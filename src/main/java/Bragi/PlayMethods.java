@@ -1,7 +1,7 @@
 package Bragi;
 
 import Bragi.APIObjectsInfo.TrackInfo;
-import Bragi.LavaPlayer.Player;
+import Bragi.LavaPlayer.GuildPlayer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -9,12 +9,9 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import javax.sound.sampled.*;
 import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import static java.lang.String.valueOf;
@@ -88,16 +85,6 @@ public class PlayMethods {
             trackInfo.SetTrackInformation(0,attachment.getFileName(), attachment.getProxyUrl(), 0);
             trackInfo.richInformation = false;  //У нас не полный набор информации, поэтому мы не можем осуществить стандартный вывод
 
-            /* Пытаемся получить длину аудиофайла */
-
-            try {
-                attachment.downloadToFile("/tmp/~bragi.mp3");
-                AudioFileFormat fileFormat = AudioSystem.getAudioFileFormat(new File("/tmp/~bragi.mp3"));
-                Map<?, ?> properties = (fileFormat).properties();
-                String key = "duration";
-                trackInfo.SetTrackDuration((int)((Long)properties.get(key) / 1000000));
-            } catch (Exception ignore) {    }
-
             /* Если элемент последний в списке, то выходим из метода */
             if (i + 1 == audioAttachments.size())  {
                 /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
@@ -114,7 +101,7 @@ public class PlayMethods {
     }
 
     private static EmbedBuilder PlayTrackOrAddItToPlaylist (TrackInfo trackInfo, MessageReceivedEvent event) {
-        if (Playlist.list.size() < 1) {
+        if (Player.list.size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
             if (!Methods.JoinChannel(event)) {
                 return new EmbedBuilder()
@@ -123,12 +110,12 @@ public class PlayMethods {
             }
 
             /* Добавляем трек в плейлист для дальнейшего воспроизведения */
-            Playlist.list.add(trackInfo);
-            Playlist.totalDuration += trackInfo.trackDuration;
+            Player.list.add(trackInfo);
+            Player.totalDuration += trackInfo.trackDuration;
 
             /* Объявляем проигрыватель и воспроизводим трек */
-            Playlist.player = new Player(event.getGuild());
-            Playlist.player.Play(trackInfo.trackURL);
+            Player.player = new GuildPlayer(event.getGuild());
+            Player.player.Play(trackInfo.trackURL);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()
@@ -144,11 +131,11 @@ public class PlayMethods {
                 return output;
         } else {
             /* Просто добавляем трек в очередь плейлиста и **не** воспроизводим его */
-            Playlist.list.add(trackInfo);
-            Playlist.totalDuration += trackInfo.trackDuration;
+            Player.list.add(trackInfo);
+            Player.totalDuration += trackInfo.trackDuration;
 
             /* Высчитываем общую продолжительность треков и приводим ее к приемлемому виду */
-            int totalDuration = Playlist.totalDuration;
+            int totalDuration = Player.totalDuration;
             String duration;
             int hours = totalDuration / 3600;
             int minutes = (totalDuration - hours * 3600) / 60;
@@ -160,13 +147,13 @@ public class PlayMethods {
 
             /* Необходимо правильно просклонять слово "треки" в русском языке */
             String playlistState;
-            String numberOfTracks = valueOf(Playlist.list.size());
+            String numberOfTracks = valueOf(Player.list.size());
             if (numberOfTracks.endsWith("1") && !numberOfTracks.endsWith("11"))
-                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Playlist.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Player.list.size(), duration);
             else if ((numberOfTracks.endsWith("2") || numberOfTracks.endsWith("3") || numberOfTracks.endsWith("4")) && !(numberOfTracks.endsWith("12") || numberOfTracks.endsWith("13") || numberOfTracks.endsWith("14")))
-                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Playlist.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Player.list.size(), duration);
             else
-                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Playlist.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Player.list.size(), duration);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()

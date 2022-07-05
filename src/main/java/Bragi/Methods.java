@@ -77,21 +77,21 @@ public class Methods {
 
     public static void SkipTracks (int numberOfTracks) {
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
-        if (numberOfTracks > Playlist.list.size())
-            numberOfTracks = Playlist.list.size();
+        if (numberOfTracks > Player.list.size())
+            numberOfTracks = Player.list.size();
         else if (numberOfTracks < 1) {  //Если не передано число, присваиваем единицу, то есть убираем один трек
             numberOfTracks = 1;
         }
 
         //Удаляем элементы
-        Playlist.list.subList(0, numberOfTracks).clear();
+        Player.list.subList(0, numberOfTracks).clear();
 
-        for (TrackInfo info : Playlist.list)
+        for (TrackInfo info : Player.list)
             System.out.println(info.trackTitle);
 
         System.out.println("Split");
 
-        String url = Playlist.list.get(0).trackURL;  //Получаем url следующего трека
-        Playlist.player.Play(url);  //Воспроизводим следующий трек
+        String url = Player.list.get(0).trackURL;  //Получаем url следующего трека
+        Player.player.Play(url);  //Воспроизводим следующий трек
     }
 }

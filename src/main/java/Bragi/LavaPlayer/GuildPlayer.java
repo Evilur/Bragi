@@ -1,6 +1,6 @@
 package Bragi.LavaPlayer;
 
-import Bragi.Playlist;
+import Bragi.Player;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -10,11 +10,11 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 
-public class Player {
+public class GuildPlayer {
     private final GuildMusicManager guildMusicManager;
     private final AudioPlayerManager audioPlayerManager;
 
-    public Player(Guild guild) {
+    public GuildPlayer(Guild guild) {
         /* Создаем менеджер для проигрывания */
         this.audioPlayerManager = new DefaultAudioPlayerManager();
         this.guildMusicManager =  new GuildMusicManager(audioPlayerManager);
@@ -36,10 +36,10 @@ public class Player {
                 guildMusicManager.scheduler.PlayTrack(audioTrack);  //Проигрываем трек при успешной загрузке
 
                 /* Если не получилось получить продолжительность трека раньше */
-                if (Playlist.list.get(0).trackDuration == 0) {
+                if (Player.list.get(0).trackDuration == 0) {
                     int duration = (int)(audioTrack.getDuration() / 1000);  //Получаем продолжительность трека из проигрывателя
-                    Playlist.list.get(0).SetTrackDuration(duration);  //Присваиваем ее текщему треку
-                    Playlist.totalDuration += duration;  //Также добавляем это к общей продолжительности
+                    Player.list.get(0).SetTrackDuration(duration);  //Присваиваем ее текщему треку
+                    Player.totalDuration += duration;  //Также добавляем это к общей продолжительности
                 }
             }
 
