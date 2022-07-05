@@ -1,6 +1,5 @@
 package Bragi.LavaPlayer;
 
-import Bragi.Player;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -28,19 +27,12 @@ public class GuildPlayer {
         guild.getAudioManager().setSendingHandler(sendHandler);
     }
 
-    public void Play (String trackUrl) {
+    public void Play (String trackURL) {
         /* Объявляем обработчик состояния трека */
         AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
                 guildMusicManager.scheduler.PlayTrack(audioTrack);  //Проигрываем трек при успешной загрузке
-
-                /* Если не получилось получить продолжительность трека раньше */
-                if (Player.playlist.get(0).trackDuration == 0) {
-                    int duration = (int)(audioTrack.getDuration() / 1000);  //Получаем продолжительность трека из проигрывателя
-                    Player.playlist.get(0).SetTrackDuration(duration);  //Присваиваем ее текщему треку
-                    Player.totalDuration += duration;  //Также добавляем это к общей продолжительности
-                }
             }
 
             /* Неиспользуемые, но обязательные методы, которые нельзя убирать */
@@ -53,6 +45,6 @@ public class GuildPlayer {
         };
 
         /* Загружаем трек */
-        audioPlayerManager.loadItemOrdered(guildMusicManager, trackUrl, resultHandler);
+        audioPlayerManager.loadItemOrdered(guildMusicManager, trackURL, resultHandler);
     }
 }

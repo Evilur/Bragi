@@ -23,12 +23,10 @@ public class TrackInfo {
     /* Если значение false, то метод, выводящий информацию принебрегнет некоторыми деталями */
     public boolean richInformation = true;
 
-    public void SetTrackInformation(int id, String title, String url, int duration) {  //Метод, с помощью которого будем устанавливать информацию о треке
+    public void SetTrackInformation(int id, String title, String url) {  //Метод, с помощью которого будем устанавливать информацию о треке
         this.trackId = id;
         this.trackTitle = title;
         this.trackURL = url;
-
-        SetTrackDuration(duration);
     }
 
     public void SetTrackDuration (int duration) {

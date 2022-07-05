@@ -1,7 +1,15 @@
 package Bragi;
 
 import Bragi.APIObjectsInfo.TrackInfo;
+import Bragi.LavaPlayer.GuildMusicManager;
 import Bragi.LavaPlayer.GuildPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -39,8 +47,7 @@ public class PlayMethods {
             trackInfo.SetTrackInformation(  //Устанавливаем информацию о треке
                     songObject.getInt("id"),
                     songObject.getString("title"),
-                    songObject.getString("preview"),
-                    songObject.getInt("duration"));
+                    songObject.getString("preview"));
             trackInfo.SetAlbumInformation(  //Устанавливаем информацию об альбоме
                     songObject.getJSONObject("album").getInt("id"),
                     songObject.getJSONObject("album").getString("title"),
@@ -49,6 +56,7 @@ public class PlayMethods {
                     songObject.getJSONObject("artist").getInt("id"),
                     songObject.getJSONObject("artist").getString("name"),
                     songObject.getJSONObject("artist").getString("picture_xl"));
+            trackInfo.SetTrackDuration(songObject.getInt("duration"));  //Устанавливаем длину трека
 
             /* Если следующийрезультат поиска существует */
             try {
@@ -82,7 +90,8 @@ public class PlayMethods {
 
             /* Созаем новый объект TrackInfo и присваиваем ему необходимые значения */
             TrackInfo trackInfo = new TrackInfo();
-            trackInfo.SetTrackInformation(0,attachment.getFileName(), attachment.getProxyUrl(), 0);
+            trackInfo.SetTrackInformation(0,attachment.getFileName(), attachment.getProxyUrl());
+            trackInfo.SetTrackDuration(GetTrackDuration(trackInfo.trackURL));  //Устанавливаем длину трека
             trackInfo.richInformation = false;  //У нас не полный набор информации, поэтому мы не можем осуществить стандартный вывод
 
             /* Если элемент последний в списке, то выходим из метода */
@@ -175,5 +184,33 @@ public class PlayMethods {
                 .addField("Альбом", trackInfo.albumTitle, false)
                 .addField("Исполнитель",trackInfo.artistName, false)
                 .setThumbnail(trackInfo.artistPictureUrl);
+    }
+
+    private static int GetTrackDuration (String trackUrl) {
+        final int[] duration = {0};  //В этой переменной будет храниться длина трека в секундах
+
+        /* Объявляем обработчик состояния трека */
+        AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack audioTrack) {
+                /* При успешной загрузке получаем длину трека*/
+                duration[0] = (int) (audioTrack.getDuration() / 1000);
+            }
+
+            /* Неиспользуемые, но обязательные методы, которые нельзя убирать */
+            @Override
+            public void loadFailed(FriendlyException e) {   }
+            @Override
+            public void playlistLoaded(AudioPlaylist audioPlaylist) {   }
+            @Override
+            public void noMatches() {   }
+        };
+
+        /* Загружаем трек в несуществующий проигрыватель и стразу выключаем его*/
+        AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
+        AudioSourceManagers.registerRemoteSources(audioPlayerManager);
+        audioPlayerManager.loadItemOrdered(new GuildMusicManager(audioPlayerManager), trackUrl, resultHandler);
+        audioPlayerManager.shutdown();
+        return duration[0];
     }
 }
