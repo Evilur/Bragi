@@ -86,13 +86,14 @@ public class Methods {
         //Удаляем элементы
         Player.playlist.subList(0, numberOfTracks).clear();
 
-        for (TrackInfo info : Player.playlist)
-            System.out.println(info.trackTitle);
-
-        System.out.println("Split");
-
-        String url = Player.playlist.get(0).trackURL;  //Получаем url следующего трека
-        Player.player.Play(url);  //Воспроизводим следующий трек
+        /* Если в плейлисте есть треки */
+        if (Player.playlist.size() > 0) {
+            String url = Player.playlist.get(0).trackURL;  //Получаем url следующего трека
+            Player.player.Play(url);  //Воспроизводим следующий трек
+        }
+        else {  //Если треков в плейлисте нет
+            Player.player.Stop();
+        }
     }
 
     public static EmbedBuilder GetPlaylist () {

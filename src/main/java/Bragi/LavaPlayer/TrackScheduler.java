@@ -10,13 +10,17 @@ public class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
 
     /* Объявляем конструктор, который будет присваивать значение переменное "player" */
-    public TrackScheduler(AudioPlayer player) {
+    public TrackScheduler (AudioPlayer player) {
         this.player = player;
     }
 
     /* С помощью этого метода будем воспроизводить треки */
-    public void PlayTrack(AudioTrack track) {
+    public void PlayTrack (AudioTrack track) {
         this.player.playTrack(track);
+    }
+
+    public void StopTrack () {
+        this.player.stopTrack();
     }
 
     /* Это обработчик событий, который срабатывает при окончании трека */

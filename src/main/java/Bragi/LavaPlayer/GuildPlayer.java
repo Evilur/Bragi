@@ -47,4 +47,8 @@ public class GuildPlayer {
         /* Загружаем трек */
         audioPlayerManager.loadItemOrdered(guildMusicManager, trackURL, resultHandler);
     }
+
+    public void Stop () {
+        guildMusicManager.scheduler.StopTrack();
+    }
 }
