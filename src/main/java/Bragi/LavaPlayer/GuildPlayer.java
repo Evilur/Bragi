@@ -36,9 +36,9 @@ public class GuildPlayer {
                 guildMusicManager.scheduler.PlayTrack(audioTrack);  //Проигрываем трек при успешной загрузке
 
                 /* Если не получилось получить продолжительность трека раньше */
-                if (Player.list.get(0).trackDuration == 0) {
+                if (Player.playlist.get(0).trackDuration == 0) {
                     int duration = (int)(audioTrack.getDuration() / 1000);  //Получаем продолжительность трека из проигрывателя
-                    Player.list.get(0).SetTrackDuration(duration);  //Присваиваем ее текщему треку
+                    Player.playlist.get(0).SetTrackDuration(duration);  //Присваиваем ее текщему треку
                     Player.totalDuration += duration;  //Также добавляем это к общей продолжительности
                 }
             }

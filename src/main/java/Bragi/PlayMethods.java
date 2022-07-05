@@ -101,7 +101,7 @@ public class PlayMethods {
     }
 
     private static EmbedBuilder PlayTrackOrAddItToPlaylist (TrackInfo trackInfo, MessageReceivedEvent event) {
-        if (Player.list.size() < 1) {
+        if (Player.playlist.size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
             if (!Methods.JoinChannel(event)) {
                 return new EmbedBuilder()
@@ -110,7 +110,7 @@ public class PlayMethods {
             }
 
             /* Добавляем трек в плейлист для дальнейшего воспроизведения */
-            Player.list.add(trackInfo);
+            Player.playlist.add(trackInfo);
             Player.totalDuration += trackInfo.trackDuration;
 
             /* Объявляем проигрыватель и воспроизводим трек */
@@ -131,7 +131,7 @@ public class PlayMethods {
                 return output;
         } else {
             /* Просто добавляем трек в очередь плейлиста и **не** воспроизводим его */
-            Player.list.add(trackInfo);
+            Player.playlist.add(trackInfo);
             Player.totalDuration += trackInfo.trackDuration;
 
             /* Высчитываем общую продолжительность треков и приводим ее к приемлемому виду */
@@ -147,13 +147,13 @@ public class PlayMethods {
 
             /* Необходимо правильно просклонять слово "треки" в русском языке */
             String playlistState;
-            String numberOfTracks = valueOf(Player.list.size());
+            String numberOfTracks = valueOf(Player.playlist.size());
             if (numberOfTracks.endsWith("1") && !numberOfTracks.endsWith("11"))
-                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Player.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Player.playlist.size(), duration);
             else if ((numberOfTracks.endsWith("2") || numberOfTracks.endsWith("3") || numberOfTracks.endsWith("4")) && !(numberOfTracks.endsWith("12") || numberOfTracks.endsWith("13") || numberOfTracks.endsWith("14")))
-                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Player.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Player.playlist.size(), duration);
             else
-                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Player.list.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Player.playlist.size(), duration);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()
