@@ -94,4 +94,26 @@ public class Methods {
         String url = Player.playlist.get(0).trackURL;  //Получаем url следующего трека
         Player.player.Play(url);  //Воспроизводим следующий трек
     }
+
+    public static EmbedBuilder GetPlaylist () {
+        /* Если плейлист пуст */
+        if (Player.playlist.size() == 0) {
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#0BDA4D"))
+                    .setDescription("**В плейлисте нет треков для воспроизведения**");
+        }
+
+        /* Если плейлист не пуст, перебираем его циклом, форматируем и записываем результат в переменную */
+        StringBuilder result = new StringBuilder(new String());
+        for (int i = 0; i < Player.playlist.size(); i++) {
+            TrackInfo trackInfo = Player.playlist.get(i);
+            result.append(String.format("**%d. %s**\n", i + 1, trackInfo.trackTitle));
+        }
+
+        /* Возвращаем информацию о плейлисте */
+        return new EmbedBuilder()
+                .setColor(Color.decode("#0BDA4D"))
+                .setTitle("**Текущий плейлист:**")
+                .setDescription(result);
+    }
 }

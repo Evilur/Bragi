@@ -59,6 +59,10 @@ public class EventHandler extends ListenerAdapter {
                     Methods.SkipTracks(1);
                 }
             }
+            case "list" ->  {  //Выводим состояние плейлиста
+                EmbedBuilder embed = Methods.GetPlaylist();
+                channel.sendMessageEmbeds(embed.build()).submit();
+            }
         }
     }
 }
