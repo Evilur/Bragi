@@ -14,9 +14,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,48 +25,14 @@ public class PlayMethods {
     /* С помощью этого метода будем воспроизводить треки Deezer по поисковому запросу */
     public static EmbedBuilder PlayDeezerTrackBySearchResults (String templateName, MessageReceivedEvent event) {
         try {
-            /* Парсим страницу с результатами поиска */
-            String url = String.format("https://api.deezer.com/search?limit=1&q=%s", templateName);  //Создаем ссылку для дальнейшего парсинга JSON ифнормации
-            JSONObject jsonObject = Methods.GetJsonObject(url);  //Парсим JSON информаци
-            JSONArray jsonArray = jsonObject.getJSONArray("data");  //Получаем массив "data" с результатами поиска
-
-            /* Если поиск не выдал результатов, то выходим из метода с отправкой ошибки */
-            if (jsonArray.length() == 0) {
-                return new EmbedBuilder()
-                        .setDescription("**Не удалось найти подходящую песню**")
-                        .setColor(Color.decode("#FE2901"));
-            }
-
-            JSONObject songObject = jsonArray.getJSONObject(0);  //Получаем первый объект из массива
-
-            /* Создаем свой объект, в который будем складывать иформацию */
-            TrackInfo trackInfo = new TrackInfo();
-            trackInfo.SetTrackInformation(  //Устанавливаем информацию о треке
-                    songObject.getInt("id"),
-                    songObject.getString("title"),
-                    songObject.getString("preview"));
-            trackInfo.SetAlbumInformation(  //Устанавливаем информацию об альбоме
-                    songObject.getJSONObject("album").getInt("id"),
-                    songObject.getJSONObject("album").getString("title"),
-                    songObject.getJSONObject("album").getString("cover_xl"));
-            trackInfo.SetArtistInformation( //Устанавливаем информацию об исполнителе
-                    songObject.getJSONObject("artist").getInt("id"),
-                    songObject.getJSONObject("artist").getString("name"),
-                    songObject.getJSONObject("artist").getString("picture_xl"));
-            trackInfo.SetTrackDuration(songObject.getInt("duration"));  //Устанавливаем длину трека
-
-            /* Если следующийрезультат поиска существует */
-            try {
-                /* На случай, если пользователь захочет выбрать другой трек из результатов поиска */
-                trackInfo.nextTrackInSearchResults = jsonObject.getString("next");
-            } catch (Exception ignore) {    }
-
+            /* Выполняем поиск трека */
+            TrackInfo trackInfo = DeezerMethods.SearchTrack(templateName, 0);
 
             /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
             return PlayTrackOrAddItToPlaylist(trackInfo, event);
-        } catch (Exception ignore) {  //При ошибке возвращаем Embed с ошибкой
+        } catch (Exception ignore) {  //Если поиск не выдал результатов
             return new EmbedBuilder()
-                    .setDescription("**Ошибка подключения к удаленному серверу. Повторите попытку позже**")
+                    .setDescription("**Не удалось найти подходящую песню**")
                     .setColor(Color.decode("#FE2901"));
         }
     }

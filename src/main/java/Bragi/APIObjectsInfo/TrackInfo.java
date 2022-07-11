@@ -19,7 +19,13 @@ public class TrackInfo {
     public String artistPictureUrl;
 
     /* Ссылка на следующий трек в результатах поиск (на случай, если первый в поиске оказался не тем, который хотелось найти) */
-    public String nextTrackInSearchResults;
+    public String nextTrackInSearchResultsUrl;
+
+    /* Поисковой запрос, с помощью которого нашли этот трек */
+    public String searchRequest;
+    /* Общее количество результатов поиска */
+    public int totalOfSearchResults;
+
     /* Если значение false, то метод, выводящий информацию принебрегнет некоторыми деталями */
     public boolean richInformation = true;
 
