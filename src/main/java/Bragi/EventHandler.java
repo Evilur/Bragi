@@ -54,14 +54,17 @@ public class EventHandler extends ListenerAdapter {
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     assert argument != null;
-                    Methods.SkipTracks(Integer.parseInt(argument));
+                    Methods.SkipTracks(Integer.parseInt(argument), true);
                 }  catch (Exception ignore)  {
-                    Methods.SkipTracks(1);
+                    Methods.SkipTracks(1, true);
                 }
             }
             case "list" ->  {  //Выводим состояние плейлиста
                 EmbedBuilder embed = Methods.GetPlaylist();
                 channel.sendMessageEmbeds(embed.build()).submit();
+            }
+            case "loop" -> {  //Переключаем режим повторения
+                Methods.SwitchLoopMode(event);
             }
         }
     }

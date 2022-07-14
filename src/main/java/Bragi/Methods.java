@@ -75,7 +75,22 @@ public class Methods {
         return new JSONObject(jsonString);  //Создаем JSON объект из JSON строки и возвращаем его
     }
 
-    public static void SkipTracks (int numberOfTracks) {
+    public static void SwitchLoopMode (MessageReceivedEvent event) {
+        Player.loopMode = !Player.loopMode;
+
+        /* Выводим сообщение в текстовый канал */
+        if (Player.loopMode) {
+            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                    .setColor(Color.decode("#0BDA4D"))
+                    .setDescription("**Повторение треков включено**").build()).submit();
+        } else {
+            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                    .setColor(Color.decode("#0BDA4D"))
+                    .setDescription("**Повторение треков выключено**").build()).submit();
+        }
+    }
+
+    public static void SkipTracks (int numberOfTracks, boolean hardSkip) {
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
         if (numberOfTracks > Player.playlist.size())
             numberOfTracks = Player.playlist.size();
@@ -83,14 +98,16 @@ public class Methods {
             numberOfTracks = 1;
         }
 
-        //Удаляем элементы
-        Player.totalDuration -= Player.playlist.get(0).trackDuration;
-        Player.playlist.subList(0, numberOfTracks).clear();
+        /* Если не стоит повторение или трек пропускается вручную */
+        if (!Player.loopMode || hardSkip) {  //Удаляем элементы
+            Player.totalDuration -= Player.playlist.get(0).trackDuration;
+            Player.playlist.subList(0, numberOfTracks).clear();
+        }
 
         /* Если в плейлисте есть треки */
         if (Player.playlist.size() > 0) {
-            String url = Player.playlist.get(0).trackURL;  //Получаем url следующего трека
-            Player.player.Play(url);  //Воспроизводим следующий трек
+            String url = Player.playlist.get(0).trackURL;  //Получаем url трека
+            Player.player.Play(url);  //Воспроизводим трек
         }
         else {  //Если треков в плейлисте нет
             Player.player.Stop();
