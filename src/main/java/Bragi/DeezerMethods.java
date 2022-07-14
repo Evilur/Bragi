@@ -75,10 +75,6 @@ public class DeezerMethods {
         trackInfo.nextTrackInSearchResultsUrl = String.valueOf(trackIndex + 1);
         trackInfo.searchRequest = trackTitle;
 
-        try {
-            GetTrackDecodedData(trackInfo.trackURL, trackInfo.trackId);
-        } catch (Exception ignore) {    }
-
         return trackInfo;
     }
 
@@ -105,8 +101,6 @@ public class DeezerMethods {
 
     /* С помощью этого метода будем получать раскодированный трек */
     private static void GetTrackDecodedData (String trackUrl, int trackId) throws Exception {
-        /**/
-
         /* Получаем ключ для расшифровки трека */
         String salt = "g4el58wc0zvf9na1";  //Соль, которая будет применяться вдальнейшем для расшифровки
         String hash = md5Hex(String.valueOf(trackId));  //Получаем MD5 хэш-сумму идентефикатора трека

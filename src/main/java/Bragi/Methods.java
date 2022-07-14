@@ -84,6 +84,7 @@ public class Methods {
         }
 
         //Удаляем элементы
+        Player.totalDuration -= Player.playlist.get(0).trackDuration;
         Player.playlist.subList(0, numberOfTracks).clear();
 
         /* Если в плейлисте есть треки */
