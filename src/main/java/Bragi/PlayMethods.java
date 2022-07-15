@@ -52,9 +52,11 @@ public class PlayMethods {
             Message.Attachment attachment = audioAttachments.get(i);
 
             /* Созаем новый объект TrackInfo и присваиваем ему необходимые значения */
-            TrackInfo trackInfo = new TrackInfo();
-            trackInfo.SetTrackInformation(0,attachment.getFileName(), attachment.getProxyUrl());
-            trackInfo.SetTrackDuration(GetTrackDuration(trackInfo.trackURL));  //Устанавливаем длину трека
+            TrackInfo trackInfo = GetTrackInfo(attachment.getProxyUrl());
+            trackInfo.trackURL = attachment.getProxyUrl();  //Получаем url вложения
+            if (Objects.equals(trackInfo.trackTitle, "Unknown title"))  //Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения
+                trackInfo.trackTitle = attachment.getFileName().replace("." + Objects.requireNonNull(attachment.getFileExtension()), "");
+
             trackInfo.richInformation = false;  //У нас не полный набор информации, поэтому мы не можем осуществить стандартный вывод
 
             /* Если элемент последний в списке, то выходим из метода */
@@ -149,15 +151,21 @@ public class PlayMethods {
                 .setThumbnail(trackInfo.artistPictureUrl);
     }
 
-    private static int GetTrackDuration (String trackUrl) {
-        final int[] duration = {0};  //В этой переменной будет храниться длина трека в секундах
+    private static TrackInfo GetTrackInfo (String trackUrl) {
+        TrackInfo trackInfo = new TrackInfo();  //Сюда будем складывать информацию о треке
 
         /* Объявляем обработчик состояния трека */
         AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {
+
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
-                /* При успешной загрузке получаем длину трека*/
-                duration[0] = (int) (audioTrack.getDuration() / 1000);
+                /* При успешной загрузке получаем информацию о треке*/
+                int trackDuration = (int)(audioTrack.getDuration() / 1000);
+                String trackTitle = audioTrack.getInfo().title;
+
+                /* Устанавливаем полученную информацию */
+                trackInfo.SetTrackDuration(trackDuration);  //Устанавливаем длину трека
+                trackInfo.trackTitle = trackTitle;
             }
 
             /* Неиспользуемые, но обязательные методы, которые нельзя убирать */
@@ -174,6 +182,7 @@ public class PlayMethods {
         AudioSourceManagers.registerRemoteSources(audioPlayerManager);
         audioPlayerManager.loadItemOrdered(new GuildMusicManager(audioPlayerManager), trackUrl, resultHandler);
         audioPlayerManager.shutdown();
-        return duration[0];
+
+        return trackInfo;
     }
 }
