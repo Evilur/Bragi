@@ -1,4 +1,4 @@
-package Bragi.APIObjectsInfo;
+package Bragi.ObjectsInfo;
 
 public class TrackInfo {
     /* Информация о самом треке */

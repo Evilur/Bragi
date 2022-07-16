@@ -1,6 +1,6 @@
 package Bragi;
 
-import Bragi.APIObjectsInfo.TrackInfo;
+import Bragi.ObjectsInfo.TrackInfo;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

@@ -1,6 +1,6 @@
 package Bragi;
 
-import Bragi.APIObjectsInfo.TrackInfo;
+import Bragi.ObjectsInfo.TrackInfo;
 import Bragi.LavaPlayer.GuildMusicManager;
 import Bragi.LavaPlayer.GuildPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;

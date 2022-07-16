@@ -1,6 +1,6 @@
 package Bragi;
 
-import Bragi.APIObjectsInfo.TrackInfo;
+import Bragi.ObjectsInfo.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

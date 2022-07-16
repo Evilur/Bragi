@@ -1,6 +1,6 @@
 package Bragi;
 
-import Bragi.APIObjectsInfo.TrackInfo;
+import Bragi.ObjectsInfo.TrackInfo;
 import Bragi.LavaPlayer.GuildPlayer;
 
 import java.util.ArrayList;
