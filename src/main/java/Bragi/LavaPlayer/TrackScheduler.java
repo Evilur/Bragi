@@ -27,7 +27,7 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         /* Если причинойостановки трека является его замена, то скипать еще раз не нужно */
-        if (!endReason.name().equals("REPLACED"))
+        if (!endReason.name().equals("REPLACED") && !endReason.name().equals("STOPPED"))
             Methods.SkipTracks(1, false);
     }
 }
