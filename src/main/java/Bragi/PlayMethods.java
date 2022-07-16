@@ -88,8 +88,8 @@ public class PlayMethods {
             Player.totalDuration += trackInfo.trackDuration;
 
             /* Объявляем проигрыватель и воспроизводим трек */
-            Player.player = new GuildPlayer(event.getGuild());
-            Player.player.Play(trackInfo.trackURL);
+            Player.instance = new GuildPlayer(event.getGuild());
+            Player.instance.Play(trackInfo.trackURL);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()

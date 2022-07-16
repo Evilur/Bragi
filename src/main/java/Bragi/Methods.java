@@ -107,10 +107,10 @@ public class Methods {
         /* Если в плейлисте есть треки */
         if (Player.playlist.size() > 0) {
             String url = Player.playlist.get(0).trackURL;  //Получаем url трека
-            Player.player.Play(url);  //Воспроизводим трек
+            Player.instance.Play(url);  //Воспроизводим трек
         }
         else {  //Если треков в плейлисте нет
-            Player.player.Stop();
+            Player.instance.Stop();
         }
     }
 
