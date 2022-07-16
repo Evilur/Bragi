@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static Bragi.Bragi.Players;
 import static java.lang.String.valueOf;
 
 public class PlayMethods {
@@ -75,7 +76,7 @@ public class PlayMethods {
     }
 
     private static EmbedBuilder PlayTrackOrAddItToPlaylist (TrackInfo trackInfo, MessageReceivedEvent event) {
-        if (Player.playlist.size() < 1) {
+        if (Players.get(event.getGuild()).playlist.size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
             if (!Methods.JoinChannel(event)) {
                 return new EmbedBuilder()
@@ -84,12 +85,12 @@ public class PlayMethods {
             }
 
             /* Добавляем трек в плейлист для дальнейшего воспроизведения */
-            Player.playlist.add(trackInfo);
-            Player.totalDuration += trackInfo.trackDuration;
+            Players.get(event.getGuild()).playlist.add(trackInfo);
+            Players.get(event.getGuild()).totalDuration += trackInfo.trackDuration;
 
             /* Объявляем проигрыватель и воспроизводим трек */
-            Player.instance = new GuildPlayer(event.getGuild());
-            Player.instance.Play(trackInfo.trackURL);
+            Players.get(event.getGuild()).instance = new GuildPlayer(event.getGuild());
+            Players.get(event.getGuild()).instance.Play(trackInfo.trackURL);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()
@@ -105,11 +106,11 @@ public class PlayMethods {
                 return output;
         } else {
             /* Просто добавляем трек в очередь плейлиста и **не** воспроизводим его */
-            Player.playlist.add(trackInfo);
-            Player.totalDuration += trackInfo.trackDuration;
+            Players.get(event.getGuild()).playlist.add(trackInfo);
+            Players.get(event.getGuild()).totalDuration += trackInfo.trackDuration;
 
             /* Высчитываем общую продолжительность треков и приводим ее к приемлемому виду */
-            int totalDuration = Player.totalDuration;
+            int totalDuration = Players.get(event.getGuild()).totalDuration;
             String duration;
             int hours = totalDuration / 3600;
             int minutes = (totalDuration - hours * 3600) / 60;
@@ -121,13 +122,13 @@ public class PlayMethods {
 
             /* Необходимо правильно просклонять слово "треки" в русском языке */
             String playlistState;
-            String numberOfTracks = valueOf(Player.playlist.size());
+            String numberOfTracks = valueOf(Players.get(event.getGuild()).playlist.size());
             if (numberOfTracks.endsWith("1") && !numberOfTracks.endsWith("11"))
-                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Player.playlist.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Players.get(event.getGuild()).playlist.size(), duration);
             else if ((numberOfTracks.endsWith("2") || numberOfTracks.endsWith("3") || numberOfTracks.endsWith("4")) && !(numberOfTracks.endsWith("12") || numberOfTracks.endsWith("13") || numberOfTracks.endsWith("14")))
-                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Player.playlist.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Players.get(event.getGuild()).playlist.size(), duration);
             else
-                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Player.playlist.size(), duration);
+                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Players.get(event.getGuild()).playlist.size(), duration);
 
             /* Инициализируем Embed для вывода части данных */
             EmbedBuilder output = new EmbedBuilder()
@@ -180,7 +181,7 @@ public class PlayMethods {
         /* Загружаем трек в несуществующий проигрыватель и стразу выключаем его*/
         AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(audioPlayerManager);
-        audioPlayerManager.loadItemOrdered(new GuildMusicManager(audioPlayerManager), trackUrl, resultHandler);
+        audioPlayerManager.loadItemOrdered(new GuildMusicManager(audioPlayerManager, null), trackUrl, resultHandler);
         audioPlayerManager.shutdown();
 
         return trackInfo;

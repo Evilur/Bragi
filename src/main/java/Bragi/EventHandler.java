@@ -9,6 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.Objects;
 
+import static Bragi.Bragi.Players;
+
 public class EventHandler extends ListenerAdapter {
     @Override
     public void onMessageReceived (@NotNull MessageReceivedEvent event) {
@@ -25,6 +27,10 @@ public class EventHandler extends ListenerAdapter {
         if (message.length > 1) {
             argument = message[1];
         }
+
+        /* Если сервер еще не был инициализирован, инициализируем его */
+        if (Players.get(event.getGuild()) == null)
+            Players.put(event.getGuild(), new Player());
 
         /* Обрабатываем комманды */
         switch (command) {
@@ -54,17 +60,18 @@ public class EventHandler extends ListenerAdapter {
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     assert argument != null;
-                    Methods.SkipTracks(Integer.parseInt(argument), true);
+                    Methods.SkipTracks(Integer.parseInt(argument), true, event.getGuild());
                 }  catch (Exception ignore)  {
-                    Methods.SkipTracks(1, true);
+                    Methods.SkipTracks(1, true, event.getGuild());
                 }
             }
             case "list" ->  {  //Выводим состояние плейлиста
-                EmbedBuilder embed = Methods.GetPlaylist();
+                EmbedBuilder embed = Methods.GetPlaylist(event.getGuild());
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
-            case "loop" -> {  //Переключаем режим повторения
-                Methods.SwitchLoopMode(event);
+            case "loop" -> {  //Переключаем режим повторения и выводим сообщение
+                EmbedBuilder embed = Methods.SwitchLoopMode(event.getGuild());
+                channel.sendMessageEmbeds(embed.build()).submit();
             }
         }
     }

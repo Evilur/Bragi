@@ -1,8 +1,10 @@
 package Bragi;
 
 import Bragi.ObjectsInfo.TrackInfo;
+import discord4j.core.object.Embed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.jsoup.Jsoup;
@@ -15,6 +17,7 @@ import java.util.Objects;
 
 import org.json.JSONObject;
 
+import static Bragi.Bragi.Players;
 import static java.lang.String.valueOf;
 
 public class Methods {
@@ -75,48 +78,47 @@ public class Methods {
         return new JSONObject(jsonString);  //Создаем JSON объект из JSON строки и возвращаем его
     }
 
-    public static void SwitchLoopMode (MessageReceivedEvent event) {
-        Player.loopMode = !Player.loopMode;
+    public static EmbedBuilder SwitchLoopMode (Guild guild) {
+        Players.get(guild).loopMode = !Players.get(guild).loopMode;
 
-        /* Выводим сообщение в текстовый канал */
-        if (Player.loopMode) {
-            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+        /* Возвращаем сообщение */
+        if (Players.get(guild).loopMode)
+            return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
-                    .setDescription("**Повторение треков включено**").build()).submit();
-        } else {
-            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                    .setDescription("**Повторение треков включено**");
+        else
+            return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
-                    .setDescription("**Повторение треков выключено**").build()).submit();
-        }
+                    .setDescription("**Повторение треков выключено**");
     }
 
-    public static void SkipTracks (int numberOfTracks, boolean hardSkip) {
+    public static void SkipTracks (int numberOfTracks, boolean hardSkip, Guild guild) {
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
-        if (numberOfTracks > Player.playlist.size())
-            numberOfTracks = Player.playlist.size();
+        if (numberOfTracks > Players.get(guild).playlist.size())
+            numberOfTracks = Players.get(guild).playlist.size();
         else if (numberOfTracks < 1) {  //Если не передано число, присваиваем единицу, то есть убираем один трек
             numberOfTracks = 1;
         }
 
         /* Если не стоит повторение или трек пропускается вручную */
-        if (!Player.loopMode || hardSkip) {  //Удаляем элементы
-            Player.totalDuration -= Player.playlist.get(0).trackDuration;
-            Player.playlist.subList(0, numberOfTracks).clear();
+        if (!Players.get(guild).loopMode || hardSkip) {  //Удаляем элементы
+            Players.get(guild).totalDuration -= Players.get(guild).playlist.get(0).trackDuration;
+            Players.get(guild).playlist.subList(0, numberOfTracks).clear();
         }
 
         /* Если в плейлисте есть треки */
-        if (Player.playlist.size() > 0) {
-            String url = Player.playlist.get(0).trackURL;  //Получаем url трека
-            Player.instance.Play(url);  //Воспроизводим трек
+        if (Players.get(guild).playlist.size() > 0) {
+            String url = Players.get(guild).playlist.get(0).trackURL;  //Получаем url трека
+            Players.get(guild).instance.Play(url);  //Воспроизводим трек
         }
         else {  //Если треков в плейлисте нет
-            Player.instance.Stop();
+            Players.get(guild).instance.Stop();
         }
     }
 
-    public static EmbedBuilder GetPlaylist () {
+    public static EmbedBuilder GetPlaylist (Guild guild) {
         /* Если плейлист пуст */
-        if (Player.playlist.size() == 0) {
+        if (Players.get(guild).playlist.size() == 0) {
             return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
                     .setDescription("**В плейлисте нет треков для воспроизведения**");
@@ -124,8 +126,8 @@ public class Methods {
 
         /* Если плейлист не пуст, перебираем его циклом, форматируем и записываем результат в переменную */
         StringBuilder result = new StringBuilder(new String());
-        for (int i = 0; i < Player.playlist.size(); i++) {
-            TrackInfo trackInfo = Player.playlist.get(i);
+        for (int i = 0; i < Players.get(guild).playlist.size(); i++) {
+            TrackInfo trackInfo = Players.get(guild).playlist.get(i);
             result.append(String.format("**%d. %s**\n", i + 1, trackInfo.trackTitle));
         }
 
