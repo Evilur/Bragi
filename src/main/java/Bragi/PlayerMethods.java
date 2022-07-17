@@ -22,7 +22,7 @@ import java.util.Objects;
 import static Bragi.Bragi.Players;
 import static java.lang.String.valueOf;
 
-public class PlayMethods {
+public class PlayerMethods {
     /* С помощью этого метода будем воспроизводить треки Deezer по поисковому запросу */
     public static EmbedBuilder PlayDeezerTrackBySearchResults (String templateName, MessageReceivedEvent event) {
         try {

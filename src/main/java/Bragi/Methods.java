@@ -1,7 +1,6 @@
 package Bragi;
 
 import Bragi.ObjectsInfo.TrackInfo;
-import discord4j.core.object.Embed;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
@@ -49,9 +48,9 @@ public class Methods {
 
         /* Если к сообщению были прикреплены вложения, то пытаемсяих воспроизвести */
         if (!event.getMessage().getAttachments().isEmpty()) {
-            return PlayMethods.PlayTrackFromAttachment(event);
+            return PlayerMethods.PlayTrackFromAttachment(event);
         } else {  //Иначе просто создаем поисковой запрос в deezer
-            return PlayMethods.PlayDeezerTrackBySearchResults(argument, event);
+            return PlayerMethods.PlayDeezerTrackBySearchResults(argument, event);
         }
     }
 
