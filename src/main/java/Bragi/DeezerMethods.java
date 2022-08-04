@@ -37,7 +37,7 @@ public class DeezerMethods {
     }
 
     /* Метод для поиска трека в Deezer */
-    public static TrackInfo SearchTrack (String trackTitle, int trackIndex) throws IOException {
+    public static TrackInfo SearchTrack (String trackTitle, int trackIndex) throws Exception {
         /* Объявляем перменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
         String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
@@ -56,7 +56,7 @@ public class DeezerMethods {
         trackInfo.SetTrackInformation(  //Устанавливаем информацию о треке
                 trackObject.getInt("SNG_ID"),
                 trackObject.getString("SNG_TITLE"),
-                GetTrackUrl(trackObject.getString("TRACK_TOKEN"))
+                trackObject.getInt("SNG_ID") + "|" + GetTrackUrl(trackObject.getString("TRACK_TOKEN"))
         );
         trackInfo.SetAlbumInformation(  //Устанавливаем информацию об альбоме
                 trackObject.getInt("ALB_ID"),
@@ -96,60 +96,6 @@ public class DeezerMethods {
                     .getString("url");
         } catch (Exception ignore) {
             return null;
-        }
-    }
-
-    /* С помощью этого метода будем получать раскодированный трек */
-    private static void GetTrackDecodedData (String trackUrl, int trackId) throws Exception {
-        /* Получаем ключ для расшифровки трека */
-        String salt = "g4el58wc0zvf9na1";  //Соль, которая будет применяться вдальнейшем для расшифровки
-        String hash = md5Hex(String.valueOf(trackId));  //Получаем MD5 хэш-сумму идентефикатора трека
-        String firstMD5Half = hash.substring(0, 16);  //Получаем первую половину хэш-суммы
-        String secondMD5Half = hash.substring(16, 32);  //Получаем вторую половину хэш-суммы
-        StringBuilder keyBuilder = new StringBuilder(new String());  //В этой переменной будем хранить значение ключа
-
-        /* Собираем ключ */
-        for (byte i = 0; i < 16; i++) {
-            int charCode = salt.charAt(i) ^ (int)firstMD5Half.charAt(i) ^ (int)secondMD5Half.charAt(i);
-            keyBuilder.append((char) charCode);
-        }  /* На этом этапе мы получили ключ для расшифровки трека */
-
-        /* Открываем поток для чтения закодированной части трека */
-        URL url = new URL(trackUrl);
-        BufferedInputStream inputStream = new BufferedInputStream(url.openStream());
-
-        /* Здесь объявляем переменные для рыботы с чанками */
-        int chunkSize = 2048;  //Это размер чанка в байтах
-        byte[] chunk = new byte[chunkSize];  //Это сам чанк, с которым мы будем работать
-        int intervalChunk = 3;
-
-        /* Я сам от себя в шоке, как мне удалось написать следующий кусок кода */
-
-        /* Работаем с шифром Blowfish */
-        SecretKeySpec key = new SecretKeySpec(keyBuilder.toString().getBytes(), "Blowfish");  //Загружаем  наш ключ
-        IvParameterSpec iv = new IvParameterSpec(new byte[] {0, 1, 2, 3, 4, 5, 6, 7});  //Устанавливаем iv пареметр
-        Cipher cipher = Cipher.getInstance("Blowfish/CBC/NoPadding");  //Выбираем шифр
-        cipher.init(Cipher.DECRYPT_MODE, key, iv);  //Инициализируем шифр с использованием ключа и iv параметра
-
-        /* Пока поток не закончится, будем с ним работать */
-        for (int i = 0, currentChunkSize = chunkSize; currentChunkSize == chunkSize; i++) {
-            /* Подгружаем чанк вручную, потому что родной метод  работает как-то нестабильно (чанки различаются по размеру)*/
-            for (int j = 0; j < chunkSize; j++)  {
-                int value = inputStream.read();  //Получаем значение байта
-
-                if (value != -1) {  //Если поток не закончился
-                    chunk[j] = (byte)value;  //Кладем его в чанк
-                    currentChunkSize = j + 1;  //Присваиваем значение текущего размера чанка
-                } else  //Если поток закончился
-                    break;
-            }
-
-            /* Получаетися так, что не все чанки нужно расшифровывать */
-            byte[] decryptedData;
-            if (i % intervalChunk == 0)
-                decryptedData = cipher.doFinal(chunk);
-            else
-                decryptedData = chunk;
         }
     }
 

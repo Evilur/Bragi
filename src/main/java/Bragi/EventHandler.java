@@ -54,7 +54,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                EmbedBuilder embed = Methods.PlaySong(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
+                EmbedBuilder embed = Methods.PlayTrack(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "s" -> {  //Удалисть из очереди один или несколько треков

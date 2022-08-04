@@ -1,10 +1,10 @@
 package Bragi.LavaPlayer;
 
-import Bragi.LavaPlayer.AudioSourceManagers.DeezerAudioSourceManager;
+import Bragi.LavaPlayer.AudioSourceManagers.Deezer.DeezerAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -33,17 +33,17 @@ public class GuildPlayer {
         this.audioPlayerManager = new DefaultAudioPlayerManager();
         this.guildMusicManager =  new GuildMusicManager(audioPlayerManager, guild);
 
-        /* Разрешаем аудио-менеджеру использовать и локальны, и удаленные файлы */
-        AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
-        AudioSourceManagers.registerLocalSource(this.audioPlayerManager);
+        /* Подключаем AudioSourceManager's для воспроизведения треков, приоритет сверху-вниз */
+        this.audioPlayerManager.registerSourceManager(new DeezerAudioSourceManager());  //Регистрируем менеджер для воспроизведения треков с Deezer
+        this.audioPlayerManager.registerSourceManager(new HttpAudioSourceManager());  //Регистрируем менеджер для воспроизведения удаленных треков по Url
 
         /* Привязываем менеждер к дискорду */
         AudioPlayerSendHandler sendHandler = guildMusicManager.getSendHandler();
         guild.getAudioManager().setSendingHandler(sendHandler);
     }
 
-    public void Play (String trackURL) {  //Метод для автоматического определения ресурса, с которого был взят трек  и его последующего воспроизведения
-        audioPlayerManager.loadItemOrdered(guildMusicManager, trackURL, this.resultHandler);
+    public void Play (String trackIdentifier) {  //Метод для воспроизведения трека
+        audioPlayerManager.loadItemOrdered(guildMusicManager, trackIdentifier, this.resultHandler);
     }
 
     public void Stop () {  //Метод для остановки трека

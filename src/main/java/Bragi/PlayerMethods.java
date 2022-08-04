@@ -1,7 +1,6 @@
 package Bragi;
 
 import Bragi.ObjectsInfo.TrackInfo;
-import Bragi.LavaPlayer.GuildMusicManager;
 import Bragi.LavaPlayer.GuildPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -181,7 +180,7 @@ public class PlayerMethods {
         /* Загружаем трек в несуществующий проигрыватель и стразу выключаем его*/
         AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(audioPlayerManager);
-        audioPlayerManager.loadItemOrdered(new GuildMusicManager(audioPlayerManager, null), trackUrl, resultHandler);
+        audioPlayerManager.loadItem(trackUrl, resultHandler);
         audioPlayerManager.shutdown();
 
         return trackInfo;

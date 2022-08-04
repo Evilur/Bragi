@@ -33,7 +33,7 @@ public class Methods {
             return false;
         }
     }
-    public static EmbedBuilder PlaySong(String argument, MessageReceivedEvent event) {  //Метод для поиска музыки и ее воспроизведения
+    public static EmbedBuilder PlayTrack(String argument, MessageReceivedEvent event) {  //Метод для поиска музыки и ее воспроизведения
         /* Если не были переданы аргументы, и не были прикреплены вложения */
         if (argument == null && event.getMessage().getAttachments().isEmpty()) {
             return new EmbedBuilder()
@@ -46,8 +46,8 @@ public class Methods {
                     .setColor(Color.decode("#FE2901"));
         }
 
-        /* Если к сообщению были прикреплены вложения, то пытаемсяих воспроизвести */
-        if (!event.getMessage().getAttachments().isEmpty()) {
+        assert argument != null;
+        if (!event.getMessage().getAttachments().isEmpty()) {  //Если к сообщению были прикреплены вложения, то пытаемся их воспроизвести */
             return PlayerMethods.PlayTrackFromAttachment(event);
         } else {  //Иначе просто создаем поисковой запрос в deezer
             return PlayerMethods.PlayDeezerTrackBySearchResults(argument, event);
