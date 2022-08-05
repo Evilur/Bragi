@@ -3,11 +3,7 @@ package Bragi.LavaPlayer.AudioSourceManagers.Deezer;
 import com.sedmelluq.discord.lavaplayer.container.*;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.ProbingAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.Units;
-import com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools;
-import com.sedmelluq.discord.lavaplayer.tools.io.HttpInterface;
-import com.sedmelluq.discord.lavaplayer.tools.io.PersistentHttpStream;
-import com.sedmelluq.discord.lavaplayer.tools.io.ThreadLocalHttpInterfaceManager;
+import com.sedmelluq.discord.lavaplayer.tools.io.*;
 import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -16,10 +12,8 @@ import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
-
-import static com.sedmelluq.discord.lavaplayer.tools.io.HttpClientTools.getHeaderValue;
 
 public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
     private final HttpInterface httpInterface = new ThreadLocalHttpInterfaceManager(
@@ -51,12 +45,9 @@ public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
 
     private MediaContainerDetectionResult GetMediaContainerDescriptor(AudioReference reference) {
         try {
-            /* Здесь небольшой костыль, который я возможно уберу вместе со следующим коммитом */
-            PersistentHttpStream inputStream = new PersistentHttpStream(this.httpInterface, new URI("https://oplayer.ru/Vodka.flac"), Units.CONTENT_LENGTH_UNKNOWN);
-            inputStream.checkStatusCode();
-
-            MediaContainerHints hints = MediaContainerHints.from(getHeaderValue(inputStream.getCurrentResponse(), "Content-Type"), null);
-            return new MediaContainerDetection(containerRegistry, reference, inputStream, hints).detectContainer();
+            DeezerAudioStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
+            MediaContainerHints hints = MediaContainerHints.from("audio/x-flac", "flac");
+            return new MediaContainerDetection(this.containerRegistry, reference, inputStream, hints).detectContainer();
         } catch (Exception ignore) {
             return null;
         }

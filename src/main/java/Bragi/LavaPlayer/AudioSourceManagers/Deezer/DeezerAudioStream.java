@@ -27,12 +27,13 @@ public class DeezerAudioStream extends SeekableInputStream {
 
     private final Cipher cipher;  //Шифр, с помощью которого будем расшифровывать трек
 
+    /* Основной конструктор */
     public DeezerAudioStream(String trackId, URL trackUrl) throws Exception {
-        super(trackUrl.openConnection().getContentLength(), 0);
+        super(trackUrl.openConnection().getContentLength(), 0L);
 
         this.filePath = "/tmp/" + trackId + ".flac";  //Устанавливаем название временного файла
-        this.fileOutputStream = new FileOutputStream(filePath);  //Инициализируем поток для записи во временный файл
-        this.fileInputStream = new FileInputStream(filePath);  //Инициализируем поток для чтения из веременного файла
+        this.fileOutputStream = new FileOutputStream(this.filePath);  //Инициализируем поток для записи во временный файл
+        this.fileInputStream = new FileInputStream(this.filePath);  //Инициализируем поток для чтения из веременного файла
         this.inputStream = new BufferedInputStream(trackUrl.openStream());  //Создаем поток для чтения зашифрованных данных
 
         /* Работаем с шифром Blowfish */
