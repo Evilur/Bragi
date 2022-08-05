@@ -1,5 +1,6 @@
 package Bragi.LavaPlayer.AudioSourceManagers.Deezer;
 
+import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.*;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoProvider;
 import java.io.BufferedInputStream;
@@ -41,9 +42,6 @@ public class DeezerAudioStream extends SeekableInputStream {
         IvParameterSpec iv = new IvParameterSpec(new byte[] {0, 1, 2, 3, 4, 5, 6, 7});  //Устанавливаем iv пареметр
         this.cipher = Cipher.getInstance("Blowfish/CBC/NoPadding");  //Выбираем шифр
         this.cipher.init(Cipher.DECRYPT_MODE, key, iv);  //Инициализируем шифр с использованием ключа и iv параметра
-
-        /* Подгружаем первый чанк */
-        UpdateChunk();
     }
 
     /* Метод для чтения одного байта */
@@ -137,7 +135,7 @@ public class DeezerAudioStream extends SeekableInputStream {
         String hash = md5Hex(String.valueOf(trackId));  //Получаем MD5 хэш-сумму идентефикатора трека
         String firstMD5Half = hash.substring(0, 16);  //Получаем первую половину хэш-суммы
         String secondMD5Half = hash.substring(16, 32);  //Получаем вторую половину хэш-суммы
-        StringBuilder keyBuilder = new StringBuilder(new String());  //В этой переменной будем хранить значение ключа
+        StringBuilder keyBuilder = new StringBuilder("");  //В этой переменной будем хранить значение ключа
 
         /* Собираем ключ */
         for (byte i = 0; i < 16; i++) {
@@ -148,15 +146,14 @@ public class DeezerAudioStream extends SeekableInputStream {
         return keyBuilder.toString();  //Возвращаем ключ
     }
 
-    /* С этим не знаю, что делать */
     @Override
     public long skip(long n) {
-        return 0L;
+        return Units.CONTENT_LENGTH_UNKNOWN;
     }
 
     @Override
     public long getPosition() {
-        return 0L;
+        return Units.CONTENT_LENGTH_UNKNOWN;
     }
 
     @Override

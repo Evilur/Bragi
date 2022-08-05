@@ -9,10 +9,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioReference;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoBuilder;
+import com.sedmelluq.discord.lavaplayer.track.info.AudioTrackInfoProvider;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 
 public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
@@ -45,7 +49,7 @@ public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
 
     private MediaContainerDetectionResult GetMediaContainerDescriptor(AudioReference reference) {
         try {
-            DeezerAudioStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
+            SeekableInputStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
             MediaContainerHints hints = MediaContainerHints.from("audio/x-flac", "flac");
             return new MediaContainerDetection(this.containerRegistry, reference, inputStream, hints).detectContainer();
         } catch (Exception ignore) {
