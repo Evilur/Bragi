@@ -30,7 +30,7 @@ public class DeezerAudioStream extends SeekableInputStream {
 
     /* Основной конструктор */
     public DeezerAudioStream(String trackId, URL trackUrl) throws Exception {
-        super(trackUrl.openConnection().getContentLength(), 0L);
+        super(trackUrl.openConnection().getContentLength(), Units.CONTENT_LENGTH_UNKNOWN);
 
         this.filePath = "/tmp/" + trackId + ".flac";  //Устанавливаем название временного файла
         this.fileOutputStream = new FileOutputStream(this.filePath);  //Инициализируем поток для записи во временный файл
