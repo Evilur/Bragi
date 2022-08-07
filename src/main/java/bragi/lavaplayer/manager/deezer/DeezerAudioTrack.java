@@ -1,4 +1,4 @@
-package Bragi.LavaPlayer.AudioSourceManagers.Deezer;
+package bragi.lavaplayer.manager.deezer;
 
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerDescriptor;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;

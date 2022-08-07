@@ -1,5 +1,6 @@
-package Bragi;
+package bragi.util;
 
+import bragi.Settings;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.Objects;
 
-import static Bragi.Bragi.Players;
+import static bragi.Bragi.Players;
 
 public class EventHandler extends ListenerAdapter {
     @Override
@@ -30,12 +31,12 @@ public class EventHandler extends ListenerAdapter {
 
         /* Если сервер еще не был инициализирован, инициализируем его */
         if (Players.get(event.getGuild()) == null)
-            Players.put(event.getGuild(), new Player());
+            Players.put(event.getGuild(), new Player(event.getGuild()));
 
         /* Обрабатываем комманды */
         switch (command) {
             case "ping" -> {  //Проверяем задержку отправки сообщений
-                EmbedBuilder embed = Methods.GetPing(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
+                EmbedBuilder embed = Methods.getPing(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "join" -> {
@@ -46,7 +47,7 @@ public class EventHandler extends ListenerAdapter {
                             .setColor(Color.decode("#FE2901")).build()).submit();
                 } else {  //Если пользователь в канале, то пытаемся подключиться
                     /* Если не удалось подключиться к каналу, выводим сообщение */
-                    if (!Methods.JoinChannel(event)) {
+                    if (!Methods.joinChannel(event)) {
                         channel.sendMessageEmbeds(new EmbedBuilder()
                                 .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
                                 .setColor(Color.decode("#FE2901")).build()).submit();
@@ -54,23 +55,23 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                EmbedBuilder embed = Methods.PlayTrack(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
+                EmbedBuilder embed = Methods.playTrack(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     assert argument != null;
-                    Methods.SkipTracks(Integer.parseInt(argument), true, event.getGuild());
+                    Methods.skipTracks(Integer.parseInt(argument), true, event.getGuild());
                 }  catch (Exception ignore)  {
-                    Methods.SkipTracks(1, true, event.getGuild());
+                    Methods.skipTracks(1, true, event.getGuild());
                 }
             }
             case "list" ->  {  //Выводим состояние плейлиста
-                EmbedBuilder embed = Methods.GetPlaylist(event.getGuild());
+                EmbedBuilder embed = Methods.getPlaylist(event.getGuild());
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
-                EmbedBuilder embed = Methods.SwitchLoopMode(event.getGuild());
+                EmbedBuilder embed = Methods.switchLoopMode(event.getGuild());
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
         }

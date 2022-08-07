@@ -1,6 +1,6 @@
-package Bragi.LavaPlayer;
+package bragi.lavaplayer;
 
-import Bragi.LavaPlayer.AudioSourceManagers.Deezer.DeezerAudioSourceManager;
+import bragi.lavaplayer.manager.deezer.DeezerAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -16,7 +16,7 @@ public class GuildPlayer {
     private final AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {  //Объявляем обработчик состояния трека
         @Override
         public void trackLoaded(AudioTrack audioTrack) {
-            guildMusicManager.scheduler.PlayTrack(audioTrack);  //Проигрываем трек при успешной загрузке
+            guildMusicManager.getScheduler().PlayTrack(audioTrack);  //Проигрываем трек при успешной загрузке
         }
 
         /* Неиспользуемые, но обязательные методы, которые нельзя убирать */
@@ -47,6 +47,6 @@ public class GuildPlayer {
     }
 
     public void Stop () {  //Метод для остановки трека
-        guildMusicManager.scheduler.StopTrack();
+        guildMusicManager.getScheduler().StopTrack();
     }
 }

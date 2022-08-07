@@ -1,6 +1,6 @@
-package Bragi;
+package bragi.util;
 
-import Bragi.ObjectsInfo.TrackInfo;
+import bragi.info.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.Guild;
@@ -16,11 +16,11 @@ import java.util.Objects;
 
 import org.json.JSONObject;
 
-import static Bragi.Bragi.Players;
+import static bragi.Bragi.Players;
 import static java.lang.String.valueOf;
 
 public class Methods {
-    public static boolean JoinChannel (MessageReceivedEvent event) {  //Метод для присоединения к каналу
+    public static boolean joinChannel(MessageReceivedEvent event) {  //Метод для присоединения к каналу
         /* Получаем голосовой канал и аудио-менеджер для подключения к нему */
         AudioChannel audioChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
         AudioManager audioManager = event.getGuild().getAudioManager();
@@ -33,7 +33,7 @@ public class Methods {
             return false;
         }
     }
-    public static EmbedBuilder PlayTrack(String argument, MessageReceivedEvent event) {  //Метод для поиска музыки и ее воспроизведения
+    public static EmbedBuilder playTrack(String argument, MessageReceivedEvent event) {  //Метод для поиска музыки и ее воспроизведения
         /* Если не были переданы аргументы, и не были прикреплены вложения */
         if (argument == null && event.getMessage().getAttachments().isEmpty()) {
             return new EmbedBuilder()
@@ -48,13 +48,13 @@ public class Methods {
 
         assert argument != null;
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если к сообщению были прикреплены вложения, то пытаемся их воспроизвести */
-            return PlayerMethods.PlayTrackFromAttachment(event);
+            return PlayerMethods.playTrackFromAttachment(event);
         } else {  //Иначе просто создаем поисковой запрос в deezer
-            return PlayerMethods.PlayDeezerTrackBySearchResults(argument, event);
+            return PlayerMethods.playDeezerTrackBySearchResults(argument, event);
         }
     }
 
-    public static EmbedBuilder GetPing (net.dv8tion.jda.api.entities.Message message) {  //Метод для вывода задержки бота
+    public static EmbedBuilder getPing(net.dv8tion.jda.api.entities.Message message) {  //Метод для вывода задержки бота
         /* Высчитываем задержку */
         long creationTime = message.getTimeCreated().toInstant().toEpochMilli();  //Получаем время создание сообщения в миллисекундах
         long currentTime =  OffsetDateTime.now().toInstant().toEpochMilli();  //Получаем текущее время
@@ -67,7 +67,7 @@ public class Methods {
                 .setColor(Color.decode("#0BDA4D"));
     }
 
-    public static JSONObject GetJsonObject (String url) throws IOException {  //Метод для парсинга JSON информации
+    public static JSONObject getJsonObject(String url) throws IOException {  //Метод для парсинга JSON информации
         Document jsonDocument = Jsoup
                 .connect(url)
                 .ignoreContentType(true)
@@ -77,11 +77,12 @@ public class Methods {
         return new JSONObject(jsonString);  //Создаем JSON объект из JSON строки и возвращаем его
     }
 
-    public static EmbedBuilder SwitchLoopMode (Guild guild) {
-        Players.get(guild).loopMode = !Players.get(guild).loopMode;
+    /* Метод для переключения режима повторения */
+    public static EmbedBuilder switchLoopMode(Guild guild) {
+        Players.get(guild).switchLoopMode();
 
         /* Возвращаем сообщение */
-        if (Players.get(guild).loopMode)
+        if (Players.get(guild).isLoopMode())
             return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
                     .setDescription("**Повторение треков включено**");
@@ -91,33 +92,34 @@ public class Methods {
                     .setDescription("**Повторение треков выключено**");
     }
 
-    public static void SkipTracks (int numberOfTracks, boolean hardSkip, Guild guild) {
+    /* Метод для пропуска определенного колиичества треков */
+    public static void skipTracks(int numberOfTracks, boolean hardSkip, Guild guild) {
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
-        if (numberOfTracks > Players.get(guild).playlist.size())
-            numberOfTracks = Players.get(guild).playlist.size();
+        if (numberOfTracks > Players.get(guild).getPlaylist().size())
+            numberOfTracks = Players.get(guild).getPlaylist().size();
         else if (numberOfTracks < 1) {  //Если не передано число, присваиваем единицу, то есть убираем один трек
             numberOfTracks = 1;
         }
 
         /* Если не стоит повторение или трек пропускается вручную */
-        if (!Players.get(guild).loopMode || hardSkip) {  //Удаляем элементы
-            Players.get(guild).totalDuration -= Players.get(guild).playlist.get(0).trackDuration;
-            Players.get(guild).playlist.subList(0, numberOfTracks).clear();
+        if (!Players.get(guild).isLoopMode() || hardSkip) {  //Удаляем элементы
+            Players.get(guild).decreaseTotalDuration(Players.get(guild).getPlaylist().get(0).getTrackDuration());  //Уменьшаем общую длину треков
+            Players.get(guild).getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первый элемент из списка
         }
 
         /* Если в плейлисте есть треки */
-        if (Players.get(guild).playlist.size() > 0) {
-            String url = Players.get(guild).playlist.get(0).trackURL;  //Получаем url трека
-            Players.get(guild).instance.Play(url);  //Воспроизводим трек
+        if (Players.get(guild).getPlaylist().size() > 0) {
+            String url = Players.get(guild).getPlaylist().get(0).getTrackIdentifier();  //Получаем url трека
+            Players.get(guild).getInstance().Play(url);  //Воспроизводим трек
         }
         else {  //Если треков в плейлисте нет
-            Players.get(guild).instance.Stop();
+            Players.get(guild).getInstance().Stop();
         }
     }
 
-    public static EmbedBuilder GetPlaylist (Guild guild) {
+    public static EmbedBuilder getPlaylist(Guild guild) {
         /* Если плейлист пуст */
-        if (Players.get(guild).playlist.size() == 0) {
+        if (Players.get(guild).getPlaylist().size() == 0) {
             return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
                     .setDescription("**В плейлисте нет треков для воспроизведения**");
@@ -125,9 +127,9 @@ public class Methods {
 
         /* Если плейлист не пуст, перебираем его циклом, форматируем и записываем результат в переменную */
         StringBuilder result = new StringBuilder(new String());
-        for (int i = 0; i < Players.get(guild).playlist.size(); i++) {
-            TrackInfo trackInfo = Players.get(guild).playlist.get(i);
-            result.append(String.format("**%d. %s**\n", i + 1, trackInfo.trackTitle));
+        for (int i = 0; i < Players.get(guild).getPlaylist().size(); i++) {
+            TrackInfo trackInfo = Players.get(guild).getPlaylist().get(i);
+            result.append(String.format("**%d. %s**\n", i + 1, trackInfo.getTrackTitle()));
         }
 
         /* Возвращаем информацию о плейлисте */

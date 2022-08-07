@@ -1,5 +1,8 @@
-package Bragi;
+package bragi;
 
+import bragi.util.DeezerMethods;
+import bragi.util.EventHandler;
+import bragi.util.Player;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -18,11 +21,10 @@ public class Bragi {
                 if (!file.delete())
                     System.out.printf("Error while deleting file \"%s\"\n", file.getName());
             }
-
         }
 
-        JDA bot = JDABuilder.createDefault(Settings.botToken).build(); //Создаем бота и подключаем его на сервер
-        DeezerMethods.SetSessionId();  //Подключаемся к серверам Deezer и получаем Id сессии
+        JDA bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
+        DeezerMethods.setSessionId();  //Подключаемся к серверам Deezer и получаем Id сессии
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
     }
 }

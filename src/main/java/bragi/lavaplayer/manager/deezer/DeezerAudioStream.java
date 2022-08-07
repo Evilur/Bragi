@@ -1,4 +1,4 @@
-package Bragi.LavaPlayer.AudioSourceManagers.Deezer;
+package bragi.lavaplayer.manager.deezer;
 
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.*;
@@ -135,7 +135,7 @@ public class DeezerAudioStream extends SeekableInputStream {
         String hash = md5Hex(String.valueOf(trackId));  //Получаем MD5 хэш-сумму идентефикатора трека
         String firstMD5Half = hash.substring(0, 16);  //Получаем первую половину хэш-суммы
         String secondMD5Half = hash.substring(16, 32);  //Получаем вторую половину хэш-суммы
-        StringBuilder keyBuilder = new StringBuilder("");  //В этой переменной будем хранить значение ключа
+        StringBuilder keyBuilder = new StringBuilder();  //В этой переменной будем хранить значение ключа
 
         /* Собираем ключ */
         for (byte i = 0; i < 16; i++) {
