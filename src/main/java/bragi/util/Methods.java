@@ -135,12 +135,12 @@ public class Methods {
         }
 
         if (Players.get(guild).isLoopMode())  //Если включено повторение трека, заявляем об этом
-            result.append("\nВключено повторения треков");
+            result.append("————————————————————\nВключено повторения треков");
 
         /* Возвращаем информацию о плейлисте */
         return new EmbedBuilder()
                 .setColor(Color.decode("#0BDA4D"))
                 .setTitle("**Текущий плейлист:**")
-                .setDescription(String.format("**Общая продолжительность: %s\n\n%s**", Players.get(guild).getTotalDuration(), result));
+                .setDescription(String.format("**Общая продолжительность: %s\n————————————————————\n%s**", Players.get(guild).getTotalDuration(), result));
     }
 }
