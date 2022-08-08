@@ -58,6 +58,10 @@ public class EventHandler extends ListenerAdapter {
                 EmbedBuilder embed = Methods.playTrack(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
+            case "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
+                EmbedBuilder embed = Methods.getNextSong(event);  //Производим новый поиск и записываем сюда вывод
+                channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
+            }
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     assert argument != null;

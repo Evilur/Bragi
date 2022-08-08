@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import java.awt.*;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import org.json.JSONObject;
@@ -51,6 +52,41 @@ public class Methods {
             return PlayerMethods.playTrackFromAttachment(event);
         } else {  //Иначе просто создаем поисковой запрос в deezer
             return PlayerMethods.playDeezerTrackBySearchResults(argument, event);
+        }
+    }
+
+    public static EmbedBuilder getNextSong(MessageReceivedEvent event) {  //Метод, с помощью которого мы будем получать следующий трек из поискового запроса
+        /* Получаем последний трек из списка */
+        ArrayList<TrackInfo> list = Players.get(event.getGuild()).getPlaylist();
+        TrackInfo trackInfo = list.remove(list.size() - 1);  //Удаляем последний элемент в списке и записываем его в переменную
+
+        /* Проверяем, возможно ли вообще получить следующий поисковой запрос */
+        if (trackInfo.getNextTrackInSearchResults() == null) {
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setDescription("**Эта песня была найдена не с помощью поискового запроса**");
+        } else if (Integer.parseInt(trackInfo.getNextTrackInSearchResults()) >= trackInfo.getTotalOfSearchResults()) {  //Если больше не существует результатов поиска
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setDescription("**По данному поисковому запросу больше не было найдено результатов**");
+        }
+
+        if (trackInfo.getSource().equals("Deezer"))  //Если трек с Deezer
+            try {
+                /* Выполняем поиск трека, начиная не с первого элемента */
+                TrackInfo newTrackInfo = DeezerMethods.searchTrack(trackInfo.getSearchRequest(), Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
+
+                /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста) и возвращаем вывод*/
+                return PlayerMethods.playTrackOrAddItToPlaylist(newTrackInfo, event);
+            } catch (Exception ignore) {  //Если поиск не выдал результатов
+                return new EmbedBuilder()
+                        .setDescription("**Не удалось найти подходящую песню**")
+                        .setColor(Color.decode("#FE2901"));
+            }
+        else {  //Если же нет, то выводим себе напоминание
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setDescription("**Такая возможность еще не добавлена**");
         }
     }
 

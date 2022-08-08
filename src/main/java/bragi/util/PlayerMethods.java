@@ -71,7 +71,7 @@ public class PlayerMethods {
                 .setDescription("**Не удалось найти аудио файл для воспроизведения среди прикрепленных файлов**");
     }
 
-    private static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
+    public static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
         /* Если в плйлисте в данный момент нет треков */
         if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
