@@ -58,6 +58,13 @@ public class Methods {
     public static EmbedBuilder getNextSong(MessageReceivedEvent event) {  //Метод, с помощью которого мы будем получать следующий трек из поискового запроса
         /* Получаем последний трек из списка */
         ArrayList<TrackInfo> list = Players.get(event.getGuild()).getPlaylist();
+
+        if (list.size() == 0) {
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setDescription("**В плейлисте нет песен**");
+        }
+
         TrackInfo trackInfo = list.remove(list.size() - 1);  //Удаляем последний элемент в списке и записываем его в переменную
         Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
 
