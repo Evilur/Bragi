@@ -16,9 +16,6 @@ import java.net.URL;
 import java.util.Objects;
 
 public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
-    private final HttpInterface httpInterface = new ThreadLocalHttpInterfaceManager(
-            HttpClientTools.createSharedCookiesHttpBuilder().setRedirectStrategy(new HttpClientTools.NoRedirectsStrategy()),
-            HttpClientTools.DEFAULT_REQUEST_CONFIG).getInterface();
     private String trackId;
     private String trackUrl;
 
@@ -45,7 +42,7 @@ public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
 
     private MediaContainerDetectionResult GetMediaContainerDescriptor(AudioReference reference) {
         try {
-            SeekableInputStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
+            DeezerAudioStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
             MediaContainerHints hints = MediaContainerHints.from("audio/x-flac", "flac");
             return new MediaContainerDetection(this.containerRegistry, reference, inputStream, hints).detectContainer();
         } catch (Exception ignore) {
