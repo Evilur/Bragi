@@ -59,6 +59,7 @@ public class Methods {
         /* Получаем последний трек из списка */
         ArrayList<TrackInfo> list = Players.get(event.getGuild()).getPlaylist();
         TrackInfo trackInfo = list.remove(list.size() - 1);  //Удаляем последний элемент в списке и записываем его в переменную
+        Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
 
         /* Проверяем, возможно ли вообще получить следующий поисковой запрос */
         if (trackInfo.getNextTrackInSearchResults() == null) {
