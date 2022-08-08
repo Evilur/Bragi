@@ -35,7 +35,7 @@ public class DeezerMethods {
     public static TrackInfo searchTrack(String trackTitle, int trackIndex) throws Exception {
         /* Объявляем перменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
-        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
+        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%s}", trackTitle, trackIndex);
 
         /* Делаем запрос на сервер Deezer */
         JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
@@ -70,6 +70,13 @@ public class DeezerMethods {
         trackInfo.setTotalOfSearchResults(totalOfSearchResults);
         trackInfo.setNextTrackInSearchResults(String.valueOf(trackIndex + 1));
         trackInfo.setSearchRequest(trackTitle);
+
+        /* Если не удалось получить id трека, то пытаемся вернуть значение следующего трека в списке поиска */
+        if (trackInfo.getTrackIdentifier().endsWith("null") && Integer.parseInt(trackInfo.getNextTrackInSearchResults()) < trackInfo.getTotalOfSearchResults()) {
+            return searchTrack(trackInfo.getSearchRequest(), Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
+        } else if (trackInfo.getTrackIdentifier() == null) {  //Если в списке поиска больше нет треков, просто выбрасываем ошибку
+            throw new Exception();
+        }
 
         return trackInfo;
     }
