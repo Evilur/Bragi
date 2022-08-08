@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static bragi.Bragi.Players;
-import static java.lang.String.valueOf;
 
 public class PlayerMethods {
     /* С помощью этого метода будем воспроизводить треки Deezer по поисковому запросу */
@@ -54,7 +53,7 @@ public class PlayerMethods {
             TrackInfo trackInfo = getTrackInfo(attachment.getProxyUrl());
             trackInfo.setSource("Attachment");  //Устанавливаем информациб об источнике
             trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
-            if (Objects.equals(trackInfo.getTrackTitle(), "Unknown title"))  //Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения
+            if (trackInfo.getTrackTitle() == null)  //Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения
                 trackInfo.setTrackTitle(attachment.getFileName().replace("." + Objects.requireNonNull(attachment.getFileExtension()), ""));
 
             /* Если элемент последний в списке, то выходим из метода */
@@ -73,6 +72,7 @@ public class PlayerMethods {
     }
 
     private static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
+        /* Если в плйлисте в данный момент нет треков */
         if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
             if (!Methods.joinChannel(event)) {
@@ -87,51 +87,20 @@ public class PlayerMethods {
 
             /* Воспроизводим трек */
             Players.get(event.getGuild()).getInstance().Play(trackInfo.getTrackIdentifier());
-
-            /* Инициализируем Embed для вывода части данных */
-            EmbedBuilder output = new EmbedBuilder()
-                    .setColor(Color.decode("#FE2901"))
-                    .setDescription(String.format("Сейчас играет: **%s**\nПродолжительность: **%s**",
-                        trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted()));
-
-            /* Если у нас есть много информации для вывода, мы выводим часть сейчас и продолжаем выполнение кода */
-            if (trackInfo.getAlbumTitle() != null && trackInfo.getArtistName() != null && trackInfo.getAlbumCoverUrl() != null && trackInfo.getArtistPictureUrl() != null) {
-                event.getChannel().sendMessageEmbeds(output.build()).submit();
-            }
-            else  //Если информации больше нет, выходим их метода, вернув данные для вывода
-                return output;
         } else {
             /* Просто добавляем трек в очередь плейлиста и **не** воспроизводим его */
             Players.get(event.getGuild()).getPlaylist().add(trackInfo);
             Players.get(event.getGuild()).increaseTotalDuration(trackInfo.getTrackDuration());
-
-            /* Высчитываем общую продолжительность треков и приводим ее к приемлемому виду */
-            String duration = Players.get(event.getGuild()).getTotalDuration();
-
-            /* Необходимо правильно просклонять слово "треки" в русском языке */
-            String playlistState;
-            String numberOfTracks = valueOf(Players.get(event.getGuild()).getPlaylist().size());
-            if (numberOfTracks.endsWith("1") && !numberOfTracks.endsWith("11"))
-                playlistState = String.format("В плейлисте находится **%d трек** общей продолжительностью **%s**", Players.get(event.getGuild()).getPlaylist().size(), duration);
-            else if ((numberOfTracks.endsWith("2") || numberOfTracks.endsWith("3") || numberOfTracks.endsWith("4")) && !(numberOfTracks.endsWith("12") || numberOfTracks.endsWith("13") || numberOfTracks.endsWith("14")))
-                playlistState = String.format("В плейлисте находится **%d трека** общей продолжительностью **%s**", Players.get(event.getGuild()).getPlaylist().size(), duration);
-            else
-                playlistState = String.format("В плейлисте находится **%d треков** общей продолжительностью **%s**", Players.get(event.getGuild()).getPlaylist().size(), duration);
-
-            /* Инициализируем Embed для вывода части данных */
-            EmbedBuilder output = new EmbedBuilder()
-                    .setColor(Color.decode("#FE2901"))
-                    .setDescription(String.format("Трек **%s** добавлен в плейлист\nПродолжительность: **%s**\n%s",
-                            trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted(), playlistState));
-
-            /* Если у нас есть много информации для вывода, мы выводим часть сейчас и продолжаем выполнение кода */
-            if (trackInfo.getAlbumTitle() != null && trackInfo.getArtistName() != null && trackInfo.getAlbumCoverUrl() != null && trackInfo.getArtistPictureUrl() != null) {
-                event.getChannel().sendMessageEmbeds(output.build()).submit();
-            }
-            else  //Если информации больше нет, выходим их метода, вернув данные для вывода
-                return output;
         }
 
+        /* В зависимости от того, из каких источников был получен трек, выводим разное количество информации */
+        if (!trackInfo.getSource().equals("Attachment"))
+            event.getChannel()
+                    .sendMessageEmbeds(Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted()).build()).submit();
+        else  //Если трек получили из вложений, то возвращаем имеющуюся информацию
+            return Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted());
+
+        /* Соотвественно, если код дошел до сюда, у нас должна быть информацию для вывода */
         return new EmbedBuilder()
                 .setColor(Color.decode("#FE2901"))
                 .setImage(trackInfo.getAlbumCoverUrl())
@@ -149,12 +118,16 @@ public class PlayerMethods {
             @Override
             public void trackLoaded(AudioTrack audioTrack) {
                 /* При успешной загрузке получаем информацию о треке*/
-                int trackDuration = (int)(audioTrack.getDuration() / 1000);
                 String trackTitle = audioTrack.getInfo().title;
+                String artistName = audioTrack.getInfo().author;
 
                 /* Устанавливаем полученную информацию */
-                trackInfo.setTrackDuration(trackDuration);  //Устанавливаем длину трека
-                trackInfo.setTrackTitle(trackTitle);
+                trackInfo.setTrackDuration((int)(audioTrack.getDuration() / 1000));  //Устанавливаем длину трека
+
+                if (!trackTitle.contains("Unknown"))  //Если получилось узнать название трека
+                    trackInfo.setTrackTitle(trackTitle);  //Устанавливаем его
+                if (!artistName.contains("Unknown"))  //Если удалось узнать исполнителя трека
+                    trackInfo.setArtistName(artistName);  //Устанавливаем его
             }
 
             /* Неиспользуемые, но обязательные методы, которые нельзя убирать */

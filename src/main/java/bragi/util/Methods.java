@@ -126,16 +126,21 @@ public class Methods {
         }
 
         /* Если плейлист не пуст, перебираем его циклом, форматируем и записываем результат в переменную */
-        StringBuilder result = new StringBuilder(new String());
+        StringBuilder result = new StringBuilder();  //Сюда будем записывать результат
+
+        /* Циклом перебираем плейлист и дабавляем это к результату */
         for (int i = 0; i < Players.get(guild).getPlaylist().size(); i++) {
             TrackInfo trackInfo = Players.get(guild).getPlaylist().get(i);
-            result.append(String.format("**%d. %s**\n", i + 1, trackInfo.getTrackTitle()));
+            result.append(String.format("%d. %s\n", i + 1, trackInfo.getTrackTitle()));
         }
+
+        if (Players.get(guild).isLoopMode())  //Если включено повторение трека, заявляем об этом
+            result.append("\nВключено повторения треков");
 
         /* Возвращаем информацию о плейлисте */
         return new EmbedBuilder()
                 .setColor(Color.decode("#0BDA4D"))
                 .setTitle("**Текущий плейлист:**")
-                .setDescription(result);
+                .setDescription(String.format("**Продолжительность: %s\n\n%s**", Players.get(guild).getTotalDuration(), result));
     }
 }
