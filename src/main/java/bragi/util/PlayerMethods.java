@@ -96,9 +96,9 @@ public class PlayerMethods {
         /* В зависимости от того, из каких источников был получен трек, выводим разное количество информации */
         if (!trackInfo.getSource().equals("Attachment"))
             event.getChannel()
-                    .sendMessageEmbeds(Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted()).build()).submit();
+                    .sendMessageEmbeds(Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1).build()).submit();
         else  //Если трек получили из вложений, то возвращаем имеющуюся информацию
-            return Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted());
+            return Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1);
 
         /* Соотвественно, если код дошел до сюда, у нас должна быть информацию для вывода */
         return new EmbedBuilder()

@@ -141,6 +141,6 @@ public class Methods {
         return new EmbedBuilder()
                 .setColor(Color.decode("#0BDA4D"))
                 .setTitle("**Текущий плейлист:**")
-                .setDescription(String.format("**Продолжительность: %s\n\n%s**", Players.get(guild).getTotalDuration(), result));
+                .setDescription(String.format("**Общая продолжительность: %s\n\n%s**", Players.get(guild).getTotalDuration(), result));
     }
 }
