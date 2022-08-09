@@ -63,12 +63,12 @@ public class DeezerMethods {
 
         /* Устанавливаем информацию об исполнителе */
         trackInfo.setArtistId(trackObject.getInt("ART_ID"));
-        trackInfo.setArtistName( trackObject.getString("ART_NAME"));
+        trackInfo.setArtistName(trackObject.getString("ART_NAME"));
         trackInfo.setArtistPictureUrl(String.format("https://e-cdns-images.dzcdn.net/images/artist/%s/1000x1000-000000-80-0-0.jpg", trackObject.getString("ART_PICTURE")));
 
         /* Объявляем некоторые перменные, которые в будущем помогут нам поменять результат поиска */
         trackInfo.setTotalOfSearchResults(totalOfSearchResults);
-        trackInfo.setNextTrackInSearchResults(String.valueOf(trackIndex + 1));
+        trackInfo.setNextTrackInSearchResults(String.valueOf(jsonObject.getJSONObject("results").getInt("next")));
         trackInfo.setSearchRequest(trackTitle);
 
         /* Если не удалось получить id трека, то пытаемся вернуть значение следующего трека в списке поиска */

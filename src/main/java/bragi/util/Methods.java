@@ -68,37 +68,34 @@ public class Methods {
 
         TrackInfo trackInfo = list.get(list.size() - 1);  //Получаем последний элемент в списке и записываем его в переменную
 
-        /* Проверяем, возможно ли вообще получить следующий поисковой запрос */
-        if (trackInfo.getNextTrackInSearchResults() == null) {
-            return new EmbedBuilder()
-                    .setColor(Color.decode("#FE2901"))
-                    .setDescription("**Эта песня была найдена не с помощью поискового запроса**");
-        } else if (Integer.parseInt(trackInfo.getNextTrackInSearchResults()) >= trackInfo.getTotalOfSearchResults()) {  //Если больше не существует результатов поиска
-            return new EmbedBuilder()
-                    .setColor(Color.decode("#FE2901"))
-                    .setDescription("**По данному поисковому запросу больше не было найдено результатов**");
-        }
+        if (trackInfo.getSource().equals("Deezer")) {//Если трек с Deezer
+            /* Если больше не существует результатов поиска */
+            if (Integer.parseInt(trackInfo.getNextTrackInSearchResults()) > trackInfo.getTotalOfSearchResults()) {
+                return new EmbedBuilder()
+                        .setColor(Color.decode("#FE2901"))
+                        .setDescription("**По данному поисковому запросу больше не было найдено результатов**");
+            }
 
-        list.remove(list.size() - 1);  //Удаляем последний элемент списка, чтобы заменить его новым
-        new File(String.format("/tmp/%s.flac", trackInfo.getTrackId())).delete();  //Удаляем  временный файл, если он есть
-        Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
-
-        if (trackInfo.getSource().equals("Deezer"))  //Если трек с Deezer
             try {
                 /* Выполняем поиск трека, начиная не с первого элемента */
                 TrackInfo newTrackInfo = DeezerMethods.searchTrack(trackInfo.getSearchRequest(), Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
 
+                list.remove(list.size() - 1);  //Удаляем последний элемент в списке
+                new File(String.format("/tmp/%s.flac", trackInfo.getTrackId())).delete();  //Удаляем  временный файл, если он есть
+                Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
+
                 /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста) и возвращаем вывод*/
                 return PlayerMethods.playTrackOrAddItToPlaylist(newTrackInfo, event);
-            } catch (Exception ignore) {  //Если поиск не выдал результатов
+            } catch (Exception ignore) {
                 return new EmbedBuilder()
-                        .setDescription("**Не удалось найти подходящую песню**")
-                        .setColor(Color.decode("#FE2901"));
+                        .setColor(Color.decode("#FE2901"))
+                        .setDescription("**По данному поисковому запросу больше не было найдено результатов**");
             }
+        }
         else {  //Если же нет, то выводим себе напоминание
             return new EmbedBuilder()
                     .setColor(Color.decode("#FE2901"))
-                    .setDescription("**Такая возможность еще не добавлена**");
+                    .setDescription("**Эта песня не была найдена с помощью поискового запроса**");
         }
     }
 
