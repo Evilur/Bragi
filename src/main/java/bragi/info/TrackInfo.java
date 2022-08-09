@@ -25,7 +25,7 @@ public class TrackInfo {
     /* Общее количество результатов поиска */
     private int totalOfSearchResults;
 
-    //region Методы информации о треке
+    //region Методы для доступа к информации о треке
     public int getTrackId() {
         return this.trackId;
     }
@@ -67,7 +67,7 @@ public class TrackInfo {
         this.trackDuration = value;
     }
     //endregion
-    //region Методы информации об альбоме трека
+    //region Методы для доступа к  информации об альбоме трека
     public int getAlbumId() {
         return this.albumId;
     }
@@ -89,7 +89,7 @@ public class TrackInfo {
         this.albumCoverUrl = value;
     }
     //endregion
-    //region Методы информации об исполнителе трека
+    //region Методы для доступа к информации об исполнителе трека
     public int getArtistId() {
         return this.artistId;
     }
@@ -111,7 +111,7 @@ public class TrackInfo {
         this.artistPictureUrl = value;
     }
     //endregion
-    //region остальные методы
+    //region Остальные методы
     public String getNextTrackInSearchResults() {
         return this.nextTrackInSearchResults;
     }
