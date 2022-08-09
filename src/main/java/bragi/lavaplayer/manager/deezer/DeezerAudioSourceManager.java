@@ -42,7 +42,7 @@ public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
 
     private MediaContainerDetectionResult GetMediaContainerDescriptor(AudioReference reference) {
         try {
-            DeezerAudioStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
+            SeekableInputStream inputStream = new DeezerAudioStream(this.trackId, new URL(this.trackUrl));
             MediaContainerHints hints = MediaContainerHints.from("audio/x-flac", "flac");
             return new MediaContainerDetection(this.containerRegistry, reference, inputStream, hints).detectContainer();
         } catch (Exception ignore) {

@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -79,6 +80,7 @@ public class Methods {
         }
 
         list.remove(list.size() - 1);  //Удаляем последний элемент списка, чтобы заменить его новым
+        new File(String.format("/tmp/%s.flac", trackInfo.getTrackId())).delete();  //Удаляем  временный файл, если он есть
         Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
 
         if (trackInfo.getSource().equals("Deezer"))  //Если трек с Deezer
@@ -149,8 +151,9 @@ public class Methods {
 
         /* Если не стоит повторение или трек пропускается вручную */
         if (!Players.get(guild).isLoopMode() || hardSkip) {  //Удаляем элементы
+            new File(String.format("/tmp/%s.flac", Players.get(guild).getPlaylist().get(0).getTrackId())).delete();  //Удаляем временный файл
             Players.get(guild).decreaseTotalDuration(Players.get(guild).getPlaylist().get(0).getTrackDuration());  //Уменьшаем общую длину треков
-            Players.get(guild).getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первый элемент из списка
+            Players.get(guild).getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первые элементы из списка
         }
 
         /* Если в плейлисте есть треки */
