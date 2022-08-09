@@ -65,8 +65,7 @@ public class Methods {
                     .setDescription("**В плейлисте нет песен**");
         }
 
-        TrackInfo trackInfo = list.remove(list.size() - 1);  //Удаляем последний элемент в списке и записываем его в переменную
-        Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
+        TrackInfo trackInfo = list.get(list.size() - 1);  //Получаем последний элемент в списке и записываем его в переменную
 
         /* Проверяем, возможно ли вообще получить следующий поисковой запрос */
         if (trackInfo.getNextTrackInSearchResults() == null) {
@@ -78,6 +77,9 @@ public class Methods {
                     .setColor(Color.decode("#FE2901"))
                     .setDescription("**По данному поисковому запросу больше не было найдено результатов**");
         }
+
+        list.remove(list.size() - 1);  //Удаляем последний элемент списка, чтобы заменить его новым
+        Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
 
         if (trackInfo.getSource().equals("Deezer"))  //Если трек с Deezer
             try {
