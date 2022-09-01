@@ -1,5 +1,5 @@
 {
-    "prefix":"!",
+    "prefix":"Put your prefix here",
     "botToken":"Put your Discord bot's token here",
     "deezerArl":"Put your Deezer token here"
 }
