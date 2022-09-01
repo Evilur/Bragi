@@ -1,5 +1,6 @@
 package bragi.util;
 
+import bragi.info.AlbumInfo;
 import bragi.info.TrackInfo;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -31,6 +32,18 @@ public class PlayerMethods {
         } catch (Exception ignore) {  //Если поиск не выдал результатов
             return new EmbedBuilder()
                     .setDescription("**Не удалось найти подходящую песню**")
+                    .setColor(Color.decode("#FE2901"));
+        }
+    }
+
+    public static EmbedBuilder playDeezerAlbumBySearchResults(String templateName, MessageReceivedEvent event) {
+        try {
+            AlbumInfo albumInfo = DeezerMethods.searchAlbum(templateName, 0);
+
+            return null;
+        } catch (Exception ignore) {
+            return new EmbedBuilder()
+                    .setDescription("**Не удалось найти подходящий альбом**")
                     .setColor(Color.decode("#FE2901"));
         }
     }

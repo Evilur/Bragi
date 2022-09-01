@@ -1,7 +1,9 @@
 package bragi.util;
 
+import bragi.info.AlbumInfo;
 import bragi.info.TrackInfo;
 import bragi.Settings;
+import net.dv8tion.jda.api.EmbedBuilder;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,7 +37,7 @@ public class DeezerMethods {
     public static TrackInfo searchTrack(String trackTitle, int trackIndex) throws Exception {
         /* Объявляем перменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
-        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%s}", trackTitle, trackIndex);
+        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
 
         /* Делаем запрос на сервер Deezer */
         JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
@@ -79,6 +81,18 @@ public class DeezerMethods {
         }
 
         return trackInfo;
+    }
+
+    public static AlbumInfo searchAlbum(String albumName, int albumIndex) throws IOException {
+        /* Объявляем перменные для создания запроса на сервер Deezer */
+        String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
+        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"ALBUM\",\"filter\":\"ALBUM\",\"start\":%s}", albumName, albumIndex);
+
+        /* Делаем запрос на сервер Deezer */
+        JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
+        System.out.println(jsonObject);
+
+        return null;
     }
 
     /* С помощью этого метода будем получать url закодированного трека */

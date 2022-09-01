@@ -67,7 +67,7 @@ public class TrackInfo {
         this.trackDuration = value;
     }
     //endregion
-    //region Методы для доступа к  информации об альбоме трека
+    //region Методы для доступа к информации об альбоме трека
     public int getAlbumId() {
         return this.albumId;
     }

@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -51,8 +52,14 @@ public class Methods {
         assert argument != null;
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если к сообщению были прикреплены вложения, то пытаемся их воспроизвести */
             return PlayerMethods.playTrackFromAttachment(event);
-        } else {  //Иначе просто создаем поисковой запрос в deezer
-            return PlayerMethods.playDeezerTrackBySearchResults(argument, event);
+        } else {  //Иначе воспроизвводим трек из Deezer
+            if (!argument.startsWith("https://") && !argument.startsWith("http://"))  {  //Если аргумент не содержит url
+                return PlayerMethods.playDeezerTrackBySearchResults(argument, event);
+            } else {
+                return new EmbedBuilder()
+                        .setColor(Color.decode("#FE2901"))
+                        .setDescription("**Такая возможность еще не добавлена**");
+            }
         }
     }
 
@@ -96,6 +103,17 @@ public class Methods {
             return new EmbedBuilder()
                     .setColor(Color.decode("#FE2901"))
                     .setDescription("**Эта песня не была найдена с помощью поискового запроса**");
+        }
+    }
+
+    public static EmbedBuilder playAlbum(String argument, MessageReceivedEvent event) {
+        System.out.println();
+        if (!argument.startsWith("https://") && !argument.startsWith("http://")) {  //Если аргумент не содержит url
+            return  PlayerMethods.playDeezerAlbumBySearchResults(argument, event);
+        } else {
+            return new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setDescription("**Такая возможность еще не добавлена**");
         }
     }
 

@@ -62,6 +62,10 @@ public class EventHandler extends ListenerAdapter {
                 EmbedBuilder embed = Methods.getNextSong(event);  //Производим новый поиск и записываем сюда вывод
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
+            case "pal" -> {  //Воспроизводим альбом
+                //EmbedBuilder embed = Methods.playAlbum(argument, event);  //Производим воспроизведение альбома или его добавление в плейлист
+                //channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
+            }
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     assert argument != null;
