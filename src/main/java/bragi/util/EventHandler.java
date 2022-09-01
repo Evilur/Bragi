@@ -16,11 +16,11 @@ public class EventHandler extends ListenerAdapter {
     @Override
     public void onMessageReceived (@NotNull MessageReceivedEvent event) {
         /* Если сообщение отправил бот или оно начинаемтся не с префикса, прерываем метод */
-        if (event.getAuthor().isBot() || !event.getMessage().getContentDisplay().startsWith(Settings.prefix))
+        if (event.getAuthor().isBot() || !event.getMessage().getContentDisplay().startsWith(Settings.getPrefix()))
             return;
 
         MessageChannel channel = event.getChannel();  //Получаем канал, из которого пришло сообщение
-        String[] message = event.getMessage().getContentDisplay().substring(Settings.prefix.length()).split(" ", 2);  //Получаем аргументы в нормальном виде, без префикса
+        String[] message = event.getMessage().getContentDisplay().substring(Settings.getPrefix().length()).split(" ", 2);  //Получаем аргументы в нормальном виде, без префикса
         String command = message[0].toLowerCase(); //Инициализируем переменную самой комманды
         String argument = null;  //Объявляем переменную аргумента комманды
 

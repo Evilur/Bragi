@@ -23,6 +23,7 @@ public class Bragi {
             }
         }
 
+        Settings.initialize();  //Инициализируем настройки
         JDA bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
         DeezerMethods.setSessionId();  //Подключаемся к серверам Deezer и получаем Id сессии
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
