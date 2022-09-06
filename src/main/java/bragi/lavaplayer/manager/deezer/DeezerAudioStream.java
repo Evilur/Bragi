@@ -19,12 +19,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
-public class DeezerAudioStream extends SeekableInputStream {
+public class DeezerAudioStream extends SeekableInputStream implements AutoCloseable {
     private final BufferedInputStream inputStream;  //Поток зашифрованных данных
     private final FileOutputStream fileOutputStream;  //Поток записи в временный файл
     private final FileInputStream fileInputStream;  //Поток чтеия из временного файла
-    private final String filePath;  //Название временного файла
     private int currentChunk = 0;  //Номер текущего чанка (необходимо, потому что не все чанки нужно расшифровывать)
+    private int position = 0;  //Текущая позиция трека
 
     private final Cipher cipher;  //Шифр, с помощью которого будем расшифровывать трек
 
@@ -32,9 +32,10 @@ public class DeezerAudioStream extends SeekableInputStream {
     public DeezerAudioStream(String trackId, URL trackUrl) throws Exception {
         super(trackUrl.openConnection().getContentLength(), Units.CONTENT_LENGTH_UNKNOWN);
 
-        this.filePath = "/tmp/" + trackId + ".flac";  //Устанавливаем название временного файла
-        this.fileOutputStream = new FileOutputStream(this.filePath);  //Инициализируем поток для записи во временный файл
-        this.fileInputStream = new FileInputStream(this.filePath);  //Инициализируем поток для чтения из веременного файла
+        //Название временного файла
+        String filePath = "/tmp/" + trackId + ".flac";  //Устанавливаем название временного файла
+        this.fileOutputStream = new FileOutputStream(filePath);  //Инициализируем поток для записи во временный файл
+        this.fileInputStream = new FileInputStream(filePath);  //Инициализируем поток для чтения из веременного файла
         this.inputStream = new BufferedInputStream(trackUrl.openStream());  //Создаем поток для чтения зашифрованных данных
 
         /* Работаем с шифром Blowfish */
@@ -51,13 +52,14 @@ public class DeezerAudioStream extends SeekableInputStream {
 
         /* Если поток файла закончился, подгружаем туда новые данные */
         if (result == -1) {
-            /* Если удаленный поток закончился, возвращаем -1, чтобы объявить о том, что поток закончился (удаляя временный файл) */
+            /* Если удаленный поток закончился, возвращаем -1, чтобы объявить о том, что поток закончился */
             if (UpdateChunk())
-                return this.fileInputStream.read();
+                result = this.fileInputStream.read();
             else
-                return clearTemp();
+                result = clearTemp();
         }
 
+        this.position++;  //Изменяем текущую позицию
         return result;
     }
 
@@ -70,11 +72,12 @@ public class DeezerAudioStream extends SeekableInputStream {
         if (result == -1) {
             /* Если удаленный поток закончился, возвращаем -1, чтобы объявить о том, что поток закончился (удаляя временный файл) */
             if (UpdateChunk())
-                return this.fileInputStream.read(buffer, offset, length);
+                result = this.fileInputStream.read(buffer, offset, length);
             else
-                return clearTemp();
+                result = clearTemp();
         }
 
+        this.position += result;  //Изменяем текущую позицию
         return result;
     }
 
@@ -121,11 +124,7 @@ public class DeezerAudioStream extends SeekableInputStream {
         this.fileInputStream.close();
         this.inputStream.close();
 
-        /* Пытаемся удалисть файл */
-        if (new java.io.File(this.filePath).delete())
-            return -1;
-        else
-            throw new IOException("Failed to delete file");
+        return -1;
     }
 
     /* Метод для генерации ключа */
@@ -153,7 +152,7 @@ public class DeezerAudioStream extends SeekableInputStream {
 
     @Override
     public long getPosition() {
-        return Units.CONTENT_LENGTH_UNKNOWN;
+        return this.position;
     }
 
     @Override

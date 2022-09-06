@@ -166,7 +166,6 @@ public class Methods {
 
         /* Если не стоит повторение или трек пропускается вручную */
         if (!Players.get(guild).isLoopMode() || hardSkip) {  //Удаляем элементы
-            new File(String.format("/tmp/%s.flac", Players.get(guild).getPlaylist().get(0).getTrackId())).delete();  //Удаляем временный файл
             Players.get(guild).decreaseTotalDuration(Players.get(guild).getPlaylist().get(0).getTrackDuration());  //Уменьшаем общую длину треков
             Players.get(guild).getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первые элементы из списка
         }
