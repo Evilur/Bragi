@@ -1,31 +1,33 @@
-package bragi.util;
+package bragi.core.source.deezer;
 
-import bragi.info.AlbumInfo;
-import bragi.info.TrackInfo;
-import bragi.Settings;
+import bragi.core.Settings;
+import bragi.core.util.TrackInfo;
+import org.apache.commons.logging.Log;
+import org.jetbrains.annotations.Debug;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
-import java.util.*;
 
 public class DeezerMethods {
     /* Идентефикатор сессиипользователя */
     private static String sessionId;
     /* Лицензионныйтокен пользователя Deezer */
     private static String licenseToken;
+    /* Специальный веб=клиент, который будет делать запросы на сервер Deezer */
+    private static WebClient webClient;
 
-    /* Метод для установки id сессии Deezer клиента */
-    public static void setSessionId() {
+    /* Метод для установки инициализирования Deezer клиента */
+    public static void initializeDeezer() {
         /* Объявляем перменные для создания запроса на сервер Deezer для вытаскивания токена лицензии и идентефикатора пользователя */
         String requestUrl = "https://www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData&api_version=1.0&api_token";
         String requestBody = String.format("{arl=\"%s\"}", Settings.getDeezerArl());
 
         try {
             /* Делаем запрос для  вытягивания токена лицензии пользователя и идентефикатора пользователя */
-            JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
+            webClient = new WebClient();  //Инициируем веб-клиент
+            JSONObject jsonObject = webClient.sendRequest(requestUrl, requestBody);
 
             /* Присваиваем переменным их законные значения */
             sessionId = jsonObject.getJSONObject("results").getString("SESSION_ID");
@@ -40,7 +42,7 @@ public class DeezerMethods {
         String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
 
         /* Делаем запрос на сервер Deezer */
-        JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
+        JSONObject jsonObject = webClient.sendRequest(requestUrl, requestBody);
 
         /* Получаем количество треков, найденных по поисковому запросу. Если не было найдено подходящих треков, выбрасываем исключение */
         int totalOfSearchResults = jsonObject.getJSONObject("results").getInt("total");
@@ -76,18 +78,6 @@ public class DeezerMethods {
         return trackInfo;
     }
 
-    public static AlbumInfo searchAlbum(String albumName, int albumIndex) throws IOException {
-        /* Объявляем перменные для создания запроса на сервер Deezer */
-        String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
-        String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"ALBUM\",\"filter\":\"ALBUM\",\"start\":%s}", albumName, albumIndex);
-
-        /* Делаем запрос на сервер Deezer */
-        JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
-        System.out.println(jsonObject);
-
-        return null;
-    }
-
     /* С помощью этого метода будем получать url закодированного трека */
     private static String getTrackUrl(String trackToken, byte trackQuality) throws IOException {
         /* Объявляем перменные для создания запроса на сервер Deezer */
@@ -95,10 +85,9 @@ public class DeezerMethods {
         String requestBody = String.format("{\"license_token\":\"%s\",\"media\":[{\"type\":\"FULL\",\"formats\":[{\"format\":\"%s\",\"cipher\":\"BF_CBC_STRIPE\"}]}],\"track_tokens\":[\"%s\"]}", licenseToken, Quality.values()[trackQuality], trackToken);
 
         /* Получаем url трека в json массиве */
-        JSONArray media = deezerRequest(requestUrl, requestBody)
+        JSONArray media = webClient.sendRequest(requestUrl, requestBody)
                 .getJSONArray("data").getJSONObject(0)
                 .getJSONArray("media");
-        System.out.println(Quality.values()[trackQuality]);
 
         if (!media.isEmpty()) {  //Проверяем, существует ли трек в таком качестве
             /* Если трек существует, возвращаем url */
@@ -107,29 +96,5 @@ public class DeezerMethods {
         } else {  //Если не существует, снижаем планку качества
             return getTrackUrl(trackToken, (byte) (trackQuality - 1));
         }
-    }
-
-    /* Метод для парсинга JSON информации с Deezer */
-    private static JSONObject deezerRequest(String url, String requestBody) throws IOException {
-        /* Устанавливаем заголовки */
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept", "application/json, text/plain, */*");
-        headers.put("Content-Type", "text/plain;charset=UTF-8");
-        headers.put("User-Agent", "Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0");
-        headers.put("Cache-Control", "max-age=0");
-        headers.put("Accept-Language", "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7");
-        headers.put("Accept-Charset", "utf-8,ISO-8859-1;q=0.8,*;q=0.7");
-        headers.put("Cookie", "arl=" + Settings.getDeezerArl());
-        headers.put("Connection", "Close");
-
-        Document jsonDocument = Jsoup
-                .connect(url)
-                .headers(headers)
-                .ignoreContentType(true)
-                .requestBody(requestBody)
-                .post();
-        String jsonString = jsonDocument.body().html();  //Получаем содержимое тега body, что и является ответом сервера
-
-        return new JSONObject(jsonString);  //Создаем JSON объект из JSON строки и возвращаем его
     }
 }

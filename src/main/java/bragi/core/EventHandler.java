@@ -1,14 +1,15 @@
-package bragi.util;
+package bragi.core;
 
-import bragi.Settings;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import bragi.core.event.*;
 
 import java.awt.*;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import static bragi.Bragi.Players;
 
@@ -36,18 +37,19 @@ public class EventHandler extends ListenerAdapter {
         /* Обрабатываем комманды */
         switch (command) {
             case "ping" -> {  //Проверяем задержку отправки сообщений
-                EmbedBuilder embed = Methods.getPing(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
+                EmbedBuilder embed = GetPing.run(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "join" -> {
-                if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) { //Если участник не в голосовом канале, сообщим ему об этом
+                /* Если участник не в голосовом канале, сообщим ему об этом */
+                if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
                     /* Выводим информацию о том, что пользователь не в канале */
                     channel.sendMessageEmbeds(new EmbedBuilder()
                             .setDescription("**Вы должны находиться в голосовом канале**")
                             .setColor(Color.decode("#FE2901")).build()).submit();
                 } else {  //Если пользователь в канале, то пытаемся подключиться
                     /* Если не удалось подключиться к каналу, выводим сообщение */
-                    if (!Methods.joinChannel(event)) {
+                    if (!JoinChannel.run(event)) {
                         channel.sendMessageEmbeds(new EmbedBuilder()
                                 .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
                                 .setColor(Color.decode("#FE2901")).build()).submit();
@@ -55,31 +57,27 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                EmbedBuilder embed = Methods.playTrack(argument, event);  //Производим запуск музыки и получаем данные для вывода в Embed
+                EmbedBuilder embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
-                EmbedBuilder embed = Methods.getNextSong(event);  //Производим новый поиск и записываем сюда вывод
+                EmbedBuilder embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
-            }
-            case "pal" -> {  //Воспроизводим альбом
-                //EmbedBuilder embed = Methods.playAlbum(argument, event);  //Производим воспроизведение альбома или его добавление в плейлист
-                //channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
             case "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
-                    assert argument != null;
-                    Methods.skipTracks(Integer.parseInt(argument), true, event.getGuild());
-                }  catch (Exception ignore)  {
-                    Methods.skipTracks(1, true, event.getGuild());
-                }
+                    /* Если аргумент содержит цифры */
+                    int numberOfTracks = argument != null && Pattern.compile("[0-9]").matcher(argument).find() ?
+                            Integer.parseInt(argument.replaceAll("[^0-9]", "")) : 1;  //Получаем количество пропускаемых треков
+                    SkipTracks.run(numberOfTracks, true, Players.get(event.getGuild()));  //Пропускаем треки в нужном количестве
+                } catch (Exception ignore) {    }
             }
             case "list" ->  {  //Выводим состояние плейлиста
-                EmbedBuilder embed = Methods.getPlaylist(event.getGuild());
+                EmbedBuilder embed = GetPlaylist.run(event.getGuild());
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
-                EmbedBuilder embed = Methods.switchLoopMode(event.getGuild());
+                EmbedBuilder embed = SwitchLoopMode.run(event.getGuild());
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
         }

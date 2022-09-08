@@ -1,4 +1,4 @@
-package bragi.info;
+package bragi.core.util;
 
 public class TrackInfo {
     /* Информация о самом треке */

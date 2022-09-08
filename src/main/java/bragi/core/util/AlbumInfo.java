@@ -1,4 +1,4 @@
-package bragi.info;
+package bragi.core.util;
 
 import java.util.ArrayList;
 

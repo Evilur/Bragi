@@ -1,10 +1,7 @@
-package bragi;
+package bragi.core;
 
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

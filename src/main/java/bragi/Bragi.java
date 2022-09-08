@@ -1,8 +1,9 @@
 package bragi;
 
-import bragi.util.DeezerMethods;
-import bragi.util.EventHandler;
-import bragi.util.Player;
+import bragi.core.Settings;
+import bragi.core.EventHandler;
+import bragi.core.Player;
+import bragi.core.source.deezer.DeezerMethods;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -25,7 +26,7 @@ public class Bragi {
 
         Settings.initialize();  //Инициализируем настройки
         JDA bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
-        DeezerMethods.setSessionId();  //Подключаемся к серверам Deezer и получаем Id сессии
+        DeezerMethods.initializeDeezer();  //Подключаемся к серверам Deezer и инициализируем клиент
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
     }
 }

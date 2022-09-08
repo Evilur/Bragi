@@ -1,7 +1,8 @@
-package bragi.util;
+package bragi.core;
 
-import bragi.info.AlbumInfo;
-import bragi.info.TrackInfo;
+import bragi.core.event.JoinChannel;
+import bragi.core.source.deezer.DeezerMethods;
+import bragi.core.util.TrackInfo;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -20,30 +21,19 @@ import java.util.Objects;
 
 import static bragi.Bragi.Players;
 
-public class PlayerMethods {
+public class Methods {
+    //region Регион треков
     /* С помощью этого метода будем воспроизводить треки Deezer по поисковому запросу */
     public static EmbedBuilder playDeezerTrackBySearchResults(String templateName, MessageReceivedEvent event) {
         try {
             /* Выполняем поиск трека */
             TrackInfo trackInfo = DeezerMethods.searchTrack(templateName, 0);
-
             /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
             return playTrackOrAddItToPlaylist(trackInfo, event);
         } catch (Exception ignore) {  //Если поиск не выдал результатов
+            System.out.println(ignore);
             return new EmbedBuilder()
                     .setDescription("**Не удалось найти подходящую песню**")
-                    .setColor(Color.decode("#FE2901"));
-        }
-    }
-
-    public static EmbedBuilder playDeezerAlbumBySearchResults(String templateName, MessageReceivedEvent event) {
-        try {
-            AlbumInfo albumInfo = DeezerMethods.searchAlbum(templateName, 0);
-
-            return null;
-        } catch (Exception ignore) {
-            return new EmbedBuilder()
-                    .setDescription("**Не удалось найти подходящий альбом**")
                     .setColor(Color.decode("#FE2901"));
         }
     }
@@ -51,7 +41,7 @@ public class PlayerMethods {
     /* С помощбю этого метода будем воспроизводить музыку из вложений */
     public static EmbedBuilder playTrackFromAttachment(MessageReceivedEvent event) {
         List<Message.Attachment> attachments = event.getMessage().getAttachments();  //Получаем список вложений
-        List<Message.Attachment> audioAttachments = new ArrayList<>();
+        List<Message.Attachment> audioAttachments = new ArrayList<>();  //Список аудио-вложений
 
         for (Message.Attachment attachment : attachments) {
             /* Если вложение — это аудиофайл, добавляем его в список */
@@ -83,12 +73,13 @@ public class PlayerMethods {
                 .setColor(Color.decode("#FE2901"))
                 .setDescription("**Не удалось найти аудио файл для воспроизведения среди прикрепленных файлов**");
     }
-
+    //endregion
+    //region Основные методы
     public static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
         /* Если в плйлисте в данный момент нет треков */
         if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
-            if (!Methods.joinChannel(event)) {
+            if (!JoinChannel.run(event)) {
                 return new EmbedBuilder()
                         .setColor(Color.decode("#FE2901"))
                         .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**");
@@ -109,9 +100,9 @@ public class PlayerMethods {
         /* В зависимости от того, из каких источников был получен трек, выводим разное количество информации */
         if (!trackInfo.getSource().equals("Attachment"))
             event.getChannel()
-                    .sendMessageEmbeds(Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1).build()).submit();
+                    .sendMessageEmbeds(Informer.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1).build()).submit();
         else  //Если трек получили из вложений, то возвращаем имеющуюся информацию
-            return Informant.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1);
+            return Informer.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1);
 
         /* Соотвественно, если код дошел до сюда, у нас должна быть информацию для вывода */
         return new EmbedBuilder()
@@ -160,4 +151,5 @@ public class PlayerMethods {
 
         return trackInfo;
     }
+    //endregion
 }

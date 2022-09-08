@@ -1,6 +1,6 @@
-package bragi.util;
+package bragi.core;
 
-import bragi.info.TrackInfo;
+import bragi.core.util.TrackInfo;
 import bragi.lavaplayer.GuildPlayer;
 import net.dv8tion.jda.api.entities.Guild;
 

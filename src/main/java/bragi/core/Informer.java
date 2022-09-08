@@ -1,10 +1,10 @@
-package bragi.util;
+package bragi.core;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.awt.*;
 
-public class Informant {
+public class Informer {
 
     /* Метод для вывода информаци о треках, содеражит несколько перегрузок для вывода разного количества информации */
     public static EmbedBuilder getOutputInformation(String trackTitle, String trackDuration, boolean isPlayingNow) {
