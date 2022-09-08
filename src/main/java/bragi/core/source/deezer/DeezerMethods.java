@@ -2,11 +2,8 @@ package bragi.core.source.deezer;
 
 import bragi.core.Settings;
 import bragi.core.util.TrackInfo;
-import org.apache.commons.logging.Log;
-import org.jetbrains.annotations.Debug;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
 

@@ -31,7 +31,6 @@ public class Methods {
             /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
             return playTrackOrAddItToPlaylist(trackInfo, event);
         } catch (Exception ignore) {  //Если поиск не выдал результатов
-            System.out.println(ignore);
             return new EmbedBuilder()
                     .setDescription("**Не удалось найти подходящую песню**")
                     .setColor(Color.decode("#FE2901"));
