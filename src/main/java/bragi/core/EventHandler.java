@@ -40,7 +40,7 @@ public class EventHandler extends ListenerAdapter {
                 EmbedBuilder embed = GetPing.run(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
                 channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
             }
-            case "join" -> {
+            case "join" -> {  //Подключаемся к голосовому каналу
                 /* Если участник не в голосовом канале, сообщим ему об этом */
                 if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
                     /* Выводим информацию о том, что пользователь не в канале */
@@ -54,6 +54,13 @@ public class EventHandler extends ListenerAdapter {
                                 .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
                                 .setColor(Color.decode("#FE2901")).build()).submit();
                     }
+                }
+            }
+            case "leave" -> {  //Покидаем голосовой канал
+                if (!LeaveChannel.run(event)) {  //Если не удалось покинуть голосовой канал
+                    channel.sendMessageEmbeds(new EmbedBuilder()
+                            .setDescription("**Не удалось покинуть голосовой канал**")
+                            .setColor(Color.decode("#FE2901")).build()).submit();
                 }
             }
             case "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
