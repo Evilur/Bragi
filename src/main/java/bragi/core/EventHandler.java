@@ -80,11 +80,11 @@ public class EventHandler extends ListenerAdapter {
                 } catch (Exception ignore) {    }
             }
             case "list" ->  {  //Выводим состояние плейлиста
-                EmbedBuilder embed = GetPlaylist.run(event.getGuild());
+                EmbedBuilder embed = GetPlaylist.run(Players.get(event.getGuild()));
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
-                EmbedBuilder embed = SwitchLoopMode.run(event.getGuild());
+                EmbedBuilder embed = SwitchLoopMode.run(Players.get(event.getGuild()));
                 channel.sendMessageEmbeds(embed.build()).submit();
             }
         }
