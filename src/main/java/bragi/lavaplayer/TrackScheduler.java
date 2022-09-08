@@ -30,8 +30,8 @@ public class TrackScheduler extends AudioEventAdapter {
     /* Это обработчик событий, который срабатывает при окончании трека */
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        /* Если причинойостановки трека является его замена, то скипать еще раз не нужно */
-        if (!endReason.name().equals("REPLACED") && !endReason.name().equals("STOPPED"))
-            SkipTracks.run(1, false, Bragi.Players.get(this.guild));
+        /* Если причиной остановки трека является его окончание, заменяем его на новый */
+        if (endReason.name().equals("FINISHED"))
+            SkipTracks.run(1, false, this.guild);
     }
 }

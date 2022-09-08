@@ -57,7 +57,7 @@ public class EventHandler extends ListenerAdapter {
                 }
             }
             case "leave" -> {  //Покидаем голосовой канал
-                if (!LeaveChannel.run(event)) {  //Если не удалось покинуть голосовой канал
+                if (!LeaveChannel.run(event.getGuild().getAudioManager())) {  //Если не удалось покинуть голосовой канал
                     channel.sendMessageEmbeds(new EmbedBuilder()
                             .setDescription("**Не удалось покинуть голосовой канал**")
                             .setColor(Color.decode("#FE2901")).build()).submit();
@@ -76,7 +76,7 @@ public class EventHandler extends ListenerAdapter {
                     /* Если аргумент содержит цифры */
                     int numberOfTracks = argument != null && Pattern.compile("[0-9]").matcher(argument).find() ?
                             Integer.parseInt(argument.replaceAll("[^0-9]", "")) : 1;  //Получаем количество пропускаемых треков
-                    SkipTracks.run(numberOfTracks, true, Players.get(event.getGuild()));  //Пропускаем треки в нужном количестве
+                    SkipTracks.run(numberOfTracks, true, event.getGuild());  //Пропускаем треки в нужном количестве
                 } catch (Exception ignore) {    }
             }
             case "list" ->  {  //Выводим состояние плейлиста

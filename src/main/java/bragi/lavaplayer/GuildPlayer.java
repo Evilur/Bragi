@@ -1,5 +1,6 @@
 package bragi.lavaplayer;
 
+import bragi.core.event.LeaveChannel;
 import bragi.lavaplayer.manager.deezer.DeezerAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;

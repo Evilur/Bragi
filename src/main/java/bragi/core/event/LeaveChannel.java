@@ -1,11 +1,11 @@
 package bragi.core.event;
 
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.managers.AudioManager;
 
 public class LeaveChannel {
-    public static boolean run(MessageReceivedEvent event) {  //Метод для покидания голосового канала
+    public static boolean run(AudioManager audioManager) {  //Метод для покидания голосового канала
         try {
-            event.getGuild().getAudioManager().closeAudioConnection();
+            audioManager.closeAudioConnection();
             return true;
         } catch (Exception ignore) {
             return false;

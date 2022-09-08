@@ -1,9 +1,12 @@
 package bragi.core.event;
 
+import bragi.Bragi;
 import bragi.core.Player;
+import net.dv8tion.jda.api.entities.Guild;
 
 public class SkipTracks {
-    public static void run(int numberOfTracks, boolean hardSkip, Player player) {  //Метод для пропуска определенного колиичества треков
+    public static void run(int numberOfTracks, boolean hardSkip, Guild guild) {  //Метод для пропуска определенного колиичества треков
+        Player player = Bragi.Players.get(guild);  //Получаем проигрыватель
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
         if (numberOfTracks > player.getPlaylist().size())
             numberOfTracks = player.getPlaylist().size();
@@ -24,6 +27,7 @@ public class SkipTracks {
         }
         else {  //Если треков в плейлисте нет
             player.getInstance().Stop();
+            LeaveChannel.run(guild.getAudioManager());
         }
     }
 }
