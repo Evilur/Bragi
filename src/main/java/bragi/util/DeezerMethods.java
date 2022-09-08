@@ -3,7 +3,7 @@ package bragi.util;
 import bragi.info.AlbumInfo;
 import bragi.info.TrackInfo;
 import bragi.Settings;
-import net.dv8tion.jda.api.EmbedBuilder;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -55,7 +55,7 @@ public class DeezerMethods {
         trackInfo.setSource("Deezer");
         trackInfo.setTrackId(trackObject.getInt("SNG_ID"));
         trackInfo.setTrackTitle(trackObject.getString("SNG_TITLE"));
-        trackInfo.setTrackIdentifier(trackObject.getInt("SNG_ID") + "|" + getTrackUrl(trackObject.getString("TRACK_TOKEN")));
+        trackInfo.setTrackIdentifier(trackObject.getInt("SNG_ID") + "|" + getTrackUrl(trackObject.getString("TRACK_TOKEN"), (byte) 2));
         trackInfo.setTrackDuration(trackObject.getInt("DURATION"));
 
         /* Устанавливаем информацию об альбоме */
@@ -73,13 +73,6 @@ public class DeezerMethods {
         trackInfo.setNextTrackInSearchResults(String.valueOf(jsonObject.getJSONObject("results").getInt("next")));
         trackInfo.setSearchRequest(trackTitle);
 
-        /* Если не удалось получить id трека, то пытаемся вернуть значение следующего трека в списке поиска */
-        if (trackInfo.getTrackIdentifier().endsWith("null") && Integer.parseInt(trackInfo.getNextTrackInSearchResults()) < trackInfo.getTotalOfSearchResults()) {
-            return searchTrack(trackInfo.getSearchRequest(), Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
-        } else if (trackInfo.getTrackIdentifier() == null) {  //Если в списке поиска больше нет треков, просто выбрасываем ошибку
-            throw new Exception();
-        }
-
         return trackInfo;
     }
 
@@ -96,23 +89,23 @@ public class DeezerMethods {
     }
 
     /* С помощью этого метода будем получать url закодированного трека */
-    private static String getTrackUrl(String trackToken) {
+    private static String getTrackUrl(String trackToken, byte trackQuality) throws IOException {
         /* Объявляем перменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://media.deezer.com/v1/get_url?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&sid=%s", sessionId);
-        String requestBody = String.format("{\"license_token\":\"%s\",\"media\":[{\"type\":\"FULL\",\"formats\":[{\"format\":\"FLAC\",\"cipher\":\"BF_CBC_STRIPE\"}]}],\"track_tokens\":[\"%s\"]}", licenseToken, trackToken);
+        String requestBody = String.format("{\"license_token\":\"%s\",\"media\":[{\"type\":\"FULL\",\"formats\":[{\"format\":\"%s\",\"cipher\":\"BF_CBC_STRIPE\"}]}],\"track_tokens\":[\"%s\"]}", licenseToken, Quality.values()[trackQuality], trackToken);
 
-        try {
-            /* Получаем url трека в json объекте */
-            JSONObject jsonObject = deezerRequest(requestUrl, requestBody);
+        /* Получаем url трека в json массиве */
+        JSONArray media = deezerRequest(requestUrl, requestBody)
+                .getJSONArray("data").getJSONObject(0)
+                .getJSONArray("media");
+        System.out.println(Quality.values()[trackQuality]);
 
-            /* Возвращаем url трека */
-            return jsonObject
-                    .getJSONArray("data").getJSONObject(0)
-                    .getJSONArray("media").getJSONObject(0)
-                    .getJSONArray("sources").getJSONObject(0)
-                    .getString("url");
-        } catch (Exception ignore) {
-            return null;
+        if (!media.isEmpty()) {  //Проверяем, существует ли трек в таком качестве
+            /* Если трек существует, возвращаем url */
+            return media.getJSONObject(0).getJSONArray("sources")
+                    .getJSONObject(0).getString("url");
+        } else {  //Если не существует, снижаем планку качества
+            return getTrackUrl(trackToken, (byte) (trackQuality - 1));
         }
     }
 
