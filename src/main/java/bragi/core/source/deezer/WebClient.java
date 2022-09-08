@@ -32,7 +32,8 @@ public class WebClient {
                 .ignoreContentType(true)
                 .requestBody(requestBody)
                 .post();
-        String jsonString = jsonDocument.body().html();  //Получаем содержимое тега body, что и является ответом сервера
+        /* Получаем содержимое тега body, что и является ответом сервера, и удаляем амперсанд */
+        String jsonString = jsonDocument.body().html().replace("&amp;", "&");
         return new JSONObject(jsonString);  //Создаем JSON объект из JSON строки и возвращаем его
     }
 }
