@@ -1,7 +1,10 @@
 package bragi.core;
 
+import bragi.Bragi;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -86,6 +89,21 @@ public class EventHandler extends ListenerAdapter {
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
                 EmbedBuilder embed = SwitchLoopMode.run(Players.get(event.getGuild()));
                 channel.sendMessageEmbeds(embed.build()).submit();
+            }
+        }
+    }
+
+    @Override
+    public void onGuildVoiceUpdate(@NotNull GuildVoiceUpdateEvent event) {  //Этот обработчик событий будет покидать голосовой канал, если никого кроме бота там нет
+        /* Канал, из которого ливнул пользователь */
+        AudioChannel memberLeaveChannel = event.getChannelLeft();
+
+        /* Если канал не существует (пользователь не ливал из канала, а присоединился) и если пользователь только один */
+        if (memberLeaveChannel != null && memberLeaveChannel.getMembers().size() == 1) {
+            /* Если последний участник канала - это наш бот, стоит прекратить воспроизведение и покинуть канал */
+            if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(Bragi.bot.getSelfUser().getId())) {
+                SkipTracks.run(Players.get(event.getGuild()).getPlaylist().size(), true, event.getGuild());
+                LeaveChannel.run(event.getGuild().getAudioManager());
             }
         }
     }
