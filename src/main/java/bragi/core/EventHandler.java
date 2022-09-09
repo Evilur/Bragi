@@ -4,7 +4,9 @@ import bragi.Bragi;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +20,7 @@ import static bragi.Bragi.Players;
 
 public class EventHandler extends ListenerAdapter {
     @Override
-    public void onMessageReceived (@NotNull MessageReceivedEvent event) {
+    public void onMessageReceived (@NotNull MessageReceivedEvent event) {  //Обработчик событий, срабатывающий при отправке сообщения
         /* Если сообщение отправил бот или оно начинаемтся не с префикса, прерываем метод */
         if (event.getAuthor().isBot() || !event.getMessage().getContentDisplay().startsWith(Settings.getPrefix()))
             return;
@@ -26,12 +28,7 @@ public class EventHandler extends ListenerAdapter {
         MessageChannel channel = event.getChannel();  //Получаем канал, из которого пришло сообщение
         String[] message = event.getMessage().getContentDisplay().substring(Settings.getPrefix().length()).split(" ", 2);  //Получаем аргументы в нормальном виде, без префикса
         String command = message[0].toLowerCase(); //Инициализируем переменную самой комманды
-        String argument = null;  //Объявляем переменную аргумента комманды
-
-        /* Инициализируем переменную аргумента команды, если он есть */
-        if (message.length > 1) {
-            argument = message[1];
-        }
+        String argument = message.length > 1 ? message[1] : null;  //Объявляем переменную аргумента комманды
 
         /* Если сервер еще не был инициализирован, инициализируем его */
         if (Players.get(event.getGuild()) == null)
@@ -40,8 +37,8 @@ public class EventHandler extends ListenerAdapter {
         /* Обрабатываем комманды */
         switch (command) {
             case "ping" -> {  //Проверяем задержку отправки сообщений
-                EmbedBuilder embed = GetPing.run(event.getMessage());  //Получаем Embed для вывода задерки в милисекундах
-                channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
+                MessageEmbed embed = GetPing.run(event.getMessage().getTimeCreated());  //Получаем Embed для вывода задерки в милисекундах
+                channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
             }
             case "join" -> {  //Подключаемся к голосовому каналу
                 /* Если участник не в голосовом канале, сообщим ему об этом */
@@ -89,6 +86,26 @@ public class EventHandler extends ListenerAdapter {
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
                 EmbedBuilder embed = SwitchLoopMode.run(Players.get(event.getGuild()));
                 channel.sendMessageEmbeds(embed.build()).submit();
+            }
+        }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (Objects.requireNonNull(event.getMember()).getUser().isBot())  //Если команду отправил бот, выходим из метода
+            return;
+
+        MessageChannel channel = event.getChannel();  //Получаем канал, из которого пришло сообщение
+        String command = event.getName(); //Инициализируем переменную самой комманды
+
+        /* Если сервер еще не был инициализирован, инициализируем его */
+        if (Players.get(event.getGuild()) == null)
+            Players.put(event.getGuild(), new Player(event.getGuild()));
+
+        switch (command) {
+            case "ping" -> {  //Проверяем задержку отправки сообщений
+                MessageEmbed embed = GetPing.run(event.getTimeCreated());
+                event.replyEmbeds(embed).submit();
             }
         }
     }

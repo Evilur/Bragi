@@ -7,6 +7,7 @@ import bragi.core.source.deezer.DeezerMethods;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.io.File;
 import java.util.HashMap;
@@ -26,8 +27,18 @@ public class Bragi {
         }
 
         Settings.initialize();  //Инициализируем настройки
-        bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
         DeezerMethods.initializeDeezer();  //Подключаемся к серверам Deezer и инициализируем клиент
+
+        //region Инициализация бота
+        bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
+
+        /* Добавляем слэш-команды */
+        /*bot.upsertCommand("play", "Воспроизвести трек или добавить его в очередь")
+                        .addOption(OptionType.STRING, "query", "Произвести поиск трека и воспроизвести его или добавить в плейлист", true)
+                        .addOption(OptionType.ATTACHMENT, "attachment", "Воспроизвести трек из вложений или добавить его в плейлист")
+                        .queue();*/
+        bot.upsertCommand("ping", "Получить информацию о задержке").submit();
+        //endregion
     }
 }
