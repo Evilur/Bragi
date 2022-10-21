@@ -3,16 +3,18 @@ package bragi.core.event;
 import bragi.core.Player;
 import bragi.core.util.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
 
 public class GetPlaylist {
-    public static EmbedBuilder run(Player player) {  //Метод для вывода списка воспроизведения
+    /* Метод для вывода списка воспроизведения */
+    public static MessageEmbed run(Player player) {
         /* Если плейлист пуст */
         if (player.getPlaylist().size() == 0) {
             return new EmbedBuilder()
                     .setColor(Color.decode("#0BDA4D"))
-                    .setDescription("**В плейлисте нет треков для воспроизведения**");
+                    .setDescription("**В плейлисте нет треков для воспроизведения**").build();
         }
 
         /* Если плейлист не пуст, перебираем его циклом, форматируем и записываем результат в переменную */
@@ -31,6 +33,6 @@ public class GetPlaylist {
         return new EmbedBuilder()
                 .setColor(Color.decode("#0BDA4D"))
                 .setTitle("**Текущий плейлист:**")
-                .setDescription(String.format("**Общая продолжительность: %s\n————————————————————\n%s**", player.getTotalDuration(), result));
+                .setDescription(String.format("**Общая продолжительность: %s\n————————————————————\n%s**", player.getTotalDuration(), result)).build();
     }
 }

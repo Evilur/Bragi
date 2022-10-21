@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.File;
 import java.util.HashMap;
@@ -34,10 +35,15 @@ public class Bragi {
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
 
         /* Добавляем слэш-команды */
-        /*bot.upsertCommand("play", "Воспроизвести трек или добавить его в очередь")
-                        .addOption(OptionType.STRING, "query", "Произвести поиск трека и воспроизвести его или добавить в плейлист", true)
-                        .addOption(OptionType.ATTACHMENT, "attachment", "Воспроизвести трек из вложений или добавить его в плейлист")
-                        .queue();*/
+        bot.upsertCommand("play", "Воспроизвести трек или добавить его в плейлист")
+                .addSubcommands(
+                        new SubcommandData("track", "Найти трек по запросу, воспроизвести его или добавить в плейлист")
+                                .addOption(OptionType.STRING, "request", "Поисковой запрос", true),
+                        new SubcommandData("attachment", "Найти трек во вложениях, воспроизвести его или добавить в плейлист")
+                                .addOption(OptionType.ATTACHMENT, "attachment", "Вложение", true)
+                ).submit();
+        bot.upsertCommand("join", "Подключиться к голосовому каналу").submit();
+        bot.upsertCommand("leave", "Покинуть голосовой канал").submit();
         bot.upsertCommand("ping", "Получить информацию о задержке").submit();
         //endregion
     }

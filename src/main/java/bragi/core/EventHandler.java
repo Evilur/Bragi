@@ -37,8 +37,7 @@ public class EventHandler extends ListenerAdapter {
         /* Обрабатываем комманды */
         switch (command) {
             case "ping" -> {  //Проверяем задержку отправки сообщений
-                MessageEmbed embed = GetPing.run(event.getMessage().getTimeCreated());  //Получаем Embed для вывода задерки в милисекундах
-                channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
+                GetPing.run(event);
             }
             case "join" -> {  //Подключаемся к голосовому каналу
                 /* Если участник не в голосовом канале, сообщим ему об этом */
@@ -47,31 +46,27 @@ public class EventHandler extends ListenerAdapter {
                     channel.sendMessageEmbeds(new EmbedBuilder()
                             .setDescription("**Вы должны находиться в голосовом канале**")
                             .setColor(Color.decode("#FE2901")).build()).submit();
-                } else {  //Если пользователь в канале, то пытаемся подключиться
+                } else if (!JoinChannel.run(event.getMember().getVoiceState().getChannel(),
+                        event.getGuild().getAudioManager())) {  //Если пользователь в канале, то пытаемся подключиться
                     /* Если не удалось подключиться к каналу, выводим сообщение */
-                    if (!JoinChannel.run(event)) {
-                        channel.sendMessageEmbeds(new EmbedBuilder()
-                                .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
-                                .setColor(Color.decode("#FE2901")).build()).submit();
-                    }
-                }
-            }
-            case "leave" -> {  //Покидаем голосовой канал
-                if (!LeaveChannel.run(event.getGuild().getAudioManager())) {  //Если не удалось покинуть голосовой канал
                     channel.sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("**Не удалось покинуть голосовой канал**")
+                            .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
                             .setColor(Color.decode("#FE2901")).build()).submit();
                 }
             }
-            case "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                EmbedBuilder embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
-                channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
+            case "leave" -> {  //Покидаем голосовой канал
+                MessageEmbed embed = LeaveChannel.run(event.getGuild().getAudioManager());
+                channel.sendMessageEmbeds(embed).submit();
             }
-            case "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
-                EmbedBuilder embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
-                channel.sendMessageEmbeds(embed.build()).submit();  //Отправляем Embed в канал
+            case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
+                MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
+                channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
             }
-            case "s" -> {  //Удалисть из очереди один или несколько треков
+            case "next", "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
+                MessageEmbed embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
+                channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
+            }
+            case "skip", "s" -> {  //Удалисть из очереди один или несколько треков
                 try {
                     /* Если аргумент содержит цифры */
                     int numberOfTracks = argument != null && Pattern.compile("[0-9]").matcher(argument).find() ?
@@ -79,13 +74,13 @@ public class EventHandler extends ListenerAdapter {
                     SkipTracks.run(numberOfTracks, true, event.getGuild());  //Пропускаем треки в нужном количестве
                 } catch (Exception ignore) {    }
             }
-            case "list" ->  {  //Выводим состояние плейлиста
-                EmbedBuilder embed = GetPlaylist.run(Players.get(event.getGuild()));
-                channel.sendMessageEmbeds(embed.build()).submit();
+            case "list", "l" ->  {  //Выводим состояние плейлиста
+                MessageEmbed embed = GetPlaylist.run(Players.get(event.getGuild()));
+                channel.sendMessageEmbeds(embed).submit();
             }
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
-                EmbedBuilder embed = SwitchLoopMode.run(Players.get(event.getGuild()));
-                channel.sendMessageEmbeds(embed.build()).submit();
+                MessageEmbed embed = SwitchLoopMode.run(Players.get(event.getGuild()));
+                channel.sendMessageEmbeds(embed).submit();
             }
         }
     }
@@ -95,17 +90,43 @@ public class EventHandler extends ListenerAdapter {
         if (Objects.requireNonNull(event.getMember()).getUser().isBot())  //Если команду отправил бот, выходим из метода
             return;
 
-        MessageChannel channel = event.getChannel();  //Получаем канал, из которого пришло сообщение
-        String command = event.getName(); //Инициализируем переменную самой комманды
-
         /* Если сервер еще не был инициализирован, инициализируем его */
         if (Players.get(event.getGuild()) == null)
             Players.put(event.getGuild(), new Player(event.getGuild()));
 
-        switch (command) {
+        switch (event.getName()) {
             case "ping" -> {  //Проверяем задержку отправки сообщений
-                MessageEmbed embed = GetPing.run(event.getTimeCreated());
+                GetPing.run(event);
+            }
+            case "join" -> {  //Подключаемся к голосовому каналу
+                /* Если участник не в голосовом канале, сообщим ему об этом */
+                if (!Objects.requireNonNull(event.getMember().getVoiceState()).inAudioChannel()) {
+                    /* Выводим информацию о том, что пользователь не в канале */
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setDescription("**Вы должны находиться в голосовом канале**")
+                            .setColor(Color.decode("#FE2901")).build()).submit();
+                } else if (!JoinChannel.run(event.getMember().getVoiceState().getChannel(),
+                        Objects.requireNonNull(event.getGuild()).getAudioManager())) {  //Если пользователь в канале, то пытаемся подключиться
+                    /* Если не удалось подключиться к каналу, выводим сообщение */
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
+                            .setColor(Color.decode("#FE2901")).build()).submit();
+                } else {  //В данном случае надо проявить некую активность, чтобы дискорд не подумал, что приложение не отвечает
+                    event.replyEmbeds(new EmbedBuilder()
+                            .setDescription(String.format("**Подключен к голосовому каналу '%s'**", Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName()))
+                            .setColor(Color.decode("#FE2901")).build()).submit();
+                }
+            }
+            case "leave" -> {  //Покидаем голосовой канал
+                MessageEmbed embed = LeaveChannel.run(Objects.requireNonNull(event.getGuild()).getAudioManager());
                 event.replyEmbeds(embed).submit();
+            }
+            case "play" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
+                if (Objects.equals(event.getSubcommandName(), "track")) {  //В зависимости от подкоманды, выполняем разные действия
+
+                } else if (Objects.equals(event.getSubcommandName(), "attachment")) {
+
+                }
             }
         }
     }

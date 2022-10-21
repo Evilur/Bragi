@@ -12,6 +12,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.awt.*;
@@ -38,7 +39,7 @@ public class Methods {
     }
 
     /* С помощбю этого метода будем воспроизводить музыку из вложений */
-    public static EmbedBuilder playTrackFromAttachment(MessageReceivedEvent event) {
+    public static MessageEmbed playTrackFromAttachment(MessageReceivedEvent event) {
         List<Message.Attachment> attachments = event.getMessage().getAttachments();  //Получаем список вложений
         List<Message.Attachment> audioAttachments = new ArrayList<>();  //Список аудио-вложений
 
@@ -61,7 +62,7 @@ public class Methods {
             /* Если элемент последний в списке, то выходим из метода */
             if (i + 1 == audioAttachments.size())  {
                 /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
-                return playTrackOrAddItToPlaylist(trackInfo, event);
+                return playTrackOrAddItToPlaylist(trackInfo, event).build();
             } else {
                 event.getChannel().sendMessageEmbeds(playTrackOrAddItToPlaylist(trackInfo, event).build()).submit();
             }
@@ -70,7 +71,7 @@ public class Methods {
         /* Сюда програма дойдет только в том случае, если не удалось запустить ни один аудио-файл */
         return new EmbedBuilder()
                 .setColor(Color.decode("#FE2901"))
-                .setDescription("**Не удалось найти аудио файл для воспроизведения среди прикрепленных файлов**");
+                .setDescription("**Не удалось найти аудио файл для воспроизведения среди прикрепленных файлов**").build();
     }
     //endregion
     //region Основные методы
@@ -78,7 +79,8 @@ public class Methods {
         /* Если в плйлисте в данный момент нет треков */
         if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
             /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
-            if (!JoinChannel.run(event)) {
+            if (!JoinChannel.run(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel(),
+                    event.getGuild().getAudioManager())) {
                 return new EmbedBuilder()
                         .setColor(Color.decode("#FE2901"))
                         .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**");
