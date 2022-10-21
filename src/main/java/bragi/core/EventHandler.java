@@ -40,19 +40,7 @@ public class EventHandler extends ListenerAdapter {
                 GetPing.run(event);
             }
             case "join" -> {  //Подключаемся к голосовому каналу
-                /* Если участник не в голосовом канале, сообщим ему об этом */
-                if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
-                    /* Выводим информацию о том, что пользователь не в канале */
-                    channel.sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("**Вы должны находиться в голосовом канале**")
-                            .setColor(Color.decode("#FE2901")).build()).submit();
-                } else if (!JoinChannel.run(event.getMember().getVoiceState().getChannel(),
-                        event.getGuild().getAudioManager())) {  //Если пользователь в канале, то пытаемся подключиться
-                    /* Если не удалось подключиться к каналу, выводим сообщение */
-                    channel.sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
-                            .setColor(Color.decode("#FE2901")).build()).submit();
-                }
+                JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
                 MessageEmbed embed = LeaveChannel.run(event.getGuild().getAudioManager());
@@ -99,23 +87,7 @@ public class EventHandler extends ListenerAdapter {
                 GetPing.run(event);
             }
             case "join" -> {  //Подключаемся к голосовому каналу
-                /* Если участник не в голосовом канале, сообщим ему об этом */
-                if (!Objects.requireNonNull(event.getMember().getVoiceState()).inAudioChannel()) {
-                    /* Выводим информацию о том, что пользователь не в канале */
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setDescription("**Вы должны находиться в голосовом канале**")
-                            .setColor(Color.decode("#FE2901")).build()).submit();
-                } else if (!JoinChannel.run(event.getMember().getVoiceState().getChannel(),
-                        Objects.requireNonNull(event.getGuild()).getAudioManager())) {  //Если пользователь в канале, то пытаемся подключиться
-                    /* Если не удалось подключиться к каналу, выводим сообщение */
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**")
-                            .setColor(Color.decode("#FE2901")).build()).submit();
-                } else {  //В данном случае надо проявить некую активность, чтобы дискорд не подумал, что приложение не отвечает
-                    event.replyEmbeds(new EmbedBuilder()
-                            .setDescription(String.format("**Подключен к голосовому каналу '%s'**", Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName()))
-                            .setColor(Color.decode("#FE2901")).build()).submit();
-                }
+                JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
                 MessageEmbed embed = LeaveChannel.run(Objects.requireNonNull(event.getGuild()).getAudioManager());
@@ -140,7 +112,7 @@ public class EventHandler extends ListenerAdapter {
         if (memberLeaveChannel != null && memberLeaveChannel.getMembers().size() == 1) {
             /* Если последний участник канала - это наш бот, стоит прекратить воспроизведение и покинуть канал */
             if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(Bragi.bot.getSelfUser().getId())) {
-                SkipTracks.run(Players.get(event.getGuild()).getPlaylist().size(), true, event.getGuild());
+                // Здесь сделать паузу в произведении
                 LeaveChannel.run(event.getGuild().getAudioManager());
             }
         }

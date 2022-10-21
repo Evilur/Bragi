@@ -1,5 +1,6 @@
 package bragi.core;
 
+import bragi.Bragi;
 import bragi.core.event.JoinChannel;
 import bragi.core.source.deezer.DeezerMethods;
 import bragi.core.util.TrackInfo;
@@ -78,9 +79,7 @@ public class Methods {
     public static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
         /* Если в плйлисте в данный момент нет треков */
         if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
-            /* Пытаемся подключиться к голосовому каналу, если не получается, выходим из метода */
-            if (!JoinChannel.run(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel(),
-                    event.getGuild().getAudioManager())) {
+            if (!JoinChannel.run(event, false)) {  //Если не удалось подключиться к голосовому каналу
                 return new EmbedBuilder()
                         .setColor(Color.decode("#FE2901"))
                         .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**");

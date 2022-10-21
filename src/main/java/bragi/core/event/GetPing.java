@@ -10,13 +10,9 @@ import java.time.OffsetDateTime;
 
 import static java.lang.String.valueOf;
 
-/**
- * Класс для вычисления задержки сообщений
- */
-
+/** Класс для вычисления задержки сообщений */
 public class GetPing {
-    /**
-     * Метод для запуска вычисления задержки
+    /** Метод для запуска вычисления задержки
      * @param event Событие получения сообщения
      */
     public static void run(MessageReceivedEvent event) {
@@ -24,8 +20,7 @@ public class GetPing {
         long creationTime = event.getMessage().getTimeCreated().toInstant().toEpochMilli();
         event.getChannel().sendMessageEmbeds(eval(creationTime)).submit();
     }
-    /**
-     * Метод для запуска вычисления задержки
+    /** Метод для запуска вычисления задержки
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
@@ -34,9 +29,8 @@ public class GetPing {
         event.replyEmbeds(eval(creationTime)).submit();  //Создаем Embed и отправляем его
     }
 
-    /**
-     * Метод для вычисления задержки
-     * @param creationTime
+    /** Метод для вычисления задержки
+     * @param creationTime Время получения сообщения в миллисекундах
      * @return Embed для вывода
      */
     private static MessageEmbed eval(long creationTime) {
