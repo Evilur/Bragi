@@ -2,9 +2,13 @@ package bragi.core;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 public class Settings {
     private static String prefix;
@@ -28,16 +32,16 @@ public class Settings {
 
     /* Метод для инициализирования переменных */
     public static void initialize() throws Exception {
-        /* !!! Файл bragi.json в корневом каталоге репозитория - это шаблон для файла '~/.bragi' !!!*/
+        /* !!! Файл bragi.ini в корневом каталоге репозитория - это шаблон для файла '~/.config/bragi.ini' !!! */
         try {  //Пытаемся прочитать файл конфигурации
-            Path path = Paths.get(System.getProperty("user.home") + "/.bragi");  //Путь к файлу конфигурации
-            String fileText = Files.readString(path);  //Считываем файл
+            Path path = Paths.get(System.getProperty("user.home") + "/.config/bragi.ini");  //Путь к файлу конфигурации
+            Properties config = new Properties();  //С помощью этого объекта будем считывать данные из конфига
+            config.load(new FileReader(path.toFile()));  //Подгружаем наш файл
 
-            /* Переводим строку в JSON объект и инициализируем переменные */
-            JSONObject jsonObject =  new JSONObject(fileText);
-            prefix =  jsonObject.getString("prefix");
-            botToken =  jsonObject.getString("botToken");
-            deezerArl =  jsonObject.getString("deezerArl");
+            /* Вытаскиваем необходимые нам данные */
+            prefix = config.getProperty("prefix");
+            botToken = config.getProperty("botToken");
+            deezerArl = config.getProperty("deezerArl");
         } catch (Exception ignore) {  //При ошибке выбрасываем исключение
             throw new Exception("The configuration file cannot be read");
         }
