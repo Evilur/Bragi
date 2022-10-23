@@ -29,7 +29,7 @@ public class JoinChannel {
                 AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                 audioManager.openAudioConnection(audioChannel);
 
-                event.getChannel().sendMessage(String.format("**:thumbsup: Присоединен к** `%s`",
+                event.getChannel().sendMessage(String.format("**:thumbsup: Присоединен к каналу** `%s`",
                         Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
             }
             return true;
@@ -58,7 +58,7 @@ public class JoinChannel {
                 AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                 audioManager.openAudioConnection(audioChannel);
 
-                event.reply(String.format("**:thumbsup: Присоединен к** `%s`",
+                event.reply(String.format("**:thumbsup: Присоединен к каналу** `%s`",
                         Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
             }
             return true;
