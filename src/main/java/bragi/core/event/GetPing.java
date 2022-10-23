@@ -40,7 +40,7 @@ public class GetPing {
         /* Создаем Embed */
         return new EmbedBuilder()
                 .setTitle("Задержка")
-                .setDescription("**" + ping + " мс**")
+                .setDescription("**:hourglass: " + ping + " мс**")
                 .setColor(Color.decode("#0BDA4D")).build();
     }
 }
