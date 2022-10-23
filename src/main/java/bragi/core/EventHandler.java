@@ -41,7 +41,7 @@ public class EventHandler extends ListenerAdapter {
                 JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
-                LeaveChannel.run(event, false);
+                LeaveChannel.run(event);
             }
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
@@ -87,7 +87,7 @@ public class EventHandler extends ListenerAdapter {
                 JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
-                LeaveChannel.run(event, false);
+                LeaveChannel.run(event);
             }
             case "play" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 System.out.println("Not ready yet");
@@ -105,7 +105,7 @@ public class EventHandler extends ListenerAdapter {
             /* Если последний участник канала - это наш бот, стоит прекратить воспроизведение и покинуть канал */
             if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(Bragi.bot.getSelfUser().getId())) {
                 // Здесь сделать паузу в произведении
-                LeaveChannel.run((MessageReceivedEvent)event, true);
+                LeaveChannel.run(event.getGuild());
             }
         }
     }

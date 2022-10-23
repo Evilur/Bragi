@@ -25,16 +25,23 @@ public class JoinChannel {
             /* //Если надо принудительно подключиться или бот не в голосовом канале */
             if (force || !Objects.requireNonNull(Objects.requireNonNull(
                     event.getGuild()).getSelfMember().getVoiceState()).inAudioChannel()) {
-                AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
-                AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
-                audioManager.openAudioConnection(audioChannel);
+                if (Objects.requireNonNull(event.getMember()).getVoiceState().getChannel() ==
+                        Objects.requireNonNull(Objects.requireNonNull(event.getGuild())
+                                .getSelfMember().getVoiceState()).getChannel()) {  //Если бот уже в этом канале
+                    event.getChannel().sendMessage(":x:** Бот уже подключен к этому голосовому каналу**").submit();
+                } else {
+                    AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
+                    AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
+                    audioManager.openAudioConnection(audioChannel);
 
-                event.getChannel().sendMessage(String.format(":thumbsup:** Присоединился к каналу** `%s`",
-                        Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
+                    event.getChannel().sendMessage(String.format(":thumbsup:** Присоединился к каналу** `%s`",
+                            Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
+                }
             }
             return true;
         } catch (Exception ignore) {
-            event.getChannel().sendMessage(":x:** Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
+            event.getChannel().sendMessage(":x:** Не удалось подключиться к голосовому каналу. Недостаточно прав**")
+                    .submit();
             return false;
         }
     }
@@ -54,12 +61,18 @@ public class JoinChannel {
             /* //Если надо принудительно подключиться или бот не в голосовом канале */
             if (force || !Objects.requireNonNull(Objects.requireNonNull(
                     event.getGuild()).getSelfMember().getVoiceState()).inAudioChannel()) {
-                AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
-                AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
-                audioManager.openAudioConnection(audioChannel);
+                if (Objects.requireNonNull(event.getMember()).getVoiceState().getChannel() ==
+                        Objects.requireNonNull(Objects.requireNonNull(event.getGuild())
+                                .getSelfMember().getVoiceState()).getChannel()) {  //Если бот уже в этом канале
+                    event.reply(":x:** Бот уже подключен к этому голосовому каналу**").submit();
+                } else {
+                    AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
+                    AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
+                    audioManager.openAudioConnection(audioChannel);
 
-                event.reply(String.format(":thumbsup:** Присоединился к каналу** `%s`",
-                        Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
+                    event.reply(String.format(":thumbsup:** Присоединился к каналу** `%s`",
+                            Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
+                }
             }
             return true;
         } catch (Exception ignore) {
