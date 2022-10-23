@@ -17,7 +17,7 @@ public class JoinChannel {
     public static boolean run(MessageReceivedEvent event, boolean force) {
         /* Если участник не в голосовом канале, сообщим ему об этом */
         if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
-            event.getChannel().sendMessage("**:x: Вы должны находиться в голосовом канале**").submit();
+            event.getChannel().sendMessage(":x:** Вы должны находиться в голосовом канале**").submit();
             return false;
         }
 
@@ -29,12 +29,12 @@ public class JoinChannel {
                 AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                 audioManager.openAudioConnection(audioChannel);
 
-                event.getChannel().sendMessage(String.format("**:thumbsup: Присоединен к каналу** `%s`",
+                event.getChannel().sendMessage(String.format(":thumbsup:** Присоединился к каналу** `%s`",
                         Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
             }
             return true;
         } catch (Exception ignore) {
-            event.getChannel().sendMessage("**:x: Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
+            event.getChannel().sendMessage(":x:** Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
             return false;
         }
     }
@@ -46,7 +46,7 @@ public class JoinChannel {
     public static boolean run(SlashCommandInteractionEvent event, boolean force) {
         /* Если участник не в голосовом канале, сообщим ему об этом */
         if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
-            event.reply("**:x: Вы должны находиться в голосовом канале**").submit();
+            event.reply(":x:** Вы должны находиться в голосовом канале**").submit();
             return false;
         }
 
@@ -58,12 +58,12 @@ public class JoinChannel {
                 AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                 audioManager.openAudioConnection(audioChannel);
 
-                event.reply(String.format("**:thumbsup: Присоединен к каналу** `%s`",
+                event.reply(String.format(":thumbsup:** Присоединился к каналу** `%s`",
                         Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
             }
             return true;
         } catch (Exception ignore) {
-            event.reply("**:x: Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
+            event.reply(":x:** Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
             return false;
         }
     }

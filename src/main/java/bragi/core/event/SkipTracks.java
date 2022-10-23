@@ -27,7 +27,7 @@ public class SkipTracks {
         }
         else {  //Если треков в плейлисте нет
             player.getInstance().Stop();
-            LeaveChannel.run(guild.getAudioManager());
+            LeaveChannel.run(guild);
         }
     }
 }

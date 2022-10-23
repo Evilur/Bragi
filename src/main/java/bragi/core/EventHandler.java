@@ -1,7 +1,6 @@
 package bragi.core;
 
 import bragi.Bragi;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -12,7 +11,6 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import bragi.core.event.*;
 
-import java.awt.*;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -43,8 +41,7 @@ public class EventHandler extends ListenerAdapter {
                 JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
-                MessageEmbed embed = LeaveChannel.run(event.getGuild().getAudioManager());
-                channel.sendMessageEmbeds(embed).submit();
+                LeaveChannel.run(event, false);
             }
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
@@ -90,15 +87,10 @@ public class EventHandler extends ListenerAdapter {
                 JoinChannel.run(event, true);
             }
             case "leave" -> {  //Покидаем голосовой канал
-                MessageEmbed embed = LeaveChannel.run(Objects.requireNonNull(event.getGuild()).getAudioManager());
-                event.replyEmbeds(embed).submit();
+                LeaveChannel.run(event, false);
             }
             case "play" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                if (Objects.equals(event.getSubcommandName(), "track")) {  //В зависимости от подкоманды, выполняем разные действия
-
-                } else if (Objects.equals(event.getSubcommandName(), "attachment")) {
-
-                }
+                System.out.println("Not ready yet");
             }
         }
     }
@@ -113,7 +105,7 @@ public class EventHandler extends ListenerAdapter {
             /* Если последний участник канала - это наш бот, стоит прекратить воспроизведение и покинуть канал */
             if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(Bragi.bot.getSelfUser().getId())) {
                 // Здесь сделать паузу в произведении
-                LeaveChannel.run(event.getGuild().getAudioManager());
+                LeaveChannel.run((MessageReceivedEvent)event, true);
             }
         }
     }
