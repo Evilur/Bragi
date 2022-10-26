@@ -34,16 +34,11 @@ public class Bragi {
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
 
         /* Добавляем слэш-команды */
-        bot.upsertCommand("play", "Воспроизвести трек или добавить его в плейлист")
-                .addSubcommands(
-                        new SubcommandData("track", "Найти трек по запросу, воспроизвести его или добавить в плейлист")
-                                .addOption(OptionType.STRING, "request", "Поисковой запрос", true),
-                        new SubcommandData("attachment", "Найти трек во вложениях, воспроизвести его или добавить в плейлист")
-                                .addOption(OptionType.ATTACHMENT, "attachment", "Вложение", true)
-                ).submit();
+        bot.upsertCommand("ping", "Получить информацию о задержке").submit();
         bot.upsertCommand("join", "Подключиться к голосовому каналу").submit();
         bot.upsertCommand("leave", "Покинуть голосовой канал").submit();
-        bot.upsertCommand("ping", "Получить информацию о задержке").submit();
+        bot.upsertCommand("play", "Воспроизвести трек или добавить его в плейлист").submit();
+        bot.upsertCommand("list", "Вывести состояние плейлиста").submit();
         //endregion
     }
 }

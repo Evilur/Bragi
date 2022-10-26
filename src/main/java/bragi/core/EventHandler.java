@@ -1,6 +1,5 @@
 package bragi.core;
 
-import bragi.Bragi;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -43,6 +42,9 @@ public class EventHandler extends ListenerAdapter {
             case "leave" -> {  //Покидаем голосовой канал
                 LeaveChannel.run(event);
             }
+            case "list", "l" ->  {  //Выводим состояние плейлиста
+                GetPlaylist.run(event);
+            }
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
@@ -58,10 +60,6 @@ public class EventHandler extends ListenerAdapter {
                             Integer.parseInt(argument.replaceAll("[^0-9]", "")) : 1;  //Получаем количество пропускаемых треков
                     SkipTracks.run(numberOfTracks, true, event.getGuild());  //Пропускаем треки в нужном количестве
                 } catch (Exception ignore) {    }
-            }
-            case "list", "l" ->  {  //Выводим состояние плейлиста
-                MessageEmbed embed = GetPlaylist.run(Players.get(event.getGuild()));
-                channel.sendMessageEmbeds(embed).submit();
             }
             case "loop" -> {  //Переключаем режим повторения и выводим сообщение
                 MessageEmbed embed = SwitchLoopMode.run(Players.get(event.getGuild()));
@@ -88,6 +86,9 @@ public class EventHandler extends ListenerAdapter {
             }
             case "leave" -> {  //Покидаем голосовой канал
                 LeaveChannel.run(event);
+            }
+            case "list" -> {  //Выводим состояние плейлиста
+                GetPlaylist.run(event);
             }
             case "play" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 System.out.println("Not ready yet");
