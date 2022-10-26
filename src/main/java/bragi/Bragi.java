@@ -16,7 +16,6 @@ import java.util.Objects;
 
 public class Bragi {
     public static HashMap<Guild, Player> Players = new HashMap<>();  //Инициализированные сервера
-    public static JDA bot;  //Объект бота
 
     public static void main(String[] args) throws Exception {
         /* Очищаем мусор от предыдущей сессии */
@@ -31,7 +30,7 @@ public class Bragi {
         DeezerMethods.initializeDeezer();  //Подключаемся к серверам Deezer и инициализируем клиент
 
         //region Инициализация бота
-        bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем бота и подключаем его на сервер
+        JDA bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем экземпляр бота
         bot.addEventListener(new EventHandler());  //Добавляем обработчики событий
 
         /* Добавляем слэш-команды */

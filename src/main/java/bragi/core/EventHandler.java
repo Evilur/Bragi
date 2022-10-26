@@ -103,7 +103,7 @@ public class EventHandler extends ListenerAdapter {
         /* Если канал не существует (пользователь не ливал из канала, а присоединился) и если пользователь только один */
         if (memberLeaveChannel != null && memberLeaveChannel.getMembers().size() == 1) {
             /* Если последний участник канала - это наш бот, стоит прекратить воспроизведение и покинуть канал */
-            if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(Bragi.bot.getSelfUser().getId())) {
+            if (memberLeaveChannel.getMembers().get(0).getUser().getId().equals(event.getGuild().getSelfMember().getId())) {
                 // Здесь сделать паузу в произведении
                 LeaveChannel.run(event.getGuild());
             }
