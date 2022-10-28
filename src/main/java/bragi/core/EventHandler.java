@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import bragi.core.event.*;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import static bragi.Bragi.Players;
 
@@ -43,6 +42,8 @@ public class EventHandler extends ListenerAdapter {
                     GetPlaylist.run(event);
             case "loop" -> //Переключаем режим повторения и выводим сообщение
                     SwitchLoopMode.run(event);
+            case "skip", "s" -> //Удалисть из очереди один или несколько треков
+                    SkipTracks.run(event, argument);
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
@@ -50,14 +51,6 @@ public class EventHandler extends ListenerAdapter {
             case "next", "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
                 MessageEmbed embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
                 channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
-            }
-            case "skip", "s" -> {  //Удалисть из очереди один или несколько треков
-                try {
-                    /* Если аргумент содержит цифры */
-                    int numberOfTracks = argument != null && Pattern.compile("[0-9]").matcher(argument).find() ?
-                            Integer.parseInt(argument.replaceAll("[^0-9]", "")) : 1;  //Получаем количество пропускаемых треков
-                    SkipTracks.run(numberOfTracks, true, event.getGuild());  //Пропускаем треки в нужном количестве
-                } catch (Exception ignore) {    }
             }
         }
     }
@@ -72,18 +65,20 @@ public class EventHandler extends ListenerAdapter {
             Players.put(event.getGuild(), new Player(event.getGuild()));
 
         switch (event.getName()) {
-            case "ping" -> //Проверяем задержку отправки сообщений
+            case "ping" ->  //Проверяем задержку отправки сообщений
                     GetPing.run(event);
-            case "join" -> //Подключаемся к голосовому каналу
+            case "join" ->  //Подключаемся к голосовому каналу
                     JoinChannel.run(event, true);
-            case "leave" -> //Покидаем голосовой канал
+            case "leave" ->  //Покидаем голосовой канал
                     LeaveChannel.run(event);
-            case "list" -> //Выводим состояние плейлиста
+            case "list" ->  //Выводим состояние плейлиста
                     GetPlaylist.run(event);
-            case "play" -> //Воспроизводим отдельный трек или добавляем его в очередь
+            case "play" ->  //Воспроизводим отдельный трек или добавляем его в очередь
                     System.out.println("Not ready yet");
-            case "loop" -> //Переключаем режим повторения и выводим сообщение
+            case "loop" ->  //Переключаем режим повторения и выводим сообщение
                     SwitchLoopMode.run(event);
+            case "skip" ->  //Удалисть из очереди один или несколько треков
+                    SkipTracks.run(event);
         }
     }
 

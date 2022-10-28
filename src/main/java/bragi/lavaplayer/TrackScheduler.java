@@ -1,6 +1,5 @@
 package bragi.lavaplayer;
 
-import bragi.Bragi;
 import bragi.core.event.SkipTracks;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
@@ -32,6 +31,6 @@ public class TrackScheduler extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         /* Если причиной остановки трека является его окончание, заменяем его на новый */
         if (endReason.name().equals("FINISHED"))
-            SkipTracks.run(1, false, this.guild);
+            SkipTracks.run(this.guild);
     }
 }
