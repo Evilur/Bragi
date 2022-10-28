@@ -60,7 +60,7 @@ public class GetPlaylist {
             result.append(String.format("%d. %s\n", i + 1, player.getPlaylist().get(i).getTrackTitle()));
 
         if (player.isLoopMode())  //Если включено повторение трека, объявляем об этом
-            result.append("─────────────────────\n:repeat_one: Включено повторения треков");
+            result.append("─────────────────────\n:repeat: Включено повторения треков");
 
         return "**" + result + "**";
     }

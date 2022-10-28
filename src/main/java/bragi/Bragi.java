@@ -7,8 +7,6 @@ import bragi.core.source.deezer.DeezerMethods;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.File;
 import java.util.HashMap;
@@ -39,6 +37,7 @@ public class Bragi {
         bot.upsertCommand("leave", "Покинуть голосовой канал").submit();
         bot.upsertCommand("play", "Воспроизвести трек или добавить его в плейлист").submit();
         bot.upsertCommand("list", "Вывести состояние плейлиста").submit();
+        bot.upsertCommand("loop", "Переключить режим повторения").submit();
         //endregion
     }
 }

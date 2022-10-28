@@ -33,18 +33,16 @@ public class EventHandler extends ListenerAdapter {
 
         /* Обрабатываем комманды */
         switch (command) {
-            case "ping" -> {  //Проверяем задержку отправки сообщений
-                GetPing.run(event);
-            }
-            case "join" -> {  //Подключаемся к голосовому каналу
-                JoinChannel.run(event, true);
-            }
-            case "leave" -> {  //Покидаем голосовой канал
-                LeaveChannel.run(event);
-            }
-            case "list", "l" ->  {  //Выводим состояние плейлиста
-                GetPlaylist.run(event);
-            }
+            case "ping" -> //Проверяем задержку отправки сообщений
+                    GetPing.run(event);
+            case "join" -> //Подключаемся к голосовому каналу
+                    JoinChannel.run(event, true);
+            case "leave" -> //Покидаем голосовой канал
+                    LeaveChannel.run(event);
+            case "list", "l" ->  //Выводим состояние плейлиста
+                    GetPlaylist.run(event);
+            case "loop" -> //Переключаем режим повторения и выводим сообщение
+                    SwitchLoopMode.run(event);
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
                 MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
                 channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
@@ -61,10 +59,6 @@ public class EventHandler extends ListenerAdapter {
                     SkipTracks.run(numberOfTracks, true, event.getGuild());  //Пропускаем треки в нужном количестве
                 } catch (Exception ignore) {    }
             }
-            case "loop" -> {  //Переключаем режим повторения и выводим сообщение
-                MessageEmbed embed = SwitchLoopMode.run(Players.get(event.getGuild()));
-                channel.sendMessageEmbeds(embed).submit();
-            }
         }
     }
 
@@ -78,21 +72,18 @@ public class EventHandler extends ListenerAdapter {
             Players.put(event.getGuild(), new Player(event.getGuild()));
 
         switch (event.getName()) {
-            case "ping" -> {  //Проверяем задержку отправки сообщений
-                GetPing.run(event);
-            }
-            case "join" -> {  //Подключаемся к голосовому каналу
-                JoinChannel.run(event, true);
-            }
-            case "leave" -> {  //Покидаем голосовой канал
-                LeaveChannel.run(event);
-            }
-            case "list" -> {  //Выводим состояние плейлиста
-                GetPlaylist.run(event);
-            }
-            case "play" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                System.out.println("Not ready yet");
-            }
+            case "ping" -> //Проверяем задержку отправки сообщений
+                    GetPing.run(event);
+            case "join" -> //Подключаемся к голосовому каналу
+                    JoinChannel.run(event, true);
+            case "leave" -> //Покидаем голосовой канал
+                    LeaveChannel.run(event);
+            case "list" -> //Выводим состояние плейлиста
+                    GetPlaylist.run(event);
+            case "play" -> //Воспроизводим отдельный трек или добавляем его в очередь
+                    System.out.println("Not ready yet");
+            case "loop" -> //Переключаем режим повторения и выводим сообщение
+                    SwitchLoopMode.run(event);
         }
     }
 
