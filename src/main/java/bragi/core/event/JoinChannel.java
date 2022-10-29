@@ -11,10 +11,9 @@ import java.util.Objects;
 public class JoinChannel {
     /** Метод для присоединения к голосовому каналу
      * @param event Событие получения сообщения
-     * @param force Принудительно переместиться в канал
      * @return true, если удалось подключиться. В противном случае - false
      */
-    public static boolean run(MessageReceivedEvent event, boolean force) {
+    public static boolean run(MessageReceivedEvent event) {
         /* Если участник не в голосовом канале, сообщим ему об этом */
         if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
             event.getChannel().sendMessage(":x:** Вы должны находиться в голосовом канале**").submit();
@@ -22,8 +21,8 @@ public class JoinChannel {
         }
 
         try {  //Пытаемся подключиться к голосовому каналу
-            /* //Если надо принудительно подключиться или бот не в голосовом канале */
-            if (force || !Objects.requireNonNull(Objects.requireNonNull(
+            /* //Если бот не в голосовом канале */
+            if (!Objects.requireNonNull(Objects.requireNonNull(
                     event.getGuild()).getSelfMember().getVoiceState()).inAudioChannel()) {
                 if (Objects.requireNonNull(event.getMember()).getVoiceState().getChannel() ==
                         Objects.requireNonNull(Objects.requireNonNull(event.getGuild())
@@ -47,10 +46,9 @@ public class JoinChannel {
     }
     /** Метод для присоединения к голосовому каналу
      * @param event Событие получения команды
-     * @param force Принудительно переместиться в канал
      * @return true, если удалось подключиться. В противном случае - false
      */
-    public static boolean run(SlashCommandInteractionEvent event, boolean force) {
+    public static boolean run(SlashCommandInteractionEvent event) {
         /* Если участник не в голосовом канале, сообщим ему об этом */
         if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
             event.reply(":x:** Вы должны находиться в голосовом канале**").submit();
@@ -58,8 +56,8 @@ public class JoinChannel {
         }
 
         try {  //Пытаемся подключиться к голосовому каналу
-            /* //Если надо принудительно подключиться или бот не в голосовом канале */
-            if (force || !Objects.requireNonNull(Objects.requireNonNull(
+            /* //Если бот не в голосовом канале */
+            if (!Objects.requireNonNull(Objects.requireNonNull(
                     event.getGuild()).getSelfMember().getVoiceState()).inAudioChannel()) {
                 if (Objects.requireNonNull(event.getMember()).getVoiceState().getChannel() ==
                         Objects.requireNonNull(Objects.requireNonNull(event.getGuild())

@@ -61,13 +61,12 @@ public class SkipTracks {
         /* Если пользователь хочет пропустить треков больше, чем существует в плейлисте, ограничим его хотения */
         if (numberOfTracks > player.getPlaylist().size())
             numberOfTracks = player.getPlaylist().size();
-        else if (numberOfTracks < 1) {  //Если не передано число, присваиваем единицу, то есть убираем один трек
+        else if (numberOfTracks < 1)  //Если не передано число, присваиваем единицу, то есть убираем один трек
             numberOfTracks = 1;
-        }
 
         /* Если не стоит повторение или трек пропускается вручную */
         if (!player.isLoopMode() || hardSkip) {  //Удаляем элементы
-            player.decreaseTotalDuration(player.getPlaylist().get(0).getTrackDuration());  //Уменьшаем общую длину треков
+            player.decreaseTotalDuration(player.getPlaylist().get(0).getTrackDuration()); //Уменьшаем общую длину треков
             player.getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первые элементы из списка
         }
 

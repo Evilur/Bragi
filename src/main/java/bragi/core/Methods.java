@@ -2,7 +2,6 @@ package bragi.core;
 
 import bragi.Bragi;
 import bragi.core.event.JoinChannel;
-import bragi.core.source.deezer.DeezerMethods;
 import bragi.core.util.TrackInfo;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -11,109 +10,33 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
-import static bragi.Bragi.Players;
-
 public class Methods {
-    //region Регион треков
-    /* С помощью этого метода будем воспроизводить треки Deezer по поисковому запросу */
-    public static EmbedBuilder playDeezerTrackBySearchResults(String templateName, MessageReceivedEvent event) {
-        try {
-            /* Выполняем поиск трека */
-            TrackInfo trackInfo = DeezerMethods.searchTrack(templateName, 0);
-            /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
-            return playTrackOrAddItToPlaylist(trackInfo, event);
-        } catch (Exception ignore) {  //Если поиск не выдал результатов
-            return new EmbedBuilder()
-                    .setDescription("**Не удалось найти подходящую песню**")
-                    .setColor(Color.decode("#FE2901"));
-        }
-    }
+    public static void playTrackOrAddItToPlaylist(MessageReceivedEvent event, TrackInfo trackInfo) throws Exception {
+        Player player = Bragi.Players.get(event.getGuild());  //Получаем экземпляр проигрывателя
 
-    /* С помощбю этого метода будем воспроизводить музыку из вложений */
-    public static MessageEmbed playTrackFromAttachment(MessageReceivedEvent event) {
-        List<Message.Attachment> attachments = event.getMessage().getAttachments();  //Получаем список вложений
-        List<Message.Attachment> audioAttachments = new ArrayList<>();  //Список аудио-вложений
+        /* Если плейлист пуст */
+        if (player.getPlaylist().size() == 0) {
+            /* Пытаемся подключиться к голосовому каналу */
+            if (!JoinChannel.run(event))
+                throw new Exception("Failed to connect to voice channel");
 
-        for (Message.Attachment attachment : attachments) {
-            /* Если вложение — это аудиофайл, добавляем его в список */
-            if (Objects.requireNonNull(attachment.getContentType()).contains("audio"))
-                audioAttachments.add(attachment);
-        }
+            /* Добавляем трек в очередь для дальнейшего проигрывания */
+            player.getPlaylist().add(trackInfo);
+            player.increaseTotalDuration(trackInfo.getTrackDuration());
 
-        for (byte i = 0; i < audioAttachments.size(); i++) {
-            Message.Attachment attachment = audioAttachments.get(i);
-
-            /* Созаем новый объект TrackInfo и присваиваем ему необходимые значения */
-            TrackInfo trackInfo = getTrackInfo(attachment.getProxyUrl());
-            trackInfo.setSource("Attachment");  //Устанавливаем информациб об источнике
-            trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
-            if (trackInfo.getTrackTitle() == null)  //Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения
-                trackInfo.setTrackTitle(attachment.getFileName().replace("." + Objects.requireNonNull(attachment.getFileExtension()), ""));
-
-            /* Если элемент последний в списке, то выходим из метода */
-            if (i + 1 == audioAttachments.size())  {
-                /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста)*/
-                return playTrackOrAddItToPlaylist(trackInfo, event).build();
-            } else {
-                event.getChannel().sendMessageEmbeds(playTrackOrAddItToPlaylist(trackInfo, event).build()).submit();
-            }
-        }
-
-        /* Сюда програма дойдет только в том случае, если не удалось запустить ни один аудио-файл */
-        return new EmbedBuilder()
-                .setColor(Color.decode("#FE2901"))
-                .setDescription("**Не удалось найти аудио файл для воспроизведения среди прикрепленных файлов**").build();
-    }
-    //endregion
-    //region Основные методы
-    public static EmbedBuilder playTrackOrAddItToPlaylist(TrackInfo trackInfo, MessageReceivedEvent event) {
-        /* Если в плйлисте в данный момент нет треков */
-        if (Players.get(event.getGuild()).getPlaylist().size() < 1) {
-            if (!JoinChannel.run(event, false)) {  //Если не удалось подключиться к голосовому каналу
-                return new EmbedBuilder()
-                        .setColor(Color.decode("#FE2901"))
-                        .setDescription("**Не удалось подключиться к голосовому каналу. Недостаточно прав**");
-            }
-
-            /* Добавляем трек в плейлист для дальнейшего воспроизведения */
-            Players.get(event.getGuild()).getPlaylist().add(trackInfo);
-            Players.get(event.getGuild()).increaseTotalDuration(trackInfo.getTrackDuration());
-
-            /* Воспроизводим трек */
-            Players.get(event.getGuild()).getInstance().Play(trackInfo.getTrackIdentifier());
+            player.getInstance().Play(trackInfo.getTrackIdentifier());  //Воспроизводим трек
         } else {
-            /* Просто добавляем трек в очередь плейлиста и **не** воспроизводим его */
-            Players.get(event.getGuild()).getPlaylist().add(trackInfo);
-            Players.get(event.getGuild()).increaseTotalDuration(trackInfo.getTrackDuration());
+            /* Добавляем трек в очередь и не проигрываем его */
+            player.getPlaylist().add(trackInfo);
+            player.increaseTotalDuration(trackInfo.getTrackDuration());
         }
-
-        /* В зависимости от того, из каких источников был получен трек, выводим разное количество информации */
-        if (!trackInfo.getSource().equals("Attachment"))
-            event.getChannel()
-                    .sendMessageEmbeds(Informer.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1).build()).submit();
-        else  //Если трек получили из вложений, то возвращаем имеющуюся информацию
-            return Informer.getOutputInformation(trackInfo.getTrackTitle(), trackInfo.getArtistName(), trackInfo.getTrackDurationFormatted(), Players.get(event.getGuild()).getPlaylist().size() == 1);
-
-        /* Соотвественно, если код дошел до сюда, у нас должна быть информацию для вывода */
-        return new EmbedBuilder()
-                .setColor(Color.decode("#FE2901"))
-                .setImage(trackInfo.getAlbumCoverUrl())
-                .addField("Альбом", trackInfo.getAlbumTitle(), false)
-                .addField("Исполнитель",trackInfo.getArtistName(), false)
-                .setThumbnail(trackInfo.getArtistPictureUrl());
     }
 
-    private static TrackInfo getTrackInfo(String trackUrl) {
+    public static TrackInfo getTrackInfo(String trackUrl) {
         TrackInfo trackInfo = new TrackInfo();  //Сюда будем складывать информацию о треке
 
         /* Объявляем обработчик состояния трека */
@@ -151,5 +74,4 @@ public class Methods {
 
         return trackInfo;
     }
-    //endregion
 }

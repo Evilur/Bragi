@@ -1,39 +1,125 @@
 package bragi.core.event;
 
+import bragi.Bragi;
 import bragi.core.Methods;
+import bragi.core.Player;
+import bragi.core.source.deezer.DeezerMethods;
+import bragi.core.util.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+/** Класс для воспроизведения музыки */
 public class PlayTrack {
-    /* Метод для поиска музыки и ее воспроизведения */
-    public static MessageEmbed run(String argument, MessageReceivedEvent event) {
+    /** Метод запуска воспроизведения музыки
+     * @param event Событие полуения сообщения
+     * @param argument Аргумент, полученный из сообщения
+     */
+    public static void run(MessageReceivedEvent event, String argument) {
         /* Если не были переданы аргументы, и не были прикреплены вложения */
         if (argument == null && event.getMessage().getAttachments().isEmpty()) {
-            return new EmbedBuilder()
-                    .setTitle("Ошибка!")
-                    .setDescription("**После команды не было передано обязательных аргументов!**")
-                    .setColor(Color.decode("#FE2901")).build();
-        } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) { //Если участник не в голосовом канале, сообщим ему об этом и не выполняем код дальше
-            return new EmbedBuilder()
-                    .setDescription("**Вы должны находиться в голосовом канале**")
-                    .setColor(Color.decode("#FE2901")).build();
+            event.getChannel().sendMessage("**:x: После команды не было передано обязательных аргументов!**").submit();
+            return;
+        } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему это, и не выполняем код дальше
+            event.getChannel().sendMessage("**Вы должны находиться в голосовом канале**").submit();
+            return;
         }
 
-        assert argument != null;
-        if (!event.getMessage().getAttachments().isEmpty()) {  //Если к сообщению были прикреплены вложения, то пытаемся их воспроизвести */
-            return Methods.playTrackFromAttachment(event);
-        } else {  //Иначе воспроизвводим трек из Deezer
-            if (!argument.startsWith("https://") && !argument.startsWith("http://"))  {  //Если аргумент не содержит url
-                return Methods.playDeezerTrackBySearchResults(argument, event).build();
-            } else {
-                return new EmbedBuilder()
-                        .setColor(Color.decode("#FE2901"))
-                        .setDescription("**Такая возможность еще не добавлена**").build();
+        Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
+        String state = player.getPlaylist().isEmpty() ? "Сейчас играет" : "В плейлист добавлено";  //Состояние
+
+        if (!event.getMessage().getAttachments().isEmpty()) {  //Если были переданы вложения
+            /* Получаем список треков из вложений */
+            List<TrackInfo> trackInfoList = getTracksFromAttachments(event.getMessage().getAttachments());
+
+            /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
+            for (byte i = 0; i < trackInfoList.size(); i++) {
+                try {
+                    TrackInfo trackInfo = trackInfoList.get(i);  //Получаем объект с ифнормацией о треке
+                    state = player.getPlaylist().isEmpty() ? "Сейчас играет" : "В плейлист добавлено";
+
+                    /* Добавляем трек в очередь или сразу воспроизводим его */
+                    Methods.playTrackOrAddItToPlaylist(event, trackInfo);
+
+                    /* Строка, в которую записываем результат */
+                    String result = String
+                            .format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
+                                    state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted());
+
+                    /* Если есть имя исполнителя */
+                    result = trackInfo.getArtistName() != null ?
+                            String.format("%s\n**:bust_in_silhouette: Исполнитель: `%s`**", result,
+                                    trackInfo.getArtistName()) : result;
+
+                    if (i + 1 != trackInfoList.size())  //Если трек не последний, необходимо добавить разделитель
+                        result += "\n**────────────────────**";
+
+                    event.getChannel().sendMessage(result).submit();  //Выводим информацию
+                } catch (Exception ignore) {    }
+            }
+        } else {  //Если вложений нет, работаем с аргументом
+            try {  //Пытаемся найти трек на сервере по запросу
+                TrackInfo trackInfo = DeezerMethods.searchTrack(argument, 0);  //Получаем инфо трека
+                try {
+                    /* Добавляем трек в очередь или сразу воспроизводим его */
+                    Methods.playTrackOrAddItToPlaylist(event, trackInfo);
+
+                    /* Выводим информацию */
+                    event.getChannel().sendMessage(String
+                            .format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
+                            state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+                    event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                            .setColor(Color.decode("#FE2901"))
+                            .setImage(trackInfo.getAlbumCoverUrl())
+                            .addField("Альбом", trackInfo.getAlbumTitle(), false)
+                            .addField("Исполнитель",trackInfo.getArtistName(), false)
+                            .setThumbnail(trackInfo.getArtistPictureUrl()).build()).submit();
+                } catch (Exception ignore) {    }
+            } catch (Exception ignore) {  //Если трек мы не находим
+                event.getChannel().sendMessage("**:x: Не удалось найти подходящую песню**").submit();
             }
         }
+    }
+    /** Метод запуска воспроизведения музыки
+     * @param event Событие получения команды
+     */
+    public static void run(SlashCommandInteractionEvent event) {
+
+    }
+
+    /** Метод для воспроизведения треков из вложений
+     * @param attachments Список вложений сообщения
+     * @return Список объектов с информацией о треке
+     */
+    private static List<TrackInfo> getTracksFromAttachments(List<Message.Attachment> attachments) {
+        List<Message.Attachment> audioAttachments = new ArrayList<>();  //Список аудио-вложений
+        List<TrackInfo> result = new ArrayList<>(); //Список треков для возврата результата
+
+        for (Message.Attachment attachment : attachments) {  //Проходимся циклом по вложениям
+            /* Если вложение — это аудиофайл, добавляем его в список */
+            if (Objects.requireNonNull(attachment.getContentType()).contains("audio"))
+                audioAttachments.add(attachment);
+        }
+
+        for (Message.Attachment attachment : audioAttachments) {
+            /* Созаем новый объект TrackInfo и присваиваем ему необходимые значения */
+            TrackInfo trackInfo = Methods.getTrackInfo(attachment.getProxyUrl());
+            trackInfo.setSource("Attachment");  //Устанавливаем информациб об источнике
+            trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
+            /* Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения */
+            if (trackInfo.getTrackTitle() == null)
+                trackInfo.setTrackTitle(attachment.getFileName().replace("." +
+                        Objects.requireNonNull(attachment.getFileExtension()), ""));
+            result.add(trackInfo);  //Добавляем полученный трек в результаты
+        }
+
+        return result;  //Возвращаем результат
     }
 }

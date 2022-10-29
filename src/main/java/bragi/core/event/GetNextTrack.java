@@ -41,7 +41,7 @@ public class GetNextTrack {
                 Players.get(event.getGuild()).decreaseTotalDuration(trackInfo.getTrackDuration());  //Уменьшаем общую продолжительность треков
 
                 /* Добалвяем в очередь, или начинаем воспроизводить (в зависимости от состояния плейлиста) и возвращаем вывод*/
-                return bragi.core.Methods.playTrackOrAddItToPlaylist(newTrackInfo, event).build();
+                return null ;//bragi.core.Methods.playTrackOrAddItToPlaylist(newTrackInfo, event).build();
             } catch (Exception ignore) {
                 return new EmbedBuilder()
                         .setColor(Color.decode("#FE2901"))

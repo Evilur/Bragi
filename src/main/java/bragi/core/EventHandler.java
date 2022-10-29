@@ -35,7 +35,7 @@ public class EventHandler extends ListenerAdapter {
             case "ping" -> //Проверяем задержку отправки сообщений
                     GetPing.run(event);
             case "join" -> //Подключаемся к голосовому каналу
-                    JoinChannel.run(event, true);
+                    JoinChannel.run(event);
             case "leave" -> //Покидаем голосовой канал
                     LeaveChannel.run(event);
             case "list", "l" ->  //Выводим состояние плейлиста
@@ -45,8 +45,7 @@ public class EventHandler extends ListenerAdapter {
             case "skip", "s" -> //Удалисть из очереди один или несколько треков
                     SkipTracks.run(event, argument);
             case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                MessageEmbed embed = PlayTrack.run(argument, event); //Производим запуск музыки и получаем данные для вывода в Embed
-                channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
+                PlayTrack.run(event, argument);
             }
             case "next", "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
                 MessageEmbed embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
@@ -68,7 +67,7 @@ public class EventHandler extends ListenerAdapter {
             case "ping" ->  //Проверяем задержку отправки сообщений
                     GetPing.run(event);
             case "join" ->  //Подключаемся к голосовому каналу
-                    JoinChannel.run(event, true);
+                    JoinChannel.run(event);
             case "leave" ->  //Покидаем голосовой канал
                     LeaveChannel.run(event);
             case "list" ->  //Выводим состояние плейлиста
