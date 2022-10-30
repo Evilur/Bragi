@@ -40,6 +40,9 @@ public class Bragi {
         bot.upsertCommand("loop", "Переключить режим повторения").submit();
         bot.upsertCommand("skip", "Пропустить трек")
                 .addOption(OptionType.INTEGER, "quantity", "Количество пропускаемых треков").submit();
+        bot.upsertCommand("play", "Воспроизвести трек")
+                .addOption(OptionType.STRING, "query", "Запрос, по которому ищется трек", true)
+                .submit();
         //endregion
     }
 }

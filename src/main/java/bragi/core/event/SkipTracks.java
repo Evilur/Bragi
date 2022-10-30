@@ -27,7 +27,7 @@ public class SkipTracks {
                     eval(event.getGuild(), numberOfTracks, true))).submit();
         }
         catch (Exception ignore) {
-            event.getChannel().sendMessage("**:x: Плейлист пуст**").submit();
+            event.getChannel().sendMessage("**:bangbang: Плейлист пуст**").submit();
         }
     }
     /** Метод для запуска попуска треков из плейлиста
@@ -44,7 +44,7 @@ public class SkipTracks {
                     eval(event.getGuild(), numberOfTracks, true))).submit();
         }
         catch (Exception ignore) {
-            event.reply("**:x: Плейлист пуст**").submit();
+            event.reply("**:bangbang: Плейлист пуст**").submit();
         }
     }
 

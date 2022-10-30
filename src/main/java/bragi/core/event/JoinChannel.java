@@ -33,7 +33,7 @@ public class JoinChannel {
                     AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                     audioManager.openAudioConnection(audioChannel);
 
-                    event.getChannel().sendMessage(String.format(":thumbsup:** Присоединился к каналу** `%s`",
+                    event.getChannel().sendMessage(String.format(":thumbsup:** Присоединился к каналу `%s`**",
                             Objects.requireNonNull(event.getMember().getVoiceState().getChannel()).getName())).submit();
                 }
             }

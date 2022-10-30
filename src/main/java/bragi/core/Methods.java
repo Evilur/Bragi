@@ -2,6 +2,7 @@ package bragi.core;
 
 import bragi.Bragi;
 import bragi.core.event.JoinChannel;
+import bragi.core.event.PlayTrack;
 import bragi.core.util.TrackInfo;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -10,20 +11,19 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Objects;
 
 public class Methods {
-    public static void playTrackOrAddItToPlaylist(MessageReceivedEvent event, TrackInfo trackInfo) throws Exception {
-        Player player = Bragi.Players.get(event.getGuild());  //Получаем экземпляр проигрывателя
-
+    /** Метод для добавления трека в плейлист или его воспроизведения, в зависимости от состояния плейлиста
+     * @param player Экземпляр проигрывателя сервера
+     * @param trackInfo Информация о треке
+     */
+    public static void playTrackOrAddItToPlaylist(Player player, TrackInfo trackInfo) {
         /* Если плейлист пуст */
         if (player.getPlaylist().size() == 0) {
-            /* Пытаемся подключиться к голосовому каналу */
-            if (!JoinChannel.run(event))
-                throw new Exception("Failed to connect to voice channel");
-
             /* Добавляем трек в очередь для дальнейшего проигрывания */
             player.getPlaylist().add(trackInfo);
             player.increaseTotalDuration(trackInfo.getTrackDuration());

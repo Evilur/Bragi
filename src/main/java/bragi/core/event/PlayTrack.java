@@ -33,20 +33,35 @@ public class PlayTrack {
         }
 
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
-        String state = player.getPlaylist().isEmpty() ? "Сейчас играет" : "В плейлист добавлено";  //Состояние
+        String state = "В плейлист добавлено";  //Состояние плеера
 
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если были переданы вложения
             /* Получаем список треков из вложений */
             List<TrackInfo> trackInfoList = getTracksFromAttachments(event.getMessage().getAttachments());
 
+            if (trackInfoList.isEmpty()) {
+                event.getChannel().sendMessage("**:x: Среди вложений не было аудио**").submit();
+                return;
+            }
+
+            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+                if (JoinChannel.run(event)) //Если удалось подключиться к голосовому канлу
+                    state = "Сейчас играет";
+                else {  //Если не удалось подключиться к голосовому канлу
+                    event.getChannel().sendMessage("**:x: Не удалось подключиться к голосовому канлу. Недостаточно прав**")
+                            .submit();
+                    return;
+                }
+            }
+
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
             for (byte i = 0; i < trackInfoList.size(); i++) {
                 try {
                     TrackInfo trackInfo = trackInfoList.get(i);  //Получаем объект с ифнормацией о треке
-                    state = player.getPlaylist().isEmpty() ? "Сейчас играет" : "В плейлист добавлено";
 
                     /* Добавляем трек в очередь или сразу воспроизводим его */
-                    Methods.playTrackOrAddItToPlaylist(event, trackInfo);
+                    Methods.playTrackOrAddItToPlaylist(Bragi.Players.get(event.getGuild()), trackInfo);
 
                     /* Строка, в которую записываем результат */
                     String result = String
@@ -62,14 +77,26 @@ public class PlayTrack {
                         result += "\n**────────────────────**";
 
                     event.getChannel().sendMessage(result).submit();  //Выводим информацию
+                    state = "В плейлист добавлено";  //Обновляем состояние
                 } catch (Exception ignore) {    }
             }
         } else {  //Если вложений нет, работаем с аргументом
             try {  //Пытаемся найти трек на сервере по запросу
                 TrackInfo trackInfo = DeezerMethods.searchTrack(argument, 0);  //Получаем инфо трека
                 try {
+                    /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+                    if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+                        if (JoinChannel.run(event)) //Если удалось подключиться к голосовому канлу
+                            state = "Сейчас играет";
+                        else {  //Если не удалось подключиться к голосовому канлу
+                            event.getChannel().sendMessage("**:x: Не удалось подключиться к голосовому канлу. Недостаточно прав**")
+                                    .submit();
+                            return;
+                        }
+                    }
+
                     /* Добавляем трек в очередь или сразу воспроизводим его */
-                    Methods.playTrackOrAddItToPlaylist(event, trackInfo);
+                    Methods.playTrackOrAddItToPlaylist(player, trackInfo);
 
                     /* Выводим информацию */
                     event.getChannel().sendMessage(String
@@ -91,7 +118,44 @@ public class PlayTrack {
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
+        Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
+        String state = "В плейлист добавлено";  //Состояние плеера
 
+        try {  //Пытаемся найти трек на сервере по запросу
+            TrackInfo trackInfo = DeezerMethods.searchTrack(Objects.requireNonNull(event.getOption("query"))
+                    .getAsString(), 0);  //Получаем инфо трека
+
+            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+            boolean alreadyReplied = false;
+            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+                state = "Сейчас играет";
+                if (!JoinChannel.run(event)) {  //Если не удалось подключиться к голосовому каналу
+                    event.reply("**:x: Не удалось подключиться к голосовому каналу. Недостаточно прав**").submit();
+                    return;
+                } else {  //В ином случае уже будет ответ
+                    alreadyReplied = true;
+                }
+            }
+
+            /* Добавляем трек в очередь или сразу воспроизводим его */
+            Methods.playTrackOrAddItToPlaylist(player, trackInfo);
+
+            /* Выводим информацию */
+            if (alreadyReplied)
+                event.getChannel().sendMessage(String.format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
+                        state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+            else
+                event.reply(String.format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
+                        state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                    .setColor(Color.decode("#FE2901"))
+                    .setImage(trackInfo.getAlbumCoverUrl())
+                    .addField("Альбом", trackInfo.getAlbumTitle(), false)
+                    .addField("Исполнитель",trackInfo.getArtistName(), false)
+                    .setThumbnail(trackInfo.getArtistPictureUrl()).build()).submit();
+        } catch (Exception ignore) {  //Если трек мы не находим
+            event.reply("**:x: Не удалось найти подходящую песню**").submit();
+        }
     }
 
     /** Метод для воспроизведения треков из вложений

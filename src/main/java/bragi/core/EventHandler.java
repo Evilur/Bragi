@@ -14,9 +14,11 @@ import java.util.Objects;
 
 import static bragi.Bragi.Players;
 
+/** Класс, содержащий обработчики событий для бота */
 public class EventHandler extends ListenerAdapter {
+    /** Обработчик события, срабатывающий при получении сообщения */
     @Override
-    public void onMessageReceived (@NotNull MessageReceivedEvent event) {  //Обработчик событий, срабатывающий при отправке сообщения
+    public void onMessageReceived (@NotNull MessageReceivedEvent event) {
         /* Если сообщение отправил бот или оно начинаемтся не с префикса, прерываем метод */
         if (event.getAuthor().isBot() || !event.getMessage().getContentDisplay().startsWith(Settings.getPrefix()))
             return;
@@ -44,9 +46,8 @@ public class EventHandler extends ListenerAdapter {
                     SwitchLoopMode.run(event);
             case "skip", "s" -> //Удалисть из очереди один или несколько треков
                     SkipTracks.run(event, argument);
-            case "play", "p" -> {  //Воспроизводим отдельный трек или добавляем его в очередь
-                PlayTrack.run(event, argument);
-            }
+            case "play", "p" -> //Воспроизводим отдельный трек или добавляем его в очередь
+                    PlayTrack.run(event, argument);
             case "next", "n" -> {  //Если нашелся неправильный трек, переходим к следующему результату
                 MessageEmbed embed = GetNextTrack.run(event);  //Производим новый поиск и записываем сюда вывод
                 channel.sendMessageEmbeds(embed).submit();  //Отправляем Embed в канал
@@ -72,12 +73,12 @@ public class EventHandler extends ListenerAdapter {
                     LeaveChannel.run(event);
             case "list" ->  //Выводим состояние плейлиста
                     GetPlaylist.run(event);
-            case "play" ->  //Воспроизводим отдельный трек или добавляем его в очередь
-                    System.out.println("Not ready yet");
             case "loop" ->  //Переключаем режим повторения и выводим сообщение
                     SwitchLoopMode.run(event);
             case "skip" ->  //Удалисть из очереди один или несколько треков
                     SkipTracks.run(event);
+            case "play", "p" -> //Воспроизводим отдельный трек или добавляем его в очередь
+                    PlayTrack.run(event);
         }
     }
 
