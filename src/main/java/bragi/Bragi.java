@@ -43,6 +43,9 @@ public class Bragi {
         bot.upsertCommand("play", "Воспроизвести трек")
                 .addOption(OptionType.STRING, "query", "Запрос, по которому ищется трек", true)
                 .submit();
+        bot.upsertCommand("next", "Следующий результат поиска")
+                .addOption(OptionType.INTEGER, "number", "Номер трека для нового поиска")
+                .submit();
         //endregion
     }
 }

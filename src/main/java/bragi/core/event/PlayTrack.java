@@ -28,7 +28,7 @@ public class PlayTrack {
             return;
         } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
                 .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему это, и не выполняем код дальше
-            event.getChannel().sendMessage("**Вы должны находиться в голосовом канале**").submit();
+            event.getChannel().sendMessage("**:x: Вы должны находиться в голосовом канале**").submit();
             return;
         }
 
@@ -112,6 +112,12 @@ public class PlayTrack {
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
+        if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему это, и не выполняем код дальше
+            event.reply("**:x: Вы должны находиться в голосовом канале**").submit();
+            return;
+        }
+
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
         String state = "В плейлист добавлено";  //Состояние плеера
 

@@ -15,8 +15,8 @@ public class SkipTracks {
      * @param argument Аргумент, полученный из сообщения
      */
     public static void run(MessageReceivedEvent event, String argument) {
-        argument = argument == null ? "" :
-                argument.replaceAll("[^0-9]", "");  //Очищаем аргумент от не цифр
+        /* Очищаем аргумент от не цифр */
+        argument = argument == null ? "" : argument.replaceAll("[^0-9]", "");
 
         /* Получаем количество пропускаемых треков */
         int numberOfTracks = !argument.equals("") ? Integer.parseInt(argument) : 1;

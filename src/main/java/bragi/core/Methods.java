@@ -1,8 +1,5 @@
 package bragi.core;
 
-import bragi.Bragi;
-import bragi.core.event.JoinChannel;
-import bragi.core.event.PlayTrack;
 import bragi.core.util.TrackInfo;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -11,10 +8,6 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-
-import java.util.Objects;
 
 public class Methods {
     /** Метод для добавления трека в плейлист или его воспроизведения, в зависимости от состояния плейлиста
@@ -36,6 +29,10 @@ public class Methods {
         }
     }
 
+    /** Метод для получения некоторой первичной информации о треке
+     * @param trackUrl Url адрес трека
+     * @return Первичную информацию
+     */
     public static TrackInfo getTrackInfo(String trackUrl) {
         TrackInfo trackInfo = new TrackInfo();  //Сюда будем складывать информацию о треке
 
