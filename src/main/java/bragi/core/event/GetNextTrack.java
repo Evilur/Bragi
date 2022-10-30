@@ -45,11 +45,9 @@ public class GetNextTrack {
 
             try {  //На всякий случай делаем еще одну проверку
                 /* Заменяем предыдущий трек на новый */
-                player.decreaseTotalDuration(trackInfo.getTrackDuration());
                 trackInfo = DeezerMethods.searchTrack(trackInfo.getSearchRequest(),
                         Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
-                player.increaseTotalDuration(trackInfo.getTrackDuration());
-                player.getPlaylist().set(trackNumber, trackInfo);
+                player.replaceTrack(trackNumber, trackInfo);
 
                 if (trackNumber == 0) {  //Если мы заменяем самый первый элемент, то нужно начать воспроизведение заново
                     player.getInstance().Play(trackInfo.getTrackIdentifier());
@@ -104,11 +102,9 @@ public class GetNextTrack {
 
             try {  //На всякий случай делаем еще одну проверку
                 /* Заменяем предыдущий трек на новый */
-                player.decreaseTotalDuration(trackInfo.getTrackDuration());
                 trackInfo = DeezerMethods.searchTrack(trackInfo.getSearchRequest(),
                         Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
-                player.increaseTotalDuration(trackInfo.getTrackDuration());
-                player.getPlaylist().set(trackNumber, trackInfo);
+                player.replaceTrack(trackNumber, trackInfo);
 
                 if (trackNumber == 0) {  //Если мы заменяем самый первый элемент, то нужно начать воспроизведение заново
                     player.getInstance().Play(trackInfo.getTrackIdentifier());

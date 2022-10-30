@@ -1,5 +1,6 @@
 package bragi.core;
 
+import bragi.core.source.deezer.DeezerMethods;
 import bragi.core.util.TrackInfo;
 import bragi.lavaplayer.GuildPlayer;
 import net.dv8tion.jda.api.entities.Guild;
@@ -32,6 +33,16 @@ public class Player {
             return String.format("%dм%dс", minutes, seconds);
         else
             return String.format("%dч%dм%dс", hours, minutes, seconds);
+    }
+
+    /** Метод для замены трека в плейлисте
+     * @param trackNumber Номер трека в плейлисте
+     * @param trackInfo Новый трек
+     */
+    public void replaceTrack(int trackNumber, TrackInfo trackInfo) {
+        this.decreaseTotalDuration(this.playlist.get(trackNumber).getTrackDuration()); //Уменьшаем общ продолжительность
+        this.increaseTotalDuration(trackInfo.getTrackDuration());  //Увеличиваем общую продолжительность
+        this.playlist.set(trackNumber, trackInfo);
     }
 
     /* Метод для увеличения общей продолжительности треков */

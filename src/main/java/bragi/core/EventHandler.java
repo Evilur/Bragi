@@ -21,7 +21,8 @@ public class EventHandler extends ListenerAdapter {
         if (event.getAuthor().isBot() || !event.getMessage().getContentDisplay().startsWith(Settings.getPrefix()))
             return;
 
-        String[] message = event.getMessage().getContentDisplay().substring(Settings.getPrefix().length()).split(" ", 2);  //Получаем аргументы в нормальном виде, без префикса
+        String[] message = event.getMessage().getContentDisplay().substring(Settings.getPrefix().length())
+                .split(" ", 2);  //Получаем аргументы в нормальном виде, без префикса
         String command = message[0].toLowerCase(); //Инициализируем переменную самой команды
         String argument = message.length > 1 ? message[1] : null;  //Объявляем переменную аргумента команды
 

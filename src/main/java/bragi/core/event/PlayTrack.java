@@ -171,7 +171,7 @@ public class PlayTrack {
         }
 
         for (Message.Attachment attachment : audioAttachments) {
-            /* Созаем новый объект TrackInfo и присваиваем ему необходимые значения */
+            /* Создаем новый объект TrackInfo и присваиваем ему необходимые значения */
             TrackInfo trackInfo = Methods.getTrackInfo(attachment.getProxyUrl());
             trackInfo.setSource("Attachment");  //Устанавливаем информациб об источнике
             trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
