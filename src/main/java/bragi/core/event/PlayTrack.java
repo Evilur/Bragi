@@ -18,7 +18,7 @@ import java.util.Objects;
 /** Класс для воспроизведения музыки */
 public class PlayTrack {
     /** Метод запуска воспроизведения музыки
-     * @param event Событие полуения сообщения
+     * @param event Событие получения сообщения
      * @param argument Аргумент, полученный из сообщения
      */
     public static void run(MessageReceivedEvent event, String argument) {
@@ -55,7 +55,7 @@ public class PlayTrack {
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
             for (byte i = 0; i < trackInfoList.size(); i++) {
                 try {
-                    TrackInfo trackInfo = trackInfoList.get(i);  //Получаем объект с ифнормацией о треке
+                    TrackInfo trackInfo = trackInfoList.get(i);  //Получаем объект с информацией о треке
 
                     /* Добавляем трек в очередь или сразу воспроизводим его */
                     Methods.playTrackOrAddItToPlaylist(Bragi.Players.get(event.getGuild()), trackInfo);
@@ -173,7 +173,7 @@ public class PlayTrack {
         for (Message.Attachment attachment : audioAttachments) {
             /* Создаем новый объект TrackInfo и присваиваем ему необходимые значения */
             TrackInfo trackInfo = Methods.getTrackInfo(attachment.getProxyUrl());
-            trackInfo.setSource("Attachment");  //Устанавливаем информациб об источнике
+            trackInfo.setSource("Attachment");  //Устанавливаем информацию об источнике
             trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
             /* Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения */
             if (trackInfo.getTrackTitle() == null)
