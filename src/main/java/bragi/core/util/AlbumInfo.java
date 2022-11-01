@@ -2,7 +2,7 @@ package bragi.core.util;
 
 import java.util.ArrayList;
 
-public class AlbumInfo {
+public final class AlbumInfo {
     /* Информация об альбоме */
     private int albumId;
     private String albumTitle;

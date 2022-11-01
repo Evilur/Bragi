@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.Objects;
 
 /** Класс для пропуска треков из плейлиста */
-public class SkipTracks {
+public final class SkipTracks {
     /** Метод для запуска попуска треков из плейлиста
      * @param event Событие получения команды
      * @param argument Аргумент, полученный из сообщения

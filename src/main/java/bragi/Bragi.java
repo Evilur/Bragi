@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class Bragi {
+public final class Bragi {
     public static HashMap<Guild, Player> Players = new HashMap<>();  //Инициализированные сервера
 
     public static void main(String[] args) throws Exception {

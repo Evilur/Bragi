@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 import static java.lang.String.valueOf;
 
 /** Класс для вычисления задержки сообщений */
-public class GetPing {
+public final class GetPing {
     /** Метод для запуска вычисления задержки
      * @param event Событие получения сообщения
      */

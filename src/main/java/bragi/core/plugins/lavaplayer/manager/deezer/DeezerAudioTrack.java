@@ -1,4 +1,4 @@
-package bragi.lavaplayer.manager.deezer;
+package bragi.core.plugins.lavaplayer.manager.deezer;
 
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerDescriptor;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
@@ -8,7 +8,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 
 import java.net.URL;
 
-public class DeezerAudioTrack extends DelegatedAudioTrack {
+public final class DeezerAudioTrack extends DelegatedAudioTrack {
     private final MediaContainerDescriptor containerTrackFactory;
     private final String trackId;
     private final String trackUrl;

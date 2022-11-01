@@ -1,10 +1,10 @@
-package bragi.lavaplayer;
+package bragi.core.plugins.lavaplayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import net.dv8tion.jda.api.entities.Guild;
 
-public class GuildMusicManager {
+public final class GuildMusicManager {
     private final AudioPlayer audioPlayer;
 
     private final TrackScheduler scheduler;

@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-public class Settings {
+public final class Settings {
     private static String prefix;
     private static String botToken;
     private static String deezerArl;

@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 
-public class DeezerMethods {
+public final class DeezerMethods {
     /* Идентефикатор сессиипользователя */
     private static String sessionId;
     /* Лицензионныйтокен пользователя Deezer */
@@ -93,5 +93,9 @@ public class DeezerMethods {
         } else {  //Если не существует, снижаем планку качества
             return getTrackUrl(trackToken, (byte) (trackQuality - 1));
         }
+    }
+
+    private enum Quality {
+        MP3_128, MP3_320, FLAC
     }
 }

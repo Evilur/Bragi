@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.Objects;
 
 /** Класс для покидания голосовомго канала */
-public class LeaveChannel {
+public final class LeaveChannel {
     /** Метод для запуска операции покидания голосового канала
      * @param event Событие получения сообщения
      */

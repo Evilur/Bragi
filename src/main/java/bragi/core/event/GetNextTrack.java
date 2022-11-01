@@ -14,7 +14,7 @@ import java.util.Objects;
 import static bragi.Bragi.Players;
 
 /** Класс, с помощью которого мы будем получать следующий трек из поискового запроса */
-public class GetNextTrack {
+public final class GetNextTrack {
     /** С помощью этого метода будем получать следующий трек из поискового запроса
      * @param event Событие получения сообщения
      */

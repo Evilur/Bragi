@@ -1,4 +1,4 @@
-package bragi.lavaplayer;
+package bragi.core.plugins.lavaplayer;
 
 import bragi.core.event.SkipTracks;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -7,7 +7,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.Guild;
 
-public class TrackScheduler extends AudioEventAdapter {
+public final class TrackScheduler extends AudioEventAdapter {
     private final AudioPlayer player;
     private final Guild guild;
 

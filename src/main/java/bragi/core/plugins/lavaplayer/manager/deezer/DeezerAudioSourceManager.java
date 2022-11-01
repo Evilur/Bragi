@@ -1,4 +1,4 @@
-package bragi.lavaplayer.manager.deezer;
+package bragi.core.plugins.lavaplayer.manager.deezer;
 
 import com.sedmelluq.discord.lavaplayer.container.*;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -15,7 +15,7 @@ import java.io.DataOutput;
 import java.net.URL;
 import java.util.Objects;
 
-public class DeezerAudioSourceManager extends ProbingAudioSourceManager {
+public final class DeezerAudioSourceManager extends ProbingAudioSourceManager {
     private String trackId;
     private String trackUrl;
 

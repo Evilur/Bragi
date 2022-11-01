@@ -1,13 +1,12 @@
 package bragi.core;
 
-import bragi.core.source.deezer.DeezerMethods;
 import bragi.core.util.TrackInfo;
-import bragi.lavaplayer.GuildPlayer;
+import bragi.core.plugins.lavaplayer.GuildPlayer;
 import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.ArrayList;
 
-public class Player {
+public final class Player {
     private final ArrayList<TrackInfo> playlist;  //Это список воспроизведения
     private final GuildPlayer instance;  //Это наш проигрыватель
     private int totalDuration;  //Общая продолжительность треков в плейлисте

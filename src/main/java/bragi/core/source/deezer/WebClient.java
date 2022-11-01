@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WebClient {
+public final class WebClient {
     private final Map<String, String> headers = new HashMap<>();  //Стандартные веб-заголовки
 
     public WebClient() {

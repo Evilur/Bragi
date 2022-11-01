@@ -1,7 +1,6 @@
-package bragi.lavaplayer;
+package bragi.core.plugins.lavaplayer;
 
-import bragi.core.event.LeaveChannel;
-import bragi.lavaplayer.manager.deezer.DeezerAudioSourceManager;
+import bragi.core.plugins.lavaplayer.manager.deezer.DeezerAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -11,7 +10,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 
-public class GuildPlayer {
+public final class GuildPlayer {
     private final GuildMusicManager guildMusicManager;
     private final AudioPlayerManager audioPlayerManager;
     private final AudioLoadResultHandler resultHandler = new AudioLoadResultHandler() {  //Объявляем обработчик состояния трека

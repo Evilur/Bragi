@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 /** Класс для воспроизведения музыки */
-public class PlayTrack {
+public final class PlayTrack {
     /** Метод запуска воспроизведения музыки
      * @param event Событие получения сообщения
      * @param argument Аргумент, полученный из сообщения

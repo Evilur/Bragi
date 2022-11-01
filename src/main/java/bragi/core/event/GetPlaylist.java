@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.awt.*;
 
 /** Класс для вывода списка воспроизведения */
-public class GetPlaylist {
+public final class GetPlaylist {
     /** Метод для запуска скрипта, выводящего информацию о плейлисте
      * @param event Событие получения сообщения
      */

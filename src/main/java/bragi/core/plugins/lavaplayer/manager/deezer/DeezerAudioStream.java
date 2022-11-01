@@ -1,4 +1,4 @@
-package bragi.lavaplayer.manager.deezer;
+package bragi.core.plugins.lavaplayer.manager.deezer;
 
 import com.sedmelluq.discord.lavaplayer.tools.Units;
 import com.sedmelluq.discord.lavaplayer.tools.io.*;
@@ -19,7 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 
-public class DeezerAudioStream extends SeekableInputStream implements AutoCloseable {
+public final class DeezerAudioStream extends SeekableInputStream implements AutoCloseable {
     private final BufferedInputStream inputStream;  //Поток зашифрованных данных
     private final FileOutputStream fileOutputStream;  //Поток записи в временный файл
     private final FileInputStream fileInputStream;  //Поток чтеия из временного файла

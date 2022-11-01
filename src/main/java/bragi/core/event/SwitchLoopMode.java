@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 /** Класс для переключения режима повторения трека */
-public class SwitchLoopMode {
+public final class SwitchLoopMode {
     /** Метод для запуска смены переключения режима повторения трека
      * @param event Событие полуения сообщения
      */

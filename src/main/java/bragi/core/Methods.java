@@ -9,7 +9,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-public class Methods {
+public final class Methods {
     /** Метод для добавления трека в плейлист или его воспроизведения, в зависимости от состояния плейлиста
      * @param player Экземпляр проигрывателя сервера
      * @param trackInfo Информация о треке

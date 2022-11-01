@@ -13,7 +13,7 @@ import java.util.Objects;
 import static bragi.Bragi.Players;
 
 /** Класс, содержащий обработчики событий для бота */
-public class EventHandler extends ListenerAdapter {
+public final class EventHandler extends ListenerAdapter {
     /** Обработчик события, срабатывающий при получении сообщения */
     @Override
     public void onMessageReceived (@NotNull MessageReceivedEvent event) {

@@ -1,6 +1,6 @@
 package bragi.core.util;
 
-public class TrackInfo {
+public final class TrackInfo {
     /* Информация о самом треке */
     private int trackId;
     private String trackTitle;

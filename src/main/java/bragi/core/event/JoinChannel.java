@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 import java.util.Objects;
 
 /** Класс для присоединения к голосовому каналу */
-public class JoinChannel {
+public final class JoinChannel {
     /** Метод для присоединения к голосовому каналу
      * @param event Событие получения сообщения
      * @return true, если удалось подключиться. В противном случае - false
