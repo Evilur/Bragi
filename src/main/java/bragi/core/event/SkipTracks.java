@@ -55,6 +55,12 @@ public final class SkipTracks {
         eval(guild, 1, false);
     }
 
+    /** Метод очистки плейлиста
+     * @param guild Гильдия, для которой необходимо почистить плейлист
+     * @param numberOfTracks Количество пропускаемых треков
+     * @param hardSkip Наверняка пропустить трек, даже если включен режим повторения
+     * @return Количество пропущенных треков
+     */
     private static int eval(Guild guild, int numberOfTracks, boolean hardSkip) {
         Player player = Bragi.Players.get(guild);  //Получаем проигрыватель
 
@@ -66,7 +72,9 @@ public final class SkipTracks {
 
         /* Если не стоит повторение или трек пропускается вручную */
         if (!player.isLoopMode() || hardSkip) {  //Удаляем элементы
-            player.decreaseTotalDuration(player.getPlaylist().get(0).getTrackDuration()); //Уменьшаем общую длину треков
+            /* Уменьшаем общую длину треков */
+            for (short i = 0; i < numberOfTracks; i++)
+                player.decreaseTotalDuration(player.getPlaylist().get(i).getTrackDuration());
             player.getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первые элементы из списка
         }
 
@@ -74,8 +82,7 @@ public final class SkipTracks {
         if (player.getPlaylist().size() > 0) {
             String url = player.getPlaylist().get(0).getTrackIdentifier();  //Получаем url трека
             player.getInstance().Play(url);  //Воспроизводим трек
-        }
-        else {  //Если треков в плейлисте нет
+        } else {  //Если треков в плейлисте нет
             player.getInstance().Stop();  //Останавливаем проигрывание
             LeaveChannel.run(guild);  //Покидаем канал
         }
