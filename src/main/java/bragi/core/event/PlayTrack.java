@@ -26,14 +26,18 @@ public final class PlayTrack {
         if (argument == null && event.getMessage().getAttachments().isEmpty()) {
             event.getChannel().sendMessage("**:x: После команды не было передано обязательных аргументов!**").submit();
             return;
-        } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
-                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему это, и не выполняем код дальше
-            event.getChannel().sendMessage("**:x: Вы должны находиться в голосовом канале**").submit();
-            return;
         }
 
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
         String state = "В плейлист добавлено";  //Состояние плеера
+
+        /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+        if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+            if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
+                state = "Сейчас играет";
+            else  //Если не удалось подключиться к голосовому каналу
+                return;
+        }
 
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если были переданы вложения
             /* Получаем список треков из вложений */
@@ -42,14 +46,6 @@ public final class PlayTrack {
             if (trackInfoList.isEmpty()) {
                 event.getChannel().sendMessage("**:x: Среди вложений не было аудио**").submit();
                 return;
-            }
-
-            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
-                    state = "Сейчас играет";
-                else  //Если не удалось подключиться к голосовому каналу
-                    return;
             }
 
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
@@ -112,28 +108,22 @@ public final class PlayTrack {
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
-        if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
-                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему это, и не выполняем код дальше
-            event.reply("**:x: Вы должны находиться в голосовом канале**").submit();
-            return;
-        }
-
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
         String state = "В плейлист добавлено";  //Состояние плеера
+
+        /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+        boolean alreadyReplied = false;
+        if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+            state = "Сейчас играет";
+            if (!JoinChannel.run(event)) //Если не удалось подключиться к голосовому каналу
+                return;
+            else //В ином случае уже будет ответ
+                alreadyReplied = true;
+        }
 
         try {  //Пытаемся найти трек на сервере по запросу
             TrackInfo trackInfo = DeezerMethods.searchTrack(Objects.requireNonNull(event.getOption("query"))
                     .getAsString(), 0);  //Получаем инфо трека
-
-            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-            boolean alreadyReplied = false;
-            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                state = "Сейчас играет";
-                if (!JoinChannel.run(event)) //Если не удалось подключиться к голосовому каналу
-                    return;
-                else //В ином случае уже будет ответ
-                    alreadyReplied = true;
-            }
 
             /* Добавляем трек в очередь или сразу воспроизводим его */
             Methods.playTrackOrAddItToPlaylist(player, trackInfo);
