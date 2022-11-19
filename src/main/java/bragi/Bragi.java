@@ -24,7 +24,9 @@ public final class Bragi {
 
         /* Добавляем слэш-команды */
         bot.upsertCommand("ping", "Получить информацию о задержке").submit();
-        bot.upsertCommand("join", "Подключиться к голосовому каналу").submit();
+        bot.upsertCommand("join", "Подключиться к голосовому каналу")
+                .addOption(OptionType.USER, "user", "Пользователь, к которому нужно присоединиться")
+                .submit();
         bot.upsertCommand("leave", "Покинуть голосовой канал").submit();
         bot.upsertCommand("list", "Вывести состояние плейлиста").submit();
         bot.upsertCommand("loop", "Переключить режим повторения").submit();

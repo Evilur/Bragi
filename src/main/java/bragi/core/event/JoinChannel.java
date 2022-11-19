@@ -11,11 +11,26 @@ import java.util.Objects;
 public final class JoinChannel {
     /** Метод для присоединения к голосовому каналу
      * @param event Событие получения сообщения
-     * @return true, если удалось подключиться. В противном случае - false
+     * @return True, если удалось подключиться. В противном случае - false
      */
     public static boolean run(MessageReceivedEvent event) {
-        /* Если участник не в голосовом канале, сообщим ему об этом */
-        if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
+        AudioChannel audioChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .getChannel();  //Получаем голосовой канал, к которому нужно присоединиться
+
+
+
+        /* Если в качестве аргумента был передан пользователь, получаем голосовой канал этого пользователя */
+        if (!event.getMessage().getMentions().getMembers().isEmpty()) {
+            audioChannel = Objects.requireNonNull(event.getMessage().getMentions().getMembers().get(0).getVoiceState())
+                    .getChannel();  //Получаем голосовой канал
+
+            /* Если пользователь не в канале, выходим из метода */
+            if (audioChannel == null) {
+                event.getChannel().sendMessage(":x:** Этот пользователь не находится в голосовом канале**").submit();
+                return false;
+            }
+        } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему об этом
             event.getChannel().sendMessage(":x:** Вы должны находиться в голосовом канале**").submit();
             return false;
         }
@@ -29,7 +44,6 @@ public final class JoinChannel {
                                 .getSelfMember().getVoiceState()).getChannel()) {  //Если бот уже в этом канале
                     event.getChannel().sendMessage(":x:** Бот уже подключен к этому голосовому каналу**").submit();
                 } else {
-                    AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
                     AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                     audioManager.openAudioConnection(audioChannel);
 
@@ -46,11 +60,25 @@ public final class JoinChannel {
     }
     /** Метод для присоединения к голосовому каналу
      * @param event Событие получения команды
-     * @return true, если удалось подключиться. В противном случае - false
+     * @return True, если удалось подключиться. В противном случае - false
      */
     public static boolean run(SlashCommandInteractionEvent event) {
-        /* Если участник не в голосовом канале, сообщим ему об этом */
-        if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).inAudioChannel()) {
+        AudioChannel audioChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .getChannel();  //Получаем голосовой канал, к которому нужно присоединиться
+
+        /* Если в качестве параметра был передан пользователь, получаем голосовой канал этого пользователя */
+        if (!event.getOptionsByName("user").isEmpty()) {
+            audioChannel = Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(event.getGuild())
+                            .getMemberById(Objects.requireNonNull(event.getOption("user")).getAsUser().getId()))
+                    .getVoiceState()).getChannel();
+
+            /* Если пользователь не в канале, выходим из метода */
+            if (audioChannel == null) {
+                event.reply(":x:** Этот пользователь не находится в голосовом канале**").submit();
+                return false;
+            }
+        } else if (!Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {  //Если участник не в голосовом канале, сообщим ему об этом
             event.reply(":x:** Вы должны находиться в голосовом канале**").submit();
             return false;
         }
@@ -64,7 +92,6 @@ public final class JoinChannel {
                                 .getSelfMember().getVoiceState()).getChannel()) {  //Если бот уже в этом канале
                     event.reply(":x:** Бот уже подключен к этому голосовому каналу**").submit();
                 } else {
-                    AudioChannel audioChannel = event.getMember().getVoiceState().getChannel();
                     AudioManager audioManager = Objects.requireNonNull(event.getGuild()).getAudioManager();
                     audioManager.openAudioConnection(audioChannel);
 
