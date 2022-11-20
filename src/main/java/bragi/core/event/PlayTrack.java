@@ -42,10 +42,8 @@ public final class PlayTrack {
 
             /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
             if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
-                    state = "Сейчас играет";
-                else  //Если не удалось подключиться к голосовому каналу
-                    return;
+                state = "Сейчас играет";
+                if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
             }
 
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
@@ -79,10 +77,8 @@ public final class PlayTrack {
                 try {
                     /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
                     if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                        if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
-                            state = "Сейчас играет";
-                        else  //Если не удалось подключиться к голосовому каналу
-                            return;
+                        state = "Сейчас играет";
+                        if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
                     }
 
                     /* Добавляем трек в очередь или сразу воспроизводим его */
@@ -119,10 +115,8 @@ public final class PlayTrack {
             boolean alreadyReplied = false;
             if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
                 state = "Сейчас играет";
-                if (!JoinChannel.run(event)) //Если не удалось подключиться к голосовому каналу
-                    return;
-                else //В ином случае уже будет ответ
-                    alreadyReplied = true;
+                if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
+                else alreadyReplied = true;  //В ином случае уже будет ответ
             }
 
             /* Добавляем трек в очередь или сразу воспроизводим его */
@@ -167,8 +161,7 @@ public final class PlayTrack {
             trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
             /* Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения */
             if (trackInfo.getTrackTitle() == null)
-                trackInfo.setTrackTitle(attachment.getFileName().replace("." +
-                        Objects.requireNonNull(attachment.getFileExtension()), ""));
+                trackInfo.setTrackTitle(attachment.getFileName().replaceAll("\\..+$", ""));
             result.add(trackInfo);  //Добавляем полученный трек в результаты
         }
 

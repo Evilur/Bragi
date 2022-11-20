@@ -35,6 +35,9 @@ public final class Bragi {
         bot.upsertCommand("play", "Воспроизвести трек")
                 .addOption(OptionType.STRING, "query", "Запрос, по которому ищется трек", true)
                 .submit();
+        bot.upsertCommand("attachment", "Воспроизвести аудио-вложение")
+                .addOption(OptionType.ATTACHMENT, "audio", "Аудио-вложение для воспроизведения", true)
+                .submit();
         bot.upsertCommand("next", "Следующий результат поиска")
                 .addOption(OptionType.INTEGER, "number", "Номер трека для нового поиска")
                 .submit();

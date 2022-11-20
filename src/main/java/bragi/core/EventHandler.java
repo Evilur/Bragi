@@ -76,6 +76,8 @@ public final class EventHandler extends ListenerAdapter {
                     SkipTracks.run(event);
             case "play", "p" -> //Воспроизводим отдельный трек или добавляем его в очередь
                     PlayTrack.run(event);
+            case "attachment" -> //Воспроизводим аудио-вложения
+                    PlayAttachment.run(event);
             case "next", "n" -> //Если нашелся неправильный трек, переходим к следующему результату
                     GetNextTrack.run(event);
         }
