@@ -31,14 +31,6 @@ public final class PlayTrack {
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
         String state = "В плейлист добавлено";  //Состояние плеера
 
-        /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-        if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-            if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
-                state = "Сейчас играет";
-            else  //Если не удалось подключиться к голосовому каналу
-                return;
-        }
-
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если были переданы вложения
             /* Получаем список треков из вложений */
             List<TrackInfo> trackInfoList = getTracksFromAttachments(event.getMessage().getAttachments());
@@ -46,6 +38,14 @@ public final class PlayTrack {
             if (trackInfoList.isEmpty()) {
                 event.getChannel().sendMessage("**:x: Среди вложений не было аудио**").submit();
                 return;
+            }
+
+            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+                if (JoinChannel.run(event)) //Если удалось подключиться к голосовому каналу
+                    state = "Сейчас играет";
+                else  //Если не удалось подключиться к голосовому каналу
+                    return;
             }
 
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
@@ -111,19 +111,19 @@ public final class PlayTrack {
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
         String state = "В плейлист добавлено";  //Состояние плеера
 
-        /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-        boolean alreadyReplied = false;
-        if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-            state = "Сейчас играет";
-            if (!JoinChannel.run(event)) //Если не удалось подключиться к голосовому каналу
-                return;
-            else //В ином случае уже будет ответ
-                alreadyReplied = true;
-        }
-
         try {  //Пытаемся найти трек на сервере по запросу
             TrackInfo trackInfo = DeezerMethods.searchTrack(Objects.requireNonNull(event.getOption("query"))
                     .getAsString(), 0);  //Получаем инфо трека
+
+            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+            boolean alreadyReplied = false;
+            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
+                state = "Сейчас играет";
+                if (!JoinChannel.run(event)) //Если не удалось подключиться к голосовому каналу
+                    return;
+                else //В ином случае уже будет ответ
+                    alreadyReplied = true;
+            }
 
             /* Добавляем трек в очередь или сразу воспроизводим его */
             Methods.playTrackOrAddItToPlaylist(player, trackInfo);
