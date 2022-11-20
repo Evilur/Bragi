@@ -6,12 +6,10 @@ import bragi.core.Player;
 import bragi.core.source.deezer.DeezerMethods;
 import bragi.core.util.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,21 +27,28 @@ public final class PlayTrack {
         }
 
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
-        String state = "В плейлист добавлено";  //Состояние плеера
+        boolean needToJoin = !Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getSelfMember()
+                .getVoiceState()).inAudioChannel();
+
+        /* Если нужно присоединяться, а пользователь не в голосовом канале */
+        if (needToJoin && !Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {
+            event.getChannel().sendMessage(":x:** Вы должны находиться в голосовом канале**").submit();
+            return;
+        }
 
         if (!event.getMessage().getAttachments().isEmpty()) {  //Если были переданы вложения
             /* Получаем список треков из вложений */
-            List<TrackInfo> trackInfoList = getTracksFromAttachments(event.getMessage().getAttachments());
+            List<TrackInfo> trackInfoList = Methods.getTracksFromAttachments(event.getMessage().getAttachments());
 
             if (trackInfoList.isEmpty()) {
                 event.getChannel().sendMessage("**:x: Среди вложений не было аудио**").submit();
                 return;
             }
 
-            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                state = "Сейчас играет";
-                if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
+            /* Пытаемся подключиться к голосовому каналу, если надо */
+            if (needToJoin) {
+                if (!JoinChannel.run(event, null)) return;  //Если не удалось подключиться к голосовому каналу
             }
 
             /* Пробегаем циклом по трекам и воспроизводим трек, либо добавляем его в плейлист, выводим результат */
@@ -56,8 +61,8 @@ public final class PlayTrack {
 
                     /* Строка, в которую записываем результат */
                     String result = String
-                            .format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
-                                    state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted());
+                            .format("**:notes: В плейлист добавлено: `%s`\n:watch: Продолжительность: `%s`**",
+                                    trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted());
 
                     /* Если есть имя исполнителя */
                     result = trackInfo.getArtistName() != null ?
@@ -68,17 +73,16 @@ public final class PlayTrack {
                         result += "\n**────────────────────**";
 
                     event.getChannel().sendMessage(result).submit();  //Выводим информацию
-                    state = "В плейлист добавлено";  //Обновляем состояние
                 } catch (Exception ignore) {    }
             }
         } else {  //Если вложений нет, работаем с аргументом
             try {  //Пытаемся найти трек на сервере по запросу
                 TrackInfo trackInfo = DeezerMethods.searchTrack(argument, 0);  //Получаем инфо трека
                 try {
-                    /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
-                    if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                        state = "Сейчас играет";
-                        if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
+                    /* Пытаемся подключиться к голосовому каналу, если надо */
+                    if (needToJoin) {
+                        //Если не удалось подключиться к голосовому каналу, выходим из метода
+                        if (!JoinChannel.run(event, null)) return;
                     }
 
                     /* Добавляем трек в очередь или сразу воспроизводим его */
@@ -86,8 +90,8 @@ public final class PlayTrack {
 
                     /* Выводим информацию */
                     event.getChannel().sendMessage(String
-                            .format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
-                            state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+                            .format("**:notes: В плейлист добавлено: `%s`\n:watch: Продолжительность: `%s`**",
+                            trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
                     event.getChannel().sendMessageEmbeds(new EmbedBuilder()
                             .setColor(Color.decode("#FE2901"))
                             .setImage(trackInfo.getAlbumCoverUrl())
@@ -105,16 +109,23 @@ public final class PlayTrack {
      */
     public static void run(SlashCommandInteractionEvent event) {
         Player player = Bragi.Players.get(event.getGuild());  //Экземпляр проигрывателя
-        String state = "В плейлист добавлено";  //Состояние плеера
+        boolean needToJoin = !Objects.requireNonNull(Objects.requireNonNull(event.getGuild()).getSelfMember()
+                .getVoiceState()).inAudioChannel();
+
+        /* Если нужно присоединяться, а пользователь не в голосовом канале */
+        if (needToJoin && !Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState())
+                .inAudioChannel()) {
+            event.reply(":x:** Вы должны находиться в голосовом канале**").submit();
+            return;
+        }
 
         try {  //Пытаемся найти трек на сервере по запросу
             TrackInfo trackInfo = DeezerMethods.searchTrack(Objects.requireNonNull(event.getOption("query"))
                     .getAsString(), 0);  //Получаем инфо трека
 
-            /* Пытаемся подключиться к голосовому каналу, если плейлист пуст */
+            /* Пытаемся подключиться к голосовому каналу, если надо */
             boolean alreadyReplied = false;
-            if (player.getPlaylist().isEmpty()) {  //Если плейлист пуст
-                state = "Сейчас играет";
+            if (needToJoin) {
                 if (!JoinChannel.run(event)) return;  //Если не удалось подключиться к голосовому каналу
                 else alreadyReplied = true;  //В ином случае уже будет ответ
             }
@@ -124,11 +135,12 @@ public final class PlayTrack {
 
             /* Выводим информацию */
             if (alreadyReplied)
-                event.getChannel().sendMessage(String.format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
-                        state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+                event.getChannel().sendMessage(String.format(
+                        "**:notes: В плейлист добавлено: `%s`\n:watch: Продолжительность: `%s`**",
+                        trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
             else
-                event.reply(String.format("**:notes: %s: `%s`\n:watch: Продолжительность: `%s`**",
-                        state, trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
+                event.reply(String.format("**:notes: В плейлист добавлено: `%s`\n:watch: Продолжительность: `%s`**",
+                        trackInfo.getTrackTitle(), trackInfo.getTrackDurationFormatted())).submit();
             event.getChannel().sendMessageEmbeds(new EmbedBuilder()
                     .setColor(Color.decode("#FE2901"))
                     .setImage(trackInfo.getAlbumCoverUrl())
@@ -138,33 +150,5 @@ public final class PlayTrack {
         } catch (Exception ignore) {  //Если трек мы не находим
             event.reply("**:x: Не удалось найти подходящую песню**").submit();
         }
-    }
-
-    /** Метод для воспроизведения треков из вложений
-     * @param attachments Список вложений сообщения
-     * @return Список объектов с информацией о треке
-     */
-    private static List<TrackInfo> getTracksFromAttachments(List<Message.Attachment> attachments) {
-        List<Message.Attachment> audioAttachments = new ArrayList<>();  //Список аудио-вложений
-        List<TrackInfo> result = new ArrayList<>(); //Список треков для возврата результата
-
-        for (Message.Attachment attachment : attachments) {  //Проходимся циклом по вложениям
-            /* Если вложение — это аудиофайл, добавляем его в список */
-            if (Objects.requireNonNull(attachment.getContentType()).contains("audio"))
-                audioAttachments.add(attachment);
-        }
-
-        for (Message.Attachment attachment : audioAttachments) {
-            /* Создаем новый объект TrackInfo и присваиваем ему необходимые значения */
-            TrackInfo trackInfo = Methods.getTrackInfo(attachment.getProxyUrl());
-            trackInfo.setSource("Attachment");  //Устанавливаем информацию об источнике
-            trackInfo.setTrackIdentifier(attachment.getProxyUrl());  //Получаем url вложения
-            /* Если не удалось получить имя трека из метаданных, получаем его из имени вложения без расширения */
-            if (trackInfo.getTrackTitle() == null)
-                trackInfo.setTrackTitle(attachment.getFileName().replaceAll("\\..+$", ""));
-            result.add(trackInfo);  //Добавляем полученный трек в результаты
-        }
-
-        return result;  //Возвращаем результат
     }
 }

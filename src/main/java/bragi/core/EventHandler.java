@@ -35,7 +35,7 @@ public final class EventHandler extends ListenerAdapter {
             case "ping" -> //Проверяем задержку отправки сообщений
                     GetPing.run(event);
             case "join" -> //Подключаемся к голосовому каналу
-                    JoinChannel.run(event);
+                    JoinChannel.run(event, argument);
             case "leave" -> //Покидаем голосовой канал
                     LeaveChannel.run(event);
             case "list", "l" ->  //Выводим состояние плейлиста
@@ -46,6 +46,8 @@ public final class EventHandler extends ListenerAdapter {
                     SkipTracks.run(event, argument);
             case "play", "p" -> //Воспроизводим отдельный трек или добавляем его в очередь
                     PlayTrack.run(event, argument);
+            case "attachment", "att" -> //Воспроизводим аудио-вложения
+                    PlayAttachment.run(event);
             case "next", "n" -> //Если нашелся неправильный трек, переходим к следующему результату
                     GetNextTrack.run(event, argument);
         }
