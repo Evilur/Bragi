@@ -18,7 +18,7 @@ public final class SwitchLoopMode {
         if (player.isLoopMode())
             event.getChannel().sendMessage("**:repeat: Повторение треков включено**").submit();
         else
-            event.getChannel().sendMessage("**Повторение треков выключено**").submit();
+            event.getChannel().sendMessage("**:repeat: Повторение треков выключено**").submit();
     }
     /** Метод для запуска смены переключения режима повторения трека
      * @param event Событие полуения команды
