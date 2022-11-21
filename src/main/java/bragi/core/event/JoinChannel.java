@@ -59,7 +59,6 @@ public final class JoinChannel {
             }
             return true;
         } catch (Exception ignore) {
-            System.out.println(ignore);
             event.getChannel().sendMessage(":x:** Не удалось подключиться к голосовому каналу. Недостаточно прав**")
                     .submit();
             return false;

@@ -14,7 +14,7 @@ public final class GetPlaylist {
      * @param event Событие получения сообщения
      */
     public static void run(MessageReceivedEvent event) {
-        Player player = Bragi.Players.get(event.getGuild());  //Получаем прогрыватель сервера
+        Player player = Bragi.Players.get(event.getGuild());  //Получаем проигрыватель сервера
 
         /* Если плейлист пуст */
         if (player.getPlaylist().size() == 0) {  //Сообщаем о том, что плейлист пуст
@@ -32,7 +32,7 @@ public final class GetPlaylist {
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
-        Player player = Bragi.Players.get(event.getGuild());  //Получаем прогрыватель сервера
+        Player player = Bragi.Players.get(event.getGuild());  //Получаем проигрыватель сервера
 
         /* Если плейлист пуст */
         if (player.getPlaylist().size() == 0) {  //Сообщаем о том, что плейлист пуст
@@ -55,7 +55,7 @@ public final class GetPlaylist {
         /* Перебираем плейлист циклом, форматируем и записываем результат в переменную */
         StringBuilder result = new StringBuilder();  //Сюда будем записывать результат
 
-        /* Циклом перебираем плейлист и дабавляем это к результату */
+        /* Циклом перебираем плейлист и добавляем это к результату */
         for (int i = 0; i < player.getPlaylist().size(); i++)
             result.append(String.format("%d. %s\n", i + 1, player.getPlaylist().get(i).getTrackTitle()));
 

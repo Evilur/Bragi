@@ -8,10 +8,10 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 /** Класс для переключения режима повторения трека */
 public final class SwitchLoopMode {
     /** Метод для запуска смены переключения режима повторения трека
-     * @param event Событие полуения сообщения
+     * @param event Событие получения сообщения
      */
     public static void run(MessageReceivedEvent event) {
-        Player player = Bragi.Players.get(event.getGuild());  //Получаем экзепмпляр проигррывателя
+        Player player = Bragi.Players.get(event.getGuild());  //Получаем экземпляр проигрывателя
         player.switchLoopMode();  //Переключаем режим повторения
 
         /* Выводим сообщение */
@@ -21,16 +21,16 @@ public final class SwitchLoopMode {
             event.getChannel().sendMessage("**:repeat: Повторение треков выключено**").submit();
     }
     /** Метод для запуска смены переключения режима повторения трека
-     * @param event Событие полуения команды
+     * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
-        Player player = Bragi.Players.get(event.getGuild());  //Получаем экзепмпляр проигррывателя
+        Player player = Bragi.Players.get(event.getGuild());  //Получаем экземпляр проигрывателя
         player.switchLoopMode();  //Переключаем режим повторения
 
         /* Выводим сообщение */
         if (player.isLoopMode())
             event.reply("**:repeat: Повторение треков включено**").submit();
         else
-            event.reply("**Повторение треков выключено**").submit();
+            event.reply("**:repeat: Повторение треков выключено**").submit();
     }
 }

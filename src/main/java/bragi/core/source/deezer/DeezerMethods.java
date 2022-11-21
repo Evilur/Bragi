@@ -8,21 +8,21 @@ import org.json.JSONObject;
 import java.io.*;
 
 public final class DeezerMethods {
-    /* Идентефикатор сессиипользователя */
+    /* Идентификатор сессии пользователя */
     private static String sessionId;
-    /* Лицензионныйтокен пользователя Deezer */
+    /* Лицензионный токен пользователя Deezer */
     private static String licenseToken;
-    /* Специальный веб=клиент, который будет делать запросы на сервер Deezer */
+    /* Специальный веб-клиент, который будет делать запросы на сервер Deezer */
     private static WebClient webClient;
 
-    /* Метод для установки инициализирования Deezer клиента */
+    /** Метод для инициализации Deezer клиента */
     public static void initializeDeezer() {
-        /* Объявляем перменные для создания запроса на сервер Deezer для вытаскивания токена лицензии и идентефикатора пользователя */
+        /* Объявляем переменные для создания запроса на сервер Deezer для вытаскивания токена лицензии и идентификатора пользователя */
         String requestUrl = "https://www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData&api_version=1.0&api_token";
         String requestBody = String.format("{arl=\"%s\"}", Settings.getDeezerArl());
 
         try {
-            /* Делаем запрос для  вытягивания токена лицензии пользователя и идентефикатора пользователя */
+            /* Делаем запрос для вытягивания токена лицензии пользователя и идентификатора пользователя */
             webClient = new WebClient();  //Инициируем веб-клиент
             JSONObject jsonObject = webClient.sendRequest(requestUrl, requestBody);
 
@@ -34,7 +34,7 @@ public final class DeezerMethods {
 
     /* Метод для поиска трека в Deezer */
     public static TrackInfo searchTrack(String trackTitle, int trackIndex) throws Exception {
-        /* Объявляем перменные для создания запроса на сервер Deezer */
+        /* Объявляем переменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
         String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
 
@@ -67,7 +67,7 @@ public final class DeezerMethods {
         trackInfo.setArtistName(trackObject.getString("ART_NAME"));
         trackInfo.setArtistPictureUrl(String.format("https://e-cdns-images.dzcdn.net/images/artist/%s/1000x1000-000000-80-0-0.jpg", trackObject.getString("ART_PICTURE")));
 
-        /* Объявляем некоторые перменные, которые в будущем помогут нам поменять результат поиска */
+        /* Объявляем некоторые переменные, которые в будущем помогут нам поменять результат поиска */
         trackInfo.setTotalOfSearchResults(totalOfSearchResults);
         trackInfo.setNextTrackInSearchResults(String.valueOf(jsonObject.getJSONObject("results").getInt("next")));
         trackInfo.setSearchRequest(trackTitle);
@@ -77,7 +77,7 @@ public final class DeezerMethods {
 
     /* С помощью этого метода будем получать url закодированного трека */
     private static String getTrackUrl(String trackToken, byte trackQuality) throws IOException {
-        /* Объявляем перменные для создания запроса на сервер Deezer */
+        /* Объявляем переменные для создания запроса на сервер Deezer */
         String requestUrl = String.format("https://media.deezer.com/v1/get_url?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&sid=%s", sessionId);
         String requestBody = String.format("{\"license_token\":\"%s\",\"media\":[{\"type\":\"FULL\",\"formats\":[{\"format\":\"%s\",\"cipher\":\"BF_CBC_STRIPE\"}]}],\"track_tokens\":[\"%s\"]}", licenseToken, Quality.values()[trackQuality], trackToken);
 

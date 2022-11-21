@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Objects;
 
-/** Класс для покидания голосовомго канала */
+/** Класс для покидания голосового канала */
 public final class LeaveChannel {
     /** Метод для запуска операции покидания голосового канала
      * @param event Событие получения сообщения
@@ -24,7 +24,7 @@ public final class LeaveChannel {
             Bragi.Players.get(event.getGuild()).getInstance().Stop();  //Останавливаем проигрывание
             Bragi.Players.get(event.getGuild()).getPlaylist().clear();  //Очищаем плейлист
         } else {  //Если пользователь не в голосовом канале
-            /* Отправляем ответ */
+            /* отправляем ответ */
             event.getChannel().sendMessage(":x: **Бот не подключен к голосовому каналу**").submit();
         }
     }
