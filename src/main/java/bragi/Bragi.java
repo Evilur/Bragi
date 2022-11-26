@@ -41,6 +41,9 @@ public final class Bragi {
         bot.upsertCommand("next", "Следующий результат поиска")
                 .addOption(OptionType.INTEGER, "number", "Номер трека для нового поиска")
                 .submit();
+        bot.upsertCommand("remove", "Удалить треки из очереди")
+                .addOption(OptionType.STRING, "query", "Запрос, по которому будут удаляться треки", true)
+                .submit();
         //endregion
     }
 }

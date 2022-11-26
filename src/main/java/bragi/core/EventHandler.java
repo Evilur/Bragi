@@ -50,6 +50,8 @@ public final class EventHandler extends ListenerAdapter {
                     PlayAttachment.run(event);
             case "next", "n" -> //Если нашелся неправильный трек, переходим к следующему результату
                     GetNextTrack.run(event, argument);
+            case "remove", "r" -> //Удаляем определенные треки из очереди
+                    RemoveTracks.run(event, argument);
         }
     }
 
@@ -82,6 +84,8 @@ public final class EventHandler extends ListenerAdapter {
                     PlayAttachment.run(event);
             case "next", "n" -> //Если нашелся неправильный трек, переходим к следующему результату
                     GetNextTrack.run(event);
+            case "remove" -> //Удаляем определенные треки из очереди
+                    RemoveTracks.run(event);
         }
     }
 
