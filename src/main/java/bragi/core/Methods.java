@@ -24,13 +24,11 @@ public final class Methods {
         if (player.getPlaylist().size() == 0) {
             /* Добавляем трек в очередь для дальнейшего проигрывания */
             player.getPlaylist().add(trackInfo);
-            player.increaseTotalDuration(trackInfo.getTrackDuration());
 
             player.getInstance().Play(trackInfo.getTrackIdentifier());  //Воспроизводим трек
         } else {
             /* Добавляем трек в очередь и не проигрываем его */
             player.getPlaylist().add(trackInfo);
-            player.increaseTotalDuration(trackInfo.getTrackDuration());
         }
     }
 

@@ -16,7 +16,7 @@ public final class GetPing {
      * @param event Событие получения сообщения
      */
     public static void run(MessageReceivedEvent event) {
-        /* //Получаем время создания сообщения в миллисекундах */
+        /* Получаем время создания сообщения в миллисекундах */
         long creationTime = event.getMessage().getTimeCreated().toInstant().toEpochMilli();
         event.getChannel().sendMessageEmbeds(eval(creationTime)).submit();
     }
@@ -24,7 +24,7 @@ public final class GetPing {
      * @param event Событие получения команды
      */
     public static void run(SlashCommandInteractionEvent event) {
-        /* //Получаем время создания сообщения в миллисекундах */
+        /* Получаем время создания сообщения в миллисекундах */
         long creationTime = event.getTimeCreated().toInstant().toEpochMilli();
         event.replyEmbeds(eval(creationTime)).submit();  //Создаем Embed и отправляем его
     }

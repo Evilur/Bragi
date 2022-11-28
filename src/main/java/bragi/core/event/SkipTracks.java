@@ -72,9 +72,6 @@ public final class SkipTracks {
 
         /* Если не стоит повторение или трек пропускается вручную */
         if (!player.isLoopMode() || hardSkip) {  //Удаляем элементы
-            /* Уменьшаем общую длину треков */
-            for (short i = 0; i < numberOfTracks; i++)
-                player.decreaseTotalDuration(player.getPlaylist().get(i).getTrackDuration());
             player.getPlaylist().subList(0, numberOfTracks).clear();  //Удаляем первые элементы из списка
         }
 

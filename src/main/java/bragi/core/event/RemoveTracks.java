@@ -84,11 +84,7 @@ public class RemoveTracks {
                 if (i2 >= playlist.size()) i2 = playlist.size() - 1;  //Второй индекс тоже меньше длины плейлиста
 
                 /* Циклом перебираем необходимые элементы плейлиста, и заменяем их null'ами */
-                for ( ; i1 <= i2; i1++) {
-                    //Уменьшаем общую продолжительность треков
-                    if (playlist.get(i1) != null) player.decreaseTotalDuration(playlist.get(i1).getTrackDuration());
-                    playlist.set(i1, null);  //Заменяем элемент на null
-                }
+                for ( ; i1 <= i2; i1++) playlist.set(i1, null);
             } else if (query.length() > 0) {  //Если не является промежутком, значит это просто число.
                 int i = Integer.parseInt(query) - 1;  //Получаем индекс
 
@@ -96,8 +92,6 @@ public class RemoveTracks {
                 if (i < 0) continue;  //Индекс не должен быть меньше нуля
                 if (i >= playlist.size()) continue;  //Индекс должен быть меньше длины плейлиста
 
-                //Уменьшаем общую продолжительность треков
-                if (playlist.get(i) != null) player.decreaseTotalDuration(playlist.get(i).getTrackDuration());
                 playlist.set(i, null);  //Заменяем элемент, который хотим удалить на null
             }
         }
