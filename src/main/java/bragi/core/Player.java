@@ -24,25 +24,6 @@ public final class Player {
         return this.playlist;
     }
 
-    /** Метод для получения общей продолжительности треков
-     * @return Общую продолжительность треков
-     */
-    public String getTotalDuration() {
-        /* Высчитываем общее время продолжительности треков */
-        int totalDuration = 0;
-        for (TrackInfo trackInfo : this.playlist)
-            totalDuration += trackInfo.getTrackDuration();
-
-        int hours = totalDuration / 3600;
-        int minutes = (totalDuration - hours * 3600) / 60;
-        int seconds = totalDuration - hours * 3600 - minutes * 60;
-
-        if (hours == 0)
-            return String.format("%dм%dс", minutes, seconds);
-        else
-            return String.format("%dч%dм%dс", hours, minutes, seconds);
-    }
-
     /** Метод для получения экземпляра проигрывателя
      * @return Экземпляр проигрывателя
      */

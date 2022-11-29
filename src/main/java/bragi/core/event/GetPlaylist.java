@@ -55,17 +55,27 @@ public final class GetPlaylist {
 
         /* Перебираем плейлист циклом, форматируем и записываем результат в переменную */
         StringBuilder result = new StringBuilder();  //Сюда будем записывать результат
+        int totalDuration = 0;  //Здесь общее время продолжительности треков
 
         /* Циклом перебираем плейлист и добавляем это к результату */
-        for (int i = 0; i < playlist.size(); i++)
+        for (int i = 0; i < playlist.size(); i++) {
             result.append(String.format("%d. %s\n", i + 1, playlist.get(i).getTrackTitle()));
+            totalDuration += playlist.get(i).getTrackDuration();
+        }
+
+        /* Высчитываем общую продолжительность */
+        int hours = totalDuration / 3600;
+        int minutes = (totalDuration - hours * 3600) / 60;
+        int seconds = totalDuration - hours * 3600 - minutes * 60;
+        String totalDurationStr = hours == 0 ? String.format("%dм%dс", minutes, seconds) :
+                String.format("%dч%dм%dс", hours, minutes, seconds);
 
         if (player.isLoopMode())  //Если включено повторение трека, объявляем об этом
             result.append("─────────────────────\n:repeat: Включено повторения треков");
 
         /* Создаем вывод */
         embed.setColor(Color.decode("#0BDA4D"))
-                .setTitle(String.format("**Текущий плейлист (%s):**", player.getTotalDuration()))
+                .setTitle(String.format("**Текущий плейлист (%s):**", totalDurationStr))
                 .setDescription("**" + result + "**").build();
         return null;
     }
