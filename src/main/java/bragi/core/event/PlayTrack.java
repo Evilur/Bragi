@@ -3,7 +3,7 @@ package bragi.core.event;
 import bragi.Bragi;
 import bragi.core.Methods;
 import bragi.core.Player;
-import bragi.core.source.deezer.DeezerMethods;
+import bragi.core.source.deezer.DeezerClient;
 import bragi.core.util.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -77,7 +77,7 @@ public final class PlayTrack {
             }
         } else {  //Если вложений нет, работаем с аргументом
             try {  //Пытаемся найти трек на сервере по запросу
-                TrackInfo trackInfo = DeezerMethods.searchTrack(argument, 0);  //Получаем инфо трека
+                TrackInfo trackInfo = DeezerClient.searchTrack(argument, 0);  //Получаем инфо трека
                 try {
                     /* Пытаемся подключиться к голосовому каналу, если надо */
                     if (needToJoin) {
@@ -120,7 +120,7 @@ public final class PlayTrack {
         }
 
         try {  //Пытаемся найти трек на сервере по запросу
-            TrackInfo trackInfo = DeezerMethods.searchTrack(Objects.requireNonNull(event.getOption("query"))
+            TrackInfo trackInfo = DeezerClient.searchTrack(Objects.requireNonNull(event.getOption("query"))
                     .getAsString(), 0);  //Получаем инфо трека
 
             /* Пытаемся подключиться к голосовому каналу, если надо */

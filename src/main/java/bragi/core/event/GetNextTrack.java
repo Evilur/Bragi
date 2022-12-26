@@ -2,7 +2,7 @@ package bragi.core.event;
 
 import bragi.Bragi;
 import bragi.core.Player;
-import bragi.core.source.deezer.DeezerMethods;
+import bragi.core.source.deezer.DeezerClient;
 import bragi.core.util.TrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -80,7 +80,7 @@ public final class GetNextTrack {
 
             try {  //На всякий случай делаем еще одну проверку
                 /* Заменяем предыдущий трек на новый */
-                trackInfo = DeezerMethods.searchTrack(trackInfo.getSearchRequest(),
+                trackInfo = DeezerClient.searchTrack(trackInfo.getSearchRequest(),
                         Integer.parseInt(trackInfo.getNextTrackInSearchResults()));
                 playlist.set(trackNumber, trackInfo);
 

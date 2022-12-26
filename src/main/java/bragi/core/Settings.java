@@ -1,11 +1,6 @@
 package bragi.core;
 
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -31,7 +26,7 @@ public final class Settings {
     }
 
     /* Метод для инициализирования переменных */
-    public static void initialize() throws Exception {
+    public static void init() throws Exception {
         /* !!! Файл bragi.ini в корневом каталоге репозитория - это шаблон для файла '~/.config/bragi.ini' !!! */
         try {  //Пытаемся прочитать файл конфигурации
             Path path = Paths.get(System.getProperty("user.home") + "/.config/bragi.ini");  //Путь к файлу конфигурации

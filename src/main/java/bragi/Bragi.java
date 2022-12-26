@@ -3,7 +3,7 @@ package bragi;
 import bragi.core.Settings;
 import bragi.core.EventHandler;
 import bragi.core.Player;
-import bragi.core.source.deezer.DeezerMethods;
+import bragi.core.source.deezer.DeezerClient;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -15,8 +15,8 @@ public final class Bragi {
     public static HashMap<Guild, Player> Players = new HashMap<>();  //Инициализированные сервера
 
     public static void main(String[] args) throws Exception {
-        Settings.initialize();  //Инициализируем настройки
-        DeezerMethods.initializeDeezer();  //Подключаемся к серверам Deezer и инициализируем клиент
+        Settings.init();  //Инициализируем настройки
+        DeezerClient.init();  //Подключаемся к серверам Deezer и инициализируем клиент
 
         //region Инициализация бота
         JDA bot = JDABuilder.createDefault(Settings.getBotToken()).build(); //Создаем экземпляр бота

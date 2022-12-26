@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 
-public final class DeezerMethods {
+public final class DeezerClient {
     /* Идентификатор сессии пользователя */
     private static String sessionId;
     /* Лицензионный токен пользователя Deezer */
@@ -16,9 +16,12 @@ public final class DeezerMethods {
     private static WebClient webClient;
 
     /** Метод для инициализации Deezer клиента */
-    public static void initializeDeezer() {
-        /* Объявляем переменные для создания запроса на сервер Deezer для вытаскивания токена лицензии и идентификатора пользователя */
-        String requestUrl = "https://www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData&api_version=1.0&api_token";
+    public static void init() {
+        /* Объявляем переменные для создания запроса на сервер для получения токена лицензии и id пользователя */
+        String requestUrl = "https://www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key=" +
+                "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&buildId=" +
+                "ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData&api_version=" +
+                "1.0&api_token";
         String requestBody = String.format("{arl=\"%s\"}", Settings.getDeezerArl());
 
         try {
@@ -28,7 +31,8 @@ public final class DeezerMethods {
 
             /* Присваиваем переменным их законные значения */
             sessionId = jsonObject.getJSONObject("results").getString("SESSION_ID");
-            licenseToken = jsonObject.getJSONObject("results").getJSONObject("USER").getJSONObject("OPTIONS").getString("license_token");
+            licenseToken = jsonObject.getJSONObject("results").getJSONObject("USER")
+                    .getJSONObject("OPTIONS").getString("license_token");
         } catch (Exception ignore) {    }
     }
 
@@ -38,8 +42,15 @@ public final class DeezerMethods {
         String requestUrl = String.format("https://api.deezer.com/1.0/gateway.php?api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3&sid=%s&method=search.music", sessionId);
         String requestBody = String.format("{\"query\":\"%s\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":%d}", trackTitle, trackIndex);
 
+
         /* Делаем запрос на сервер Deezer */
         JSONObject jsonObject = webClient.sendRequest(requestUrl, requestBody);
+
+        /* Если сессия клиента закончилась, обновляем ее и повторяем запрос */
+        if (jsonObject.get("error").toString().contains("NEED_API_AUTH_REQUIRED")) {
+            DeezerClient.init();
+            return searchTrack(trackTitle, trackIndex);
+        }
 
         /* Получаем количество треков, найденных по поисковому запросу. Если не было найдено подходящих треков, выбрасываем исключение */
         int totalOfSearchResults = jsonObject.getJSONObject("results").getInt("total");
@@ -47,7 +58,6 @@ public final class DeezerMethods {
             throw new IOException("No search results");
 
         JSONObject trackObject = jsonObject.getJSONObject("results").getJSONArray("data").getJSONObject(0);
-
         TrackInfo trackInfo = new TrackInfo();  //Сюда будем записывать результат
 
         /* Устанавливаем информацию о треке */
