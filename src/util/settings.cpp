@@ -9,11 +9,12 @@ std::string Settings::arl_token;
 
 void Settings::Init() {
 	std::ifstream cfg_stream(Path::config_file);  //Open config file for reading
+	Logger::Info("Initializing tokens");
 	
 	if (!cfg_stream.is_open()) {  //If there is not such file
 		Logger::Warn("Cannot open config file");
 	} else {
-		Logger::Info("Read config file");
+		Logger::Info("Reading config file");
 		for(std::string line; getline(cfg_stream, line);) {  //Read config file line by line
 			std::regex regex(R"([^=\s]+\s*=\s*)");
 			if (line.starts_with("bot_token")) bot_token = std::regex_replace(line, regex, "");
@@ -54,8 +55,8 @@ void Settings::ReinitTokens() {
 	
 	/* Write config file to the disk */
 	if (!needToRewrite) return;
+	Logger::Info("Writing new data to the config file");
 	std::ofstream cfg_file(Path::config_file);
 	cfg_file << "bot_token = " << bot_token << std::endl;
 	cfg_file << "arl_token = " << arl_token << std::endl;
-	Logger::Info("New data has been written to the config file");
 }
