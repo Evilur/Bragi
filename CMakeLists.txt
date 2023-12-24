@@ -6,6 +6,9 @@ INCLUDE_DIRECTORIES(src)
 INCLUDE(cmake/dpp.cmake)
 
 ADD_EXECUTABLE(Bragi
-    src/Master.cpp)
+    src/master.cpp
+    src/util/logger.cpp
+    src/util/path.cpp
+)
 
 TARGET_LINK_LIBRARIES(Bragi dpp)

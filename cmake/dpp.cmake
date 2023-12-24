@@ -4,10 +4,12 @@ SET(HASH e694767edc373f9899d8365a5f218fb667334e00568af7fa20d847fe5173a858ff475a9
 FILE(DOWNLOAD 
      https://github.com/brainboxdotcc/DPP/archive/refs/tags/v${VERSION}.zip dpp.zip
      EXPECTED_HASH SHA512=${HASH}
-     SHOW_PROGRESS)
+     SHOW_PROGRESS
+)
 
 FILE(ARCHIVE_EXTRACT 
      INPUT dpp.zip
-     DESTINATION libs)
+     DESTINATION libs
+)
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_BINARY_DIR}/libs/DPP-${VERSION})

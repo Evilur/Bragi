@@ -2,6 +2,25 @@
 #include <iostream>
 #include <filesystem>
 #include <ctime>
+#include <util/path.h>
+#include <set>
+
+void Logger::Init() {
+	fs::create_directory(Path::log_dir);
+	const std::string name = Date() + ".log";
+	fs::path logFile = Path::log_dir / name;
+	stream = new std::ofstream(logFile);
+	std::cout << "Log file: " << logFile.c_str() << std::endl;
+	CleanLogs();
+}
+
+void Logger::CleanLogs() {
+	char counter = 0;
+	std::set<fs::path> list;
+	for (const fs::path entry : fs::directory_iterator(Path::log_dir)) list.insert(entry);
+	for (const fs::path &logFile : list) if (list.size() - counter++ > 15) std::remove(logFile.c_str());
+}
+
 
 /* Example: 2023.10.21 17:05:55 */
 std::string Logger::Date() {
