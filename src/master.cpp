@@ -1,9 +1,12 @@
 #include <dpp/dpp.h>
 #include <util/logger.h>
+#include <util/settings.h>
 
 int main() {
 	Logger::Init();  //Init the logger
-	dpp::cluster bot("ODg4MjkyMzE4NjczNzgwNzY3.GXS_sU.UgKKor15p0427r9YLXAze7vxpmnwKcZtz2zXGU");
+	Settings::Init();  //Init the settings
+	
+	dpp::cluster bot(Settings::GetBotToken());
 	bot.start(dpp::st_wait);
 	return 0;
 }

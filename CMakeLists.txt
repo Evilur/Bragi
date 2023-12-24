@@ -9,6 +9,7 @@ ADD_EXECUTABLE(Bragi
     src/master.cpp
     src/util/logger.cpp
     src/util/path.cpp
+    src/util/settings.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi dpp)
