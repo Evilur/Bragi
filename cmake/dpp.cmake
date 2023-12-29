@@ -1,6 +1,21 @@
 SET(VERSION "10.0.29")
 SET(HASH e694767edc373f9899d8365a5f218fb667334e00568af7fa20d847fe5173a858ff475a9c9df68fccc69754d75ea29f8b1377a9fa6799a328bf4d0f976bba20c3)
 
+FIND_LIBRARY(LIB_OPUS opus)
+FIND_LIBRARY(LIB_SODIUM sodium)
+
+IF (NOT LIB_OPUS OR NOT LIB_SODIUM)
+    SET(ERROR_CODE "")
+    IF (NOT LIB_OPUS)
+        SET(ERROR_CODE "${ERROR_CODE}opus library not found\n")
+    ENDIF ()
+    IF (NOT LIB_SODIUM)
+        SET(ERROR_CODE "${ERROR_CODE}sodium library not found\n")
+    ENDIF ()
+    MESSAGE(${LIB_OPUS})
+    MESSAGE(FATAL_ERROR "${ERROR_CODE}Fatal! Aborting")
+ENDIF ()
+
 FILE(DOWNLOAD 
      https://github.com/brainboxdotcc/DPP/archive/refs/tags/v${VERSION}.zip dpp.zip
      EXPECTED_HASH SHA512=${HASH}
