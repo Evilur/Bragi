@@ -12,9 +12,9 @@ void Ping::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 }
 
 dpp::embed Ping::Embed(dpp::cluster &bot) {
-	const auto ping = (unsigned short)(bot.rest_ping / 2 * 1000);
+	const auto ping = (unsigned short)(bot.rest_ping * 100);
 	return dpp::embed()
 			.set_color(Color::GREEN)
-			.set_title(std::format("**{}**", WORD_PING))
-			.set_description(std::format("**{} {}**", ping, WORD_MS));
+			.set_title(WORD_PING)
+			.set_description(std::format(WORD_MS, ping));
 }
