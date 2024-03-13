@@ -7,9 +7,11 @@ INCLUDE(cmake/dpp.cmake)
 
 ADD_EXECUTABLE(Bragi
     src/master.cpp
+    src/coms/ping.cpp
     src/util/logger.cpp
     src/util/path.cpp
     src/util/settings.cpp
+    src/util/color.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi dpp)

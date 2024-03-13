@@ -27,6 +27,10 @@ void Settings::Init() {
 	Logger::Info("Tokens have been initialized");
 }
 
+char Settings::GetPrefix() { 
+	return '!';
+}
+
 std::string Settings::GetBotToken() {
 	return bot_token;
 }

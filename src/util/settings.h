@@ -7,6 +7,7 @@
 class Settings {
 public:
 	static void Init();
+	static char GetPrefix();
 	static std::string GetBotToken();
 	static std::string GetArlToken();
 private:
