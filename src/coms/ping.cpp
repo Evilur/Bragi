@@ -4,17 +4,16 @@
 #include <util/dictionary.h>
 
 void Ping::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
-	event.reply(dpp::message(event.command.channel_id, Embed(bot)));
+	event.reply(Message(bot, event.command.channel_id));
 }
 
 void Ping::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
-	event.send(dpp::message(event.msg.channel_id, Embed(bot)));
+	event.send(Message(bot, event.msg.channel_id));
 }
 
-dpp::embed Ping::Embed(dpp::cluster &bot) {
-	const auto ping = (unsigned short)(bot.rest_ping * 100);
-	return dpp::embed()
+dpp::message Ping::Message(dpp::cluster &bot, dpp::snowflake channel_id) {
+	return dpp::message(channel_id, dpp::embed()
 			.set_color(Color::GREEN)
-			.set_title(WORD_PING)
-			.set_description(std::format(WORD_MS, ping));
+			.set_title(DIC_PING)
+			.set_description(std::format(DIC_MS, (unsigned short)(bot.rest_ping * 100))));
 }

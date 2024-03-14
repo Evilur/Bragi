@@ -1,5 +1,7 @@
 #include <dpp/dpp.h>
+#include <util/dictionary.h>
 #include <coms/ping.h>
+#include <coms/join.h>
 #include <util/logger.h>
 #include <util/settings.h>
 
@@ -30,17 +32,21 @@ void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event) {
 	const unsigned long space_sep = event.msg.content.find(' ');
 	std::string command = event.msg.content.substr(1, space_sep - 1);
 	std::string arg = event.msg.content.substr(space_sep + 1);
-	
+
 	if (command == "ping") Ping::Exec(bot, event);
+	else if (command == "j" || command == "join") Join::Exec(bot, event);
 }
 
 void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	if (event.command.get_command_name() == "ping") Ping::Exec(bot, event);
+	else if (event.command.get_command_name() == "join") Join::Exec(bot, event);
 }
 
 void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
 	if (dpp::run_once<struct register_bot_commands>()) {
-		bot.global_command_create(dpp::slashcommand("ping", "Get ping", bot.me.id));
+		bot.global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot.me.id));
+		bot.global_command_create(dpp::slashcommand("join", DIC_SLASH_JOIN, bot.me.id)
+													.add_option(dpp::command_option(dpp::co_user, "user", DIC_SLASH_JOIN_USER, false)));
 	}
 	
 	Logger::Info("Bot is ready");

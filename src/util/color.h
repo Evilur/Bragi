@@ -3,7 +3,8 @@
 
 class Color {
 public:
-	static constexpr int GREEN = 776781;
+	static const int GREEN = 776781;
+	static const int RED = 16717825;
 	
 	static int Get(const char* c_code);
 };
