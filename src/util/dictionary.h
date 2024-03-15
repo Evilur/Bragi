@@ -13,6 +13,8 @@
 
 //errors
 #define DIC_ERROR "**Ошибка**"
-#define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**:x: Пользователь должен быть в голосовом канале :x:**"
+#define DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL "**Бот уже подключен к этому голосовому каналу**"
+#define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**Пользователь должен быть в голосовом канале**"
+#define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
 
 #endif
