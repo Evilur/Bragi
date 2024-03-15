@@ -25,7 +25,7 @@ void Logger::CleanLogs() {
 /* Example: 2023.10.21 17:05:55 */
 std::string Logger::Date() {
 	time_t now = time(nullptr);
-	tm *tm = localtime(&now);
+	tm* tm = localtime(&now);
 	return std::to_string(1900 + tm->tm_year) + '.' +
 	       Logger::UnitFormat(tm->tm_mon + 1) + '.' +
 	       Logger::UnitFormat(tm->tm_mday) + ' ' +

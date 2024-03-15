@@ -3,18 +3,33 @@
 #include <util/dictionary.h>
 
 void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
-	event.reply(Message(bot, event.command.guild_id, event.command.usr.id, event.from, event.command.channel_id));
+	/* Default user for connection */
+	dpp::snowflake user_id = event.command.usr.id;
+	
+	/* Get user from the command parameter (if exists) */
+	dpp::command_value user_par = event.get_parameter("user");
+	if (user_par.index() != 0) user_id = event.command.get_resolved_user(std::get<dpp::snowflake>(user_par)).id;
+	
+	/* Send message to channel */
+	event.reply(Message(bot, event.command.guild_id, user_id, event.from, event.command.channel_id));
 }
 
 void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
-	event.send(Message(bot, event.msg.guild_id, event.msg.author.id, event.from, event.msg.channel_id));
+	/* Default user for connection */
+	dpp::snowflake user_id = event.msg.author.id;
+
+	/* Get user from the message content (if exists) */
+	if (!event.msg.mentions.empty()) user_id = event.msg.mentions.data()->second.user_id;
+
+	/* Send message to channel */
+	event.send(Message(bot, event.msg.guild_id, user_id, event.from, event.msg.channel_id));
 }
 
-dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client *discord_c, 
+dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client* discord_c, 
 						   const dpp::snowflake channel_id) {
-	dpp::guild *guild = dpp::find_guild(guild_id);
-	dpp::channel *bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
-	dpp::channel *user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
+	dpp::guild* guild = dpp::find_guild(guild_id);
+	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
+	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
 
 	/* If the user isn't in a voice channel */
 	if (user_vc == nullptr)

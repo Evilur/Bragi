@@ -26,7 +26,7 @@ public:
 	template<typename T>
 	static void Fatal(T message) { Logger::Log(message, LogLevel::Fatal); }
 private:
-	inline static std::ofstream *stream = nullptr;  //Log file stream
+	inline static std::ofstream* stream = nullptr;  //Log file stream
 	
 	/* Master log method */
 	template<typename T>
