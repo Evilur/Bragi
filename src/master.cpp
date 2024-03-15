@@ -9,7 +9,7 @@
 
 void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event);
 void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event);
-void on_ready(dpp::cluster &bot, const dpp::ready_t &event);
+void on_ready(dpp::cluster &bot);
 
 int main() {
 	Logger::Init();  //Init the logger
@@ -20,7 +20,7 @@ int main() {
 	/* Create event handlers */
 	bot.on_message_create([&bot](const dpp::message_create_t &event) { on_message_create(bot, event); });
 	bot.on_slashcommand([&bot](const dpp::slashcommand_t &event) { on_slashcommand(bot, event); });
-	bot.on_ready([&bot](const dpp::ready_t &event) { on_ready(bot, event); });
+	bot.on_ready([&bot](const dpp::ready_t &event) { on_ready(bot); });
 
 	Logger::Info("Starting the bot");
 	bot.start(dpp::st_wait);
@@ -37,7 +37,7 @@ void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event) {
 
 	if (command == "ping") Ping::Exec(bot, event);
 	else if (command == "j" || command == "join") Join::Exec(bot, event);
-	else if (command == "leave") Leave::Exec(bot, event);
+	else if (command == "leave") Leave::Exec(event);
 }
 
 void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
@@ -45,11 +45,11 @@ void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	
 	if (command_name == "ping") Ping::Exec(bot, event);
 	else if (command_name == "join") Join::Exec(bot, event);
-	else if (command_name == "leave") Leave::Exec(bot, event);
+	else if (command_name == "leave") Leave::Exec(event);
 	else if (command_name == "play-attachment") PlayAttachment::Exec(bot, event);
 }
 
-void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
+void on_ready(dpp::cluster &bot) {
 	if (dpp::run_once<struct register_bot_commands>()) {
 		bot.global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot.me.id));
 		
