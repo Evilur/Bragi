@@ -11,6 +11,10 @@
 #define DIC_SLASH_JOIN_USER "Пользователь, к которому необходимо присоединиться"
 #define DIC_JOINED "**:thumbsup: Бот присоединился к каналу `{}`**"
 
+//leave command
+#define DIC_SLASH_LEAVE "Покинуть голосовой канал"
+#define DIC_LEFT "**:person_walking: Бот покинул голосовой канал**"
+
 //play command
 #define DIC_SLASH_PLAY "Воспроизвести трек"
 #define DIC_SLASH_PLAY_QUERY "Запрос для поиска трека"
@@ -19,6 +23,7 @@
 
 //errors
 #define DIC_ERROR "**Ошибка**"
+#define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
 #define DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL "**Бот уже подключен к этому голосовому каналу**"
 #define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**Пользователь должен находиться в голосовом канале**"
 #define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"

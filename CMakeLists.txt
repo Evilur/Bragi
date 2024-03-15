@@ -15,6 +15,7 @@ ADD_EXECUTABLE(Bragi
     src/util/path.cpp
     src/util/settings.cpp
     src/util/color.cpp
+    src/coms/leave.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi dpp)
+TARGET_LINK_LIBRARIES(Bragi dpp oggz)
