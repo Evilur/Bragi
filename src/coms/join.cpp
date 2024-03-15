@@ -25,6 +25,12 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	event.send(Message(bot, event.msg.guild_id, user_id, event.from, event.msg.channel_id));
 }
 
+std::string Join::SoftExec(const dpp::snowflake guild_id, const dpp::snowflake user_id) {
+	dpp::guild* guild = dpp::find_guild(guild_id);
+	guild->connect_member_voice(user_id);
+	return std::format(DIC_JOINED, dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id)->name);
+}
+
 dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client* discord_c, 
 						   const dpp::snowflake channel_id) {
 	/* Get voice channels */
