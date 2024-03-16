@@ -1,8 +1,8 @@
 #ifndef BRAGI_PING_H
 #define BRAGI_PING_H
 
-#include "cluster.h"
-#include "dispatcher.h"
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 
 class Ping {
 public:

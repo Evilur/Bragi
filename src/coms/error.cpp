@@ -1,6 +1,6 @@
 #include "error.h"
-#include <util/color.h>
-#include <util/dictionary.h>
+#include "util/color.h"
+#include "util/dictionary.h"
 
 dpp::message Error::Force(const char* e_data, const dpp::snowflake channel_id) {
 	return dpp::message(channel_id, dpp::embed()

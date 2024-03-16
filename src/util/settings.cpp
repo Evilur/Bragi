@@ -1,8 +1,8 @@
 #include "settings.h"
 #include <fstream>
 #include <regex>
-#include <util/logger.h>
-#include <util/path.h>
+#include "util/logger.h"
+#include "util/path.h"
 
 std::string Settings::bot_token;
 std::string Settings::arl_token;

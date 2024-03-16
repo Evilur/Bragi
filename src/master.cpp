@@ -1,11 +1,11 @@
 #include <dpp/dpp.h>
-#include <util/dictionary.h>
-#include <coms/ping.h>
-#include <coms/join.h>
-#include <coms/leave.h>
-#include <coms/play_attachment.h>
-#include <util/logger.h>
-#include <util/settings.h>
+#include "util/dictionary.h"
+#include "coms/ping.h"
+#include "coms/join.h"
+#include "coms/leave.h"
+#include "coms/play_attachment.h"
+#include "util/logger.h"
+#include "util/settings.h"
 
 void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event);
 void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event);

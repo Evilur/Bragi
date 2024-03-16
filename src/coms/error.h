@@ -1,7 +1,7 @@
 #ifndef BRAGI_ERROR_H
 #define BRAGI_ERROR_H
 
-#include <cluster.h>
+#include <dpp/cluster.h>
 
 class Error {
 public:

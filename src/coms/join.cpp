@@ -1,6 +1,6 @@
 #include "join.h"
-#include <coms/error.h>
-#include <util/dictionary.h>
+#include "coms/error.h"
+#include "util/dictionary.h"
 
 void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	/* Default user for connection */

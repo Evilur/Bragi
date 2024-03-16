@@ -1,8 +1,8 @@
 #ifndef BRAGI_JOIN_H
 #define BRAGI_JOIN_H
 
-#include "cluster.h"
-#include "dispatcher.h"
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 
 class Join {
 public:

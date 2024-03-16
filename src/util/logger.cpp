@@ -1,8 +1,9 @@
 #include "logger.h"
+#include "util/path.h"
+
 #include <iostream>
 #include <filesystem>
 #include <ctime>
-#include <util/path.h>
 #include <set>
 
 void Logger::Init() {

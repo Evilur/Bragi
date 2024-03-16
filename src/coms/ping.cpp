@@ -1,7 +1,8 @@
 #include "ping.h"
+#include "util/color.h"
+#include "util/dictionary.h"
+
 #include <chrono>
-#include <util/color.h>
-#include <util/dictionary.h>
 
 void Ping::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	event.reply(Message(bot, event.command.channel_id));
