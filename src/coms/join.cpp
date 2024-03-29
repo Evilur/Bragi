@@ -1,6 +1,9 @@
 #include "join.h"
+#include "util/logger.h"
 #include "coms/error.h"
 #include "util/dictionary.h"
+
+#include <coroutine>
 
 void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	/* Default user for connection */
@@ -25,21 +28,17 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	event.send(Message(bot, event.msg.guild_id, user_id, event.from, event.msg.channel_id));
 }
 
-std::string Join::SoftExec(const dpp::snowflake guild_id, const dpp::snowflake user_id) {
-	dpp::guild* guild = dpp::find_guild(guild_id);
-	guild->connect_member_voice(user_id);
-	return std::format(DIC_JOINED, dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id)->name);
-}
-
-dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client* discord_c, 
-						   const dpp::snowflake channel_id) {
+dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client* ds_client, 
+						   const dpp::snowflake channel_id, bool &is_ok) {
+	is_ok = false;  //Return true boolean if all is ok
+	
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
 	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
 	
 	/* Check for the bot ready */
-	dpp::voiceconn* v_conn = discord_c->get_voice(guild_id);
+	dpp::voiceconn* v_conn = ds_client->get_voice(guild_id);
 	bool is_ready = v_conn != nullptr && v_conn->is_ready();
 
 	/* If the user isn't in a voice channel */
@@ -56,9 +55,15 @@ dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, con
 	
 	/* If bot in the voice channel we need to disconnect */
 	if (bot_vc != nullptr)
-		discord_c->disconnect_voice(guild_id);
+		ds_client->disconnect_voice(guild_id);
 
 	/* If all is OK */
-	guild->connect_member_voice(user_id);  //Connect the new voice channel
+	ds_client->connect_voice(guild_id, user_vc->id);  //Connect the new voice channel
+	is_ok = true;
 	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
+}
+
+dpp::message Join::Message(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::discord_client *ds_client, dpp::snowflake channel_id) {
+	bool _;
+	return Message(bot, guild_id, user_id, ds_client, channel_id, _);
 }
