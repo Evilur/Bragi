@@ -1,4 +1,5 @@
 #include "join.h"
+#include "master.h"
 #include "util/logger.h"
 #include "coms/error.h"
 #include "util/dictionary.h"
@@ -14,7 +15,7 @@ void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	if (user_par.index() != 0) user_id = event.command.get_resolved_user(std::get<dpp::snowflake>(user_par)).id;
 	
 	/* Send message to channel */
-	event.reply(Message(bot, event.command.guild_id, user_id, event.from, event.command.channel_id));
+	event.reply(Message(bot, event.command.guild_id, user_id, event.command.channel_id));
 }
 
 void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
@@ -25,11 +26,10 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	if (!event.msg.mentions.empty()) user_id = event.msg.mentions.data()->second.user_id;
 
 	/* Send message to channel */
-	event.send(Message(bot, event.msg.guild_id, user_id, event.from, event.msg.channel_id));
+	event.send(Message(bot, event.msg.guild_id, user_id, event.msg.channel_id));
 }
 
-dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, dpp::discord_client* ds_client, 
-						   const dpp::snowflake channel_id, bool &is_ok) {
+dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, const dpp::snowflake channel_id, bool &is_ok) {
 	is_ok = false;  //Return true boolean if all is ok
 	
 	/* Get voice channels */
@@ -63,7 +63,7 @@ dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, con
 	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
 }
 
-dpp::message Join::Message(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::discord_client *ds_client, dpp::snowflake channel_id) {
+dpp::message Join::Message(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::snowflake channel_id) {
 	bool _;
-	return Message(bot, guild_id, user_id, ds_client, channel_id, _);
+	return Message(bot, guild_id, user_id, channel_id, _);
 }
