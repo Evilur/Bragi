@@ -1,4 +1,6 @@
 #include <dpp/dpp.h>
+
+#include "master.h"
 #include "util/dictionary.h"
 #include "coms/ping.h"
 #include "coms/join.h"
@@ -6,10 +8,6 @@
 #include "coms/play_attachment.h"
 #include "util/logger.h"
 #include "util/settings.h"
-
-void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event);
-void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event);
-void on_ready(dpp::cluster &bot);
 
 int main() {
 	Logger::Init();  //Init the logger
@@ -20,7 +18,8 @@ int main() {
 	/* Create event handlers */
 	bot.on_message_create([&bot](const dpp::message_create_t &event) { on_message_create(bot, event); });
 	bot.on_slashcommand([&bot](const dpp::slashcommand_t &event) { on_slashcommand(bot, event); });
-	bot.on_ready([&bot](const dpp::ready_t &event) { on_ready(bot); });
+	bot.on_voice_ready([&bot](const dpp::voice_ready_t &event) { on_voice_ready(bot, event); });
+	bot.on_ready([&bot](const dpp::ready_t &event) { on_ready(bot, event); });
 
 	Logger::Info("Starting the bot");
 	bot.start(dpp::st_wait);
@@ -31,25 +30,38 @@ void on_message_create(dpp::cluster &bot, const dpp::message_create_t &event) {
 	/* If message doesn't start with prefix exit the method */
 	if (!event.msg.content.starts_with(Settings::GetPrefix())) return;
 	
+	/* Get a command name and arguments */
 	const unsigned long space_sep = event.msg.content.find(' ');
 	std::string command = event.msg.content.substr(1, space_sep - 1);
 	std::string arg = event.msg.content.substr(space_sep + 1);
 
+	/* Check for commands */
 	if (command == "ping") Ping::Exec(bot, event);
 	else if (command == "j" || command == "join") Join::Exec(bot, event);
 	else if (command == "leave") Leave::Exec(event);
+	else if (command == "pat" || command == "play-attachment") PlayAttachment::Exec(bot, event);
 }
 
 void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+	/* Get a command name */
 	std::string command_name = event.command.get_command_name();
-	
+
+	/* Check for commands */
 	if (command_name == "ping") Ping::Exec(bot, event);
 	else if (command_name == "join") Join::Exec(bot, event);
 	else if (command_name == "leave") Leave::Exec(event);
 	else if (command_name == "play-attachment") PlayAttachment::Exec(bot, event);
 }
 
-void on_ready(dpp::cluster &bot) {
+void on_voice_ready(dpp::cluster &bot, const dpp::voice_ready_t &event) {
+	Logger::Debug("123");
+}
+
+void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
+	/* Init the discord client */
+	ds_client = event.from;
+	
+	/* Add slash commands */
 	if (dpp::run_once<struct register_bot_commands>()) {
 		bot.global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot.me.id));
 		
