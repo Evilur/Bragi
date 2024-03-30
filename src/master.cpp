@@ -6,6 +6,7 @@
 #include "coms/join.h"
 #include "coms/leave.h"
 #include "coms/play_attachment.h"
+#include "guild/guild.h"
 #include "util/logger.h"
 #include "util/settings.h"
 
@@ -54,7 +55,7 @@ void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 }
 
 void on_voice_ready(dpp::cluster &bot, const dpp::voice_ready_t &event) {
-	Logger::Debug("123");
+	Guild::Get(event.voice_client->server_id)->ReconnectVoice();
 }
 
 void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
