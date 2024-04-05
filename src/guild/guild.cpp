@@ -65,7 +65,6 @@ bool Guild::IsPLayerReady() {
 }
 
 void Guild::ReconnectVoice() {
-	Logger::Debug("Ready");
 	voiceconn = ds_client->get_voice(guild_id);
 }
 
