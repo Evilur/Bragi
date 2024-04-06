@@ -9,7 +9,9 @@ public:
 	static void Exec(dpp::cluster &bot, const dpp::slashcommand_t &event);
 	static void Exec(dpp::cluster &bot, const dpp::message_create_t &event);
 private:
-	static dpp::message Message(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake guild_id, dpp::snowflake channel_id, const Track *track);
+	/* return the message with status of the executing
+	 * throw a BragiException */
+	static dpp::message Exec(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake guild_id, dpp::snowflake channel_id, const Track *track);
 };
 
 #endif

@@ -15,7 +15,7 @@ void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, con
 	
 	/* If the voice channel was invalid, or there is an issue with it, reconnect to the channel */
 	if (!IsPLayerReady()) {
-		Join::Message(bot, guild_id, user_id, channel_id);
+		Join::Exec(bot, guild_id, user_id, channel_id);
 	}
 
 	/* load the audio file with oggz */

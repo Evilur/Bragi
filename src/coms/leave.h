@@ -8,7 +8,9 @@ public:
 	static void Exec(const dpp::slashcommand_t &event);
 	static void Exec(const dpp::message_create_t &event);
 private:
-	static dpp::message Message(dpp::snowflake guild_id, dpp::snowflake channel_id);
+	/* return the message with status of the executing
+	 * throw a BragiException */
+	static dpp::message Exec(dpp::snowflake guild_id, dpp::snowflake channel_id);
 };
 
 #endif

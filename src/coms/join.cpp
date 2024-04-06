@@ -13,7 +13,7 @@ void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	if (user_par.index() != 0) user_id = event.command.get_resolved_user(std::get<dpp::snowflake>(user_par)).id;
 	
 	/* Send message to channel */
-	try { event.reply(Message(bot, event.command.guild_id, user_id, event.command.channel_id));	} 
+	try { event.reply(Exec(bot, event.command.guild_id, user_id, event.command.channel_id));	} 
 	catch (BragiException& exception) { event.reply(exception.GetMessage()); }
 }
 
@@ -25,11 +25,11 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	if (!event.msg.mentions.empty()) user_id = event.msg.mentions.data()->second.user_id;
 
 	/* Send message to channel */
-	try { event.send(Message(bot, event.msg.guild_id, user_id, event.msg.channel_id)); } 
+	try { event.send(Exec(bot, event.msg.guild_id, user_id, event.msg.channel_id)); } 
 	catch (BragiException& exception) { event.send(exception.GetMessage()); }
 }
 
-dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, const dpp::snowflake user_id, const dpp::snowflake channel_id) {
+dpp::message Join::Exec(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::snowflake channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
