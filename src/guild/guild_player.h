@@ -10,7 +10,8 @@ public:
 	
 	explicit GuildPlayer(dpp::snowflake* guild_id);
 	
-	/* Play track */
+	/* Play track
+	 * throw a BragiException */
 	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, const Track *track, dpp::message* message = nullptr);
 	/* Check player for ready */
 	bool IsPLayerReady();

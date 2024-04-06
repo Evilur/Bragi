@@ -14,7 +14,7 @@ void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	
 	/* Send message to channel */
 	try { event.reply(Exec(bot, event.command.guild_id, user_id, event.command.channel_id));	} 
-	catch (BragiException& exception) { event.reply(exception.GetMessage()); }
+	catch (BragiException &exception) { event.reply(exception.GetMessage()); }
 }
 
 void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
@@ -26,7 +26,7 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 
 	/* Send message to channel */
 	try { event.send(Exec(bot, event.msg.guild_id, user_id, event.msg.channel_id)); } 
-	catch (BragiException& exception) { event.send(exception.GetMessage()); }
+	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }
 
 dpp::message Join::Exec(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::snowflake channel_id) {
