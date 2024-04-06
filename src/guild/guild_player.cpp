@@ -10,12 +10,12 @@ GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
-dpp::message GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
+void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track, dpp::message* message) {
+	bool need_output = message != nullptr;
+	
 	/* If the voice channel was invalid, or there is an issue with it, reconnect to the channel */
 	if (!IsPLayerReady()) {
-		bool joined;
-		dpp::message join_msg = Join::Message(bot, guild_id, user_id, channel_id, &joined);
-		if (!joined) return join_msg;
+		Join::Message(bot, guild_id, user_id, channel_id);
 	}
 
 	/* load the audio file with oggz */
@@ -58,7 +58,6 @@ dpp::message GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user
 
 	/* Don't forget to free the memory */
 	oggz_close(track_og);
-	return nullptr;
 }
 
 bool GuildPlayer::IsPLayerReady() {

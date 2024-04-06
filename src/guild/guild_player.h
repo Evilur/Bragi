@@ -11,7 +11,7 @@ public:
 	explicit GuildPlayer(dpp::snowflake* guild_id);
 	
 	/* Play track */
-	dpp::message PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, const Track *track);
+	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, const Track *track, dpp::message* message = nullptr);
 	/* Check player for ready */
 	bool IsPLayerReady();
 	/* Connect to the voice channel */
