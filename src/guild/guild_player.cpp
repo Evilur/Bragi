@@ -10,9 +10,7 @@ GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
-void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track, dpp::message* message) {
-	bool need_output = message != nullptr;
-	
+void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
 	/* If the voice channel was invalid, or there is an issue with it, reconnect to the channel */
 	if (!IsPLayerReady()) Join::Exec(bot, guild_id, user_id, channel_id);
 

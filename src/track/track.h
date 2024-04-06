@@ -2,7 +2,7 @@
 #define BRAGI_TRACK_H
 
 class Track {
-
+	
 };
 
 #endif
