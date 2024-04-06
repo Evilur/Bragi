@@ -1,15 +1,16 @@
-#include "guild.h"
+#include "guild_player.h"
 #include "master.h"
 #include "util/logger.h"
 #include "coms/join.h"
 
+#include <fstream>
 #include <oggz/oggz.h>
 
-Guild::Guild(dpp::snowflake* guild_id) : guild_id(*guild_id) {
+GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
-dpp::message Guild::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
+dpp::message GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
 	/* If the voice channel was invalid, or there is an issue with it, reconnect to the channel */
 	if (!IsPLayerReady()) {
 		bool joined;
@@ -60,15 +61,19 @@ dpp::message Guild::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, c
 	return nullptr;
 }
 
-bool Guild::IsPLayerReady() {
+bool GuildPlayer::IsPLayerReady() {
 	return voiceconn != nullptr && voiceconn->voiceclient != nullptr && voiceconn->voiceclient->is_ready();
 }
 
-void Guild::ReconnectVoice() {
+void GuildPlayer::ConnectVoice(dpp::snowflake channel_id) {
+	ds_client->connect_voice(guild_id, channel_id);
+}
+
+void GuildPlayer::Reconnect() {
 	voiceconn = ds_client->get_voice(guild_id);
 }
 
-Guild* Guild::Get(dpp::snowflake guild_id) {
+GuildPlayer* GuildPlayer::Get(dpp::snowflake guild_id) {
 	/* Try to get the guild in the array */
 	for (unsigned int i = 0; i < _guild_count; i++)
 		if (_guilds[i]->guild_id == guild_id) return _guilds[i];
@@ -77,24 +82,24 @@ Guild* Guild::Get(dpp::snowflake guild_id) {
 	return Add(guild_id);
 }
 
-Guild* Guild::Add(dpp::snowflake guild_id) {
+GuildPlayer* GuildPlayer::Add(dpp::snowflake guild_id) {
 	/* Increase the number of guilds */
 	_guild_count++;
 	
 	/* Try to get the empty place for the pointer */
 	for (unsigned int i = _max_guild_count - guilds_delta; i < _max_guild_count; i++) {
 		if (_guilds[i] != nullptr) continue;
-		_guilds[i] = new Guild(&guild_id);
+		_guilds[i] = new GuildPlayer(&guild_id);
 		return _guilds[i];
 	}
 	
 	/* If the array with pointer is full we need to increase it */
-	auto** new_guilds = new Guild*[_max_guild_count + guilds_delta];
+	auto** new_guilds = new GuildPlayer*[_max_guild_count + guilds_delta];
 	for (unsigned int i = 0; i < _max_guild_count; i++) new_guilds[i] = _guilds[i];
 	delete[] _guilds;
 	_guilds = new_guilds;
 	
 	/* Add the new guild to the array */
-	_guilds[_max_guild_count] = new Guild(&guild_id);
+	_guilds[_max_guild_count] = new GuildPlayer(&guild_id);
 	return _guilds[_max_guild_count += guilds_delta];
 }

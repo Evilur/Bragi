@@ -1,5 +1,5 @@
 #include "play_attachment.h"
-#include "guild//guild.h"
+#include "guild//guild_player.h"
 #include "util/logger.h"
 #include "coms/join.h"
 #include <oggz/oggz.h>
@@ -15,5 +15,5 @@ void PlayAttachment::Exec(dpp::cluster &bot, const dpp::message_create_t &event)
 
 dpp::message PlayAttachment::Message(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake guild_id, const dpp::snowflake channel_id, 
 									 const Track *track) {
-	return Guild::Get(guild_id)->PlayTrack(bot, user_id, channel_id, track);
+	return GuildPlayer::Get(guild_id)->PlayTrack(bot, user_id, channel_id, track);
 }

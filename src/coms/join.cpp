@@ -2,7 +2,7 @@
 #include "master.h"
 #include "util/logger.h"
 #include "coms/error.h"
-#include "guild/guild.h"
+#include "guild/guild_player.h"
 #include "util/dictionary.h"
 
 #include <coroutine>
@@ -40,8 +40,8 @@ dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, con
 	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
 	
 	/* Check bot for ready */
-	Guild* guild_obj = Guild::Get(guild_id);
-	bool is_ready = guild_obj->IsPLayerReady();
+	GuildPlayer* guild_player = GuildPlayer::Get(guild_id);
+	bool is_ready = guild_player->IsPLayerReady();
 	
 	/* If the user isn't in a voice channel */
 	if (user_vc == nullptr)
@@ -60,7 +60,7 @@ dpp::message Join::Message(dpp::cluster &bot, const dpp::snowflake guild_id, con
 		ds_client->disconnect_voice(guild_id);
 
 	/* If all is OK */
-	ds_client->connect_voice(guild_id, user_vc->id);  //Connect the new voice channel
+	guild_player->ConnectVoice(user_vc->id); //Connect the new voice channel
 	if (is_ok != nullptr) *is_ok = true;
 	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
 }
