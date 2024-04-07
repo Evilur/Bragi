@@ -2,7 +2,7 @@
 #define BRAGI_PLAY_ATTACHMENT_H
 
 #include <dpp/cluster.h>
-#include "track/track.h"
+#include "player/track.h"
 
 class PlayAttachment {
 public:

@@ -1,8 +1,8 @@
 #ifndef BRAGI_GUILD_PLAYER_H
 #define BRAGI_GUILD_PLAYER_H
 
-#include <dpp/cluster.h>
-#include "track/track.h"
+#include "dpp/cluster.h"
+#include "track.h"
 
 class GuildPlayer {
 public:

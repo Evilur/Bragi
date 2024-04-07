@@ -6,7 +6,7 @@
 #include "coms/join.h"
 #include "coms/leave.h"
 #include "coms/play_attachment.h"
-#include "guild/guild_player.h"
+#include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
 

@@ -1,5 +1,5 @@
 #include "play_attachment.h"
-#include "guild/guild_player.h"
+#include "player/guild_player.h"
 #include "util/bragi_exception.h"
 
 void PlayAttachment::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
