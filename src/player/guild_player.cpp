@@ -2,58 +2,41 @@
 #include "master.h"
 #include "util/logger.h"
 #include "coms/join.h"
+#include "util/bragi_exception.h"
 
-#include <fstream>
-#include <oggz/oggz.h>
+#include <opus/opus.h>
+#include <opus/opusenc.h>
+
+std::ifstream fs;
+#define READ_SIZE 256
 
 GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
 void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
-	/* If the voice channel was invalid, or there is an issue with it, reconnect to the channel */
-	if (!IsPLayerReady()) Join::Exec(bot, guild_id, user_id, channel_id);
+	FILE *fin;
+	OggOpusEnc *enc;
+	OggOpusComments *comments;
+	int error;
+	fin = fopen("/home/flame/Downloads/CHSV.wav", "rb");
 
-	/* load the audio file with oggz */
-	OGGZ *track_og = oggz_open("/home/flame/Downloads/CHSV.opus", OGGZ_READ);
-
-	/* set read callback, this callback will be called on packets with the serialno,
-	 * -1 means every packet will be handled with this callback.
-	 */
-	oggz_set_read_callback(
-			track_og, -1,
-			[](OGGZ *oggz, oggz_packet *packet, long serialno,
-			   void *user_data) {
-				dpp::voiceconn *voiceconn = (dpp::voiceconn *)user_data;
-
-				/* send the audio */
-				voiceconn->voiceclient->send_audio_opus(packet->op.packet,
-				                                        packet->op.bytes);
-
-				/* make sure to always return 0 here, read more on oggz documentation */
-				return 0;
-			},
-			/* this will be the value of void *user_data */
-			(void *)voiceconn
-	);
-
-	// read loop
-	while (voiceconn && voiceconn->voiceclient && !voiceconn->voiceclient->terminating) {
-		/* you can tweak this to whatever. Here I use BUFSIZ, defined in
-		 * stdio.h as 8192.
-		 */
-		static const constexpr long CHUNK_READ = BUFSIZ * 2;
-
-		const long read_bytes = oggz_read(track_og, CHUNK_READ);
-
-		/* break on eof */
-		if (!read_bytes) {
-			break;
-		}
+	comments = ope_comments_create();
+	ope_comments_add(comments, "ARTIST", "Someone");
+	ope_comments_add(comments, "TITLE", "Some track");
+	enc = ope_encoder_create_file("/home/flame/Downloads/FFF.opus", comments, 48000, 2, 0, &error);
+	while (1) {
+		short buf[2*READ_SIZE];
+		int ret = fread(buf, 2*sizeof(short), READ_SIZE, fin);
+		if (ret > 0) {
+			ope_encoder_write(enc, buf, ret);
+		} else break;
 	}
-
-	/* Don't forget to free the memory */
-	oggz_close(track_og);
+	ope_encoder_drain(enc);
+	ope_encoder_destroy(enc);
+	ope_comments_destroy(comments);
+	fclose(fin);
+	throw BragiException("Успех!", channel_id, Hard);
 }
 
 bool GuildPlayer::IsPLayerReady() {

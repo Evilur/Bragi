@@ -19,4 +19,4 @@ ADD_EXECUTABLE(Bragi
     src/player/guild_player.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi dpp oggz)
+TARGET_LINK_LIBRARIES(Bragi dpp opus opusenc)
