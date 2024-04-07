@@ -5,37 +5,38 @@
 #include "util/bragi_exception.h"
 
 #include <opus/opus.h>
-#include <opus/opusenc.h>
-
-std::ifstream fs;
-#define READ_SIZE 256
 
 GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
 void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
-	FILE *fin;
-	OggOpusEnc *enc;
-	OggOpusComments *comments;
-	int error;
-	fin = fopen("/home/flame/Downloads/CHSV.wav", "rb");
-
-	comments = ope_comments_create();
-	ope_comments_add(comments, "ARTIST", "Someone");
-	ope_comments_add(comments, "TITLE", "Some track");
-	enc = ope_encoder_create_file("/home/flame/Downloads/FFF.opus", comments, 48000, 2, 0, &error);
-	while (1) {
-		short buf[2*READ_SIZE];
-		int ret = fread(buf, 2*sizeof(short), READ_SIZE, fin);
-		if (ret > 0) {
-			ope_encoder_write(enc, buf, ret);
-		} else break;
+	std::ifstream input("/home/flame/Downloads/CHSV.wav");
+	
+	const int freq = 48000;
+	const int frame_size = 960;
+	const int channels = 2;
+	
+	OpusEncoder* encoder = opus_encoder_create(freq, channels, OPUS_APPLICATION_AUDIO, nullptr);
+	
+	const int pcm_chunk_size = frame_size * channels * sizeof(opus_int16);
+	char* pcm_chunk = new char[pcm_chunk_size];
+	
+	const int chunk_size = 16384;
+	auto* chunk = new unsigned char[chunk_size];
+	
+	while (input.peek() != EOF) {
+		input.read(pcm_chunk, pcm_chunk_size);
+		int len = opus_encode(encoder, reinterpret_cast<const opus_int16 *>(pcm_chunk), frame_size, chunk, chunk_size);
+		voiceconn->voiceclient->send_audio_opus((uint8_t*)chunk, len);
+		
+		delete[] pcm_chunk;
+		pcm_chunk = new char[pcm_chunk_size];
+		delete[] chunk;
+		chunk = new unsigned char[chunk_size];
 	}
-	ope_encoder_drain(enc);
-	ope_encoder_destroy(enc);
-	ope_comments_destroy(comments);
-	fclose(fin);
+
+	opus_encoder_destroy(encoder);
 	throw BragiException("Успех!", channel_id, Hard);
 }
 
