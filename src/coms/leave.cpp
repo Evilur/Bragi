@@ -13,7 +13,7 @@ void Leave::Exec(const dpp::message_create_t &event) {
 	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }
 
-dpp::message Leave::Exec(dpp::snowflake guild_id, dpp::snowflake channel_id) {
+dpp::message Leave::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id) {
 	/* Get voice connections */
 	dpp::voiceconn* voiceconn = ds_client->get_voice(guild_id);
 	

@@ -29,7 +29,7 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }
 
-dpp::message Join::Exec(dpp::cluster &bot, dpp::snowflake guild_id, dpp::snowflake user_id, dpp::snowflake channel_id) {
+dpp::message Join::Exec(dpp::cluster &bot, const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);

@@ -13,7 +13,8 @@ void PlayAttachment::Exec(dpp::cluster &bot, const dpp::message_create_t &event)
 	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }
 
-dpp::message PlayAttachment::Exec(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake guild_id, dpp::snowflake channel_id, const Track *track) {
+dpp::message PlayAttachment::Exec(
+		dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const Track *track) {
 	dpp::message message;
 	GuildPlayer* guild_player = GuildPlayer::Get(guild_id);
 	guild_player->PlayTrack(bot, user_id, channel_id, track);

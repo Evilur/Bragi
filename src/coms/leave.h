@@ -10,7 +10,7 @@ public:
 private:
 	/* return the message with status of the executing
 	 * throw a BragiException */
-	static dpp::message Exec(dpp::snowflake guild_id, dpp::snowflake channel_id);
+	static dpp::message Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id);
 };
 
 #endif

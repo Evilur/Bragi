@@ -6,7 +6,7 @@
 
 #include <opus/opus.h>
 
-GuildPlayer::GuildPlayer(dpp::snowflake* guild_id) : guild_id(*guild_id) {
+GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
@@ -44,7 +44,7 @@ bool GuildPlayer::IsPLayerReady() {
 	return voiceconn != nullptr && voiceconn->voiceclient != nullptr && voiceconn->voiceclient->is_ready();
 }
 
-void GuildPlayer::ConnectVoice(dpp::snowflake channel_id) {
+void GuildPlayer::ConnectVoice(const dpp::snowflake &channel_id) {
 	ds_client->connect_voice(guild_id, channel_id);
 }
 
@@ -52,7 +52,7 @@ void GuildPlayer::Reconnect() {
 	voiceconn = ds_client->get_voice(guild_id);
 }
 
-GuildPlayer* GuildPlayer::Get(dpp::snowflake guild_id) {
+GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the array */
 	for (unsigned int i = 0; i < _guild_count; i++)
 		if (_guilds[i]->guild_id == guild_id) return _guilds[i];
@@ -61,7 +61,7 @@ GuildPlayer* GuildPlayer::Get(dpp::snowflake guild_id) {
 	return Add(guild_id);
 }
 
-GuildPlayer* GuildPlayer::Add(dpp::snowflake guild_id) {
+GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Increase the number of guilds */
 	_guild_count++;
 	

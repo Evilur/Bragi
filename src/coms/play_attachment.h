@@ -11,7 +11,8 @@ public:
 private:
 	/* return the message with status of the executing
 	 * throw a BragiException */
-	static dpp::message Exec(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake guild_id, dpp::snowflake channel_id, const Track *track);
+	static dpp::message Exec(
+			dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const Track *track);
 };
 
 #endif

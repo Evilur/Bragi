@@ -12,7 +12,7 @@ void Ping::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 	event.send(Exec(bot, event.msg.channel_id));
 }
 
-dpp::message Ping::Exec(dpp::cluster &bot, dpp::snowflake channel_id) {
+dpp::message Ping::Exec(dpp::cluster &bot, const dpp::snowflake &channel_id) {
 	return dpp::message(channel_id, dpp::embed()
 			.set_color(Color::GREEN)
 			.set_title(DIC_PING)

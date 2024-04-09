@@ -2,7 +2,7 @@
 #include "util/color.h"
 #include "util/dictionary.h"
 
-BragiException::BragiException(const char *e_data, const dpp::snowflake channel_id, const ErrorType e_type)
+BragiException::BragiException(const char *e_data, const dpp::snowflake &channel_id, const ErrorType e_type)
 													: e_data(e_data), channel_id(channel_id), e_type(e_type) { }
 
 dpp::message BragiException::GetMessage() {
