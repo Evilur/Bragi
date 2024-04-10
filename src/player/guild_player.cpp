@@ -1,7 +1,6 @@
 #include "guild_player.h"
 #include "master.h"
 #include "util/logger.h"
-#include "coms/join.h"
 #include "util/dictionary.h"
 #include "util/bragi_exception.h"
 

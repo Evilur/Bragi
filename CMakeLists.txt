@@ -8,14 +8,14 @@ INCLUDE(cmake/dpp.cmake)
 ADD_EXECUTABLE(Bragi
     src/master.cpp
     src/util/bragi_exception.cpp
-    src/coms/play_attachment.cpp
-    src/coms/ping.cpp
-    src/coms/join.cpp
+    src/command/play_attachment.cpp
+    src/command/ping.cpp
+    src/command/join.cpp
     src/util/logger.cpp
     src/util/path.cpp
     src/util/settings.cpp
     src/util/color.cpp
-    src/coms/leave.cpp
+    src/command/leave.cpp
     src/player/guild_player.cpp
 )
 
