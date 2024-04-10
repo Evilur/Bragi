@@ -50,7 +50,7 @@ void on_slashcommand(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	/* Check for commands */
 	if (command_name == "ping") Ping::Exec(bot, event);
 	else if (command_name == "join") Join::Exec(bot, event);
-	else if (command_name == "leave") Leave::Exec(event);
+	//else if (command_name == "leave") Leave::Exec(event);
 	else if (command_name == "play-attachment") PlayAttachment::Exec(bot, event);
 }
 
@@ -69,7 +69,7 @@ void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
 		bot.global_command_create(dpp::slashcommand("join", DIC_SLASH_JOIN, bot.me.id).add_option(
 				dpp::command_option(dpp::co_user, "user", DIC_SLASH_JOIN_USER, false)));
 
-		bot.global_command_create(dpp::slashcommand("leave", DIC_SLASH_LEAVE, bot.me.id));
+		//bot.global_command_create(dpp::slashcommand("leave", DIC_SLASH_LEAVE, bot.me.id));
 		
 		bot.global_command_create(dpp::slashcommand("play", DIC_SLASH_PLAY, bot.me.id).add_option(
 				dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));

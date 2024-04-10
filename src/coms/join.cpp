@@ -30,31 +30,5 @@ void Join::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
 }
 
 dpp::message Join::Exec(dpp::cluster &bot, const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
-	/* Get voice channels */
-	dpp::guild* guild = dpp::find_guild(guild_id);
-	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
-	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
-	
-	/* Check bot for ready */
-	GuildPlayer* guild_player = GuildPlayer::Get(guild_id);
-	bool is_ready = guild_player->IsPLayerReady();
-	
-	/* If the user isn't in a voice channel */
-	if (user_vc == nullptr)
-		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, ErrorType::Hard);
-
-	/* If the user and a bot already in the same channel */
-	if (is_ready && bot_vc != nullptr && bot_vc->id == user_vc->id)
-		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, ErrorType::Soft);
-	
-	/* If bot can not connect to the channel or speak there */
-	if (!user_vc->get_user_permissions(&bot.me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot.me).can(dpp::p_speak))
-		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, ErrorType::Hard);
-	
-	/* If bot in the voice channel we need to disconnect */
-	if (bot_vc != nullptr) ds_client->disconnect_voice(guild_id);
-
-	/* If all is OK */
-	guild_player->ConnectVoice(user_vc->id); //Connect the new voice channel
-	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
+	return GuildPlayer::Get(guild_id)->Join(bot, user_id, channel_id);
 }

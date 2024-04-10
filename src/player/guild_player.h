@@ -15,10 +15,12 @@ public:
 	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, const Track *track);
 	/* Check player for ready */
 	bool IsPLayerReady();
-	/* Connect to the voice channel */
-	void ConnectVoice(const dpp::snowflake &channel_id);
 	/* Reconnect to the voice channel */
 	void Reconnect();
+	/* Join to the voice channel */
+	dpp::message Join(dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	/*  Leave the voice channel */
+	dpp::message Leave(const dpp::snowflake &channel_id);
 	
 	/* Get a guild from the array
 	 * return: a founded guild from the array */
