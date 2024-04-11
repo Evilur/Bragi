@@ -27,5 +27,6 @@
 #define DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL "**Бот уже подключен к этому голосовому каналу**"
 #define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**Пользователь должен находиться в голосовом канале**"
 #define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
+#define DIC_ERROR_IS_NOT_A_FILE "**Файл из вложений не является аудио треком**"
 
 #endif

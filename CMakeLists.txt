@@ -19,6 +19,8 @@ ADD_EXECUTABLE(Bragi
     src/player/guild_player.cpp
     src/converter/opus_converter.cpp
     src/converter/wav_to_opus.cpp
+    src/player/attachment_track.cpp
+    src/player/track.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi dpp opus opusenc)

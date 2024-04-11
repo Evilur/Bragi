@@ -11,7 +11,7 @@ public:
 	static const int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(opus_int16);
 	static const int OPUS_CHUNK_SIZE = 1024;
 	
-	virtual ~OpusConverter() = 0;
+	virtual ~OpusConverter() = default;
 	virtual int Convert(char* in, unsigned char* out) = 0;
 	
 protected:

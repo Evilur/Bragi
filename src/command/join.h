@@ -3,7 +3,6 @@
 
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
-#include <coroutine>
 
 class Join {
 public:

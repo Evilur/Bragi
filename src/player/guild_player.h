@@ -12,7 +12,7 @@ public:
 	
 	/* Play track
 	 * throw a BragiException */
-	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, const Track *track);
+	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
 	/* Check player for ready */
 	bool IsPLayerReady();
 	/* Reconnect to the voice channel */

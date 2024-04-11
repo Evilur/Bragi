@@ -3,34 +3,27 @@
 #include "util/logger.h"
 #include "util/dictionary.h"
 #include "util/bragi_exception.h"
+#include "attachment_track.h"
 #include "converter/opus_converter.h"
 #include "converter/wav_to_opus.h"
 
 #include <opus/opus.h>
 
+std::ofstream fs;
+
 GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->voiceconn = ds_client->get_voice(*guild_id);
 }
 
-void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, const Track *track) {
-	OpusConverter* converter = new WavToOpus();
-	std::ifstream input("/home/flame/Downloads/CHSV.wav");
+void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
+	if (track == nullptr) throw BragiException("Ошибочка", channel_id, Hard);
+	auto* chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
 	
-	char* pcm_chunk = new char[OpusConverter::PCM_CHUNK_SIZE];
-	auto* opus_chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
-	
-	while (input.peek() != EOF) {
-		input.read(pcm_chunk, OpusConverter::PCM_CHUNK_SIZE);
-		int len = converter->Convert(pcm_chunk, opus_chunk);
-		voiceconn->voiceclient->send_audio_opus((uint8_t*)opus_chunk, len);
-		
-		delete[] pcm_chunk;
-		pcm_chunk = new char[OpusConverter::PCM_CHUNK_SIZE];
-		delete[] opus_chunk;
-		opus_chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
+	while (!track->IsEnd()) {
+		int len = track->GetOpus(chunk);
+		voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
 	
-	delete converter;
 	throw BragiException("Успех!", channel_id, Hard);
 }
 
