@@ -23,4 +23,4 @@ ADD_EXECUTABLE(Bragi
     src/player/track.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi dpp opus opusenc)
+TARGET_LINK_LIBRARIES(Bragi dpp opusenc curl)
