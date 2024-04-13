@@ -5,14 +5,15 @@
 
 class HttpClient {
 public:
+	static const inline char* HTTP_PORT = "80";
+	
 	explicit HttpClient(const std::string &url);
 	
-	std::string GetLine();
+	bool CanRead();
+	std::string ReadLine();
 private:
 	boost::asio::ip::tcp::iostream _stream;
 	std::string _url;
-	
-	static std::string GetHost(const std::string &url);
 };
 
 #endif

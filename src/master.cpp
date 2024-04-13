@@ -12,8 +12,9 @@
 
 #include "util/http_client.h"
 int main() {
-	HttpClient client("http://127.0.0.1/test.txt");
+	HttpClient c("http://127.0.0.1/test.txt");
 	
+	while(c.CanRead()) std::cout << c.ReadLine() << std::endl;
 	
 	return 0;
 	Logger::Init();  //Init the logger
