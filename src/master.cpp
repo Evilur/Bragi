@@ -10,10 +10,12 @@
 #include "util/logger.h"
 #include "util/settings.h"
 
-#include <curl/curl.h>
-
+#include "util/http_client.h"
 int main() {
-	curl_global_init(CURL_GLOBAL_ALL);  //Init the curl
+	HttpClient client("http://127.0.0.1/test.txt");
+	
+	
+	return 0;
 	Logger::Init();  //Init the logger
 	Settings::Init();  //Init the settings
 	

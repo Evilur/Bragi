@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-enum LogLevel : char {	Info, Warn, Debug, Fatal };
+enum LogLevel : char {	INFO, WARN, DEBUG, FATAL };
 
 /* Class for logging important messages */
 class Logger {
@@ -15,16 +15,16 @@ public:
 	
 	/* Log messages */
 	template<typename T>
-	static void Info(T message) { Logger::Log(message, LogLevel::Info); }
+	static void Info(T message) { Logger::Log(message, INFO); }
 
 	template<typename T>
-	static void Warn(T message) { Logger::Log(message, LogLevel::Warn); }
+	static void Warn(T message) { Logger::Log(message, WARN); }
 
 	template<typename T>
-	static void Debug(T message) { Logger::Log(message, LogLevel::Debug); }
+	static void Debug(T message) { Logger::Log(message, DEBUG); }
 
 	template<typename T>
-	static void Fatal(T message) { Logger::Log(message, LogLevel::Fatal); }
+	static void Fatal(T message) { Logger::Log(message, FATAL); }
 private:
 	inline static std::ofstream* stream = nullptr;  //Log file stream
 	
@@ -34,22 +34,22 @@ private:
 		std::string color_code, log_level;
 		
 		switch (logLevel) {
-			case LogLevel::Info:
+			case INFO:
 				color_code = "\033[34m";
 				log_level = " Info]:  ";
 				break;
 
-			case LogLevel::Warn:
+			case WARN:
 				color_code = "\033[33m";
 				log_level = " Warn]:  ";
 				break;
 
-			case LogLevel::Debug:
+			case DEBUG:
 				color_code = "\033[35m";
 				log_level = " Debug]: ";
 				break;
 
-			case LogLevel::Fatal:
+			case FATAL:
 				color_code = "\033[31m";
 				log_level = " Fatal]: ";
 				break;

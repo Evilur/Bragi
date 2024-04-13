@@ -21,6 +21,7 @@ ADD_EXECUTABLE(Bragi
     src/converter/wav_to_opus.cpp
     src/player/attachment_track.cpp
     src/player/track.cpp
+    src/util/http_client.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi dpp opusenc curl)
+TARGET_LINK_LIBRARIES(Bragi dpp opusenc boost_system)

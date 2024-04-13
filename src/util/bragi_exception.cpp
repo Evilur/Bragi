@@ -6,7 +6,7 @@ BragiException::BragiException(const char *e_data, const dpp::snowflake &channel
 													: e_data(e_data), channel_id(channel_id), e_type(e_type) { }
 
 dpp::message BragiException::GetMessage() {
-	if (e_type == ErrorType::Hard) return ForceError();
+	if (e_type == ErrorType::HARD) return ForceError();
 	else return WeakError();
 }
 													

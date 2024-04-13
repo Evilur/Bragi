@@ -16,7 +16,7 @@ GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
 }
 
 void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
-	if (track == nullptr) throw BragiException("Ошибочка", channel_id, Hard);
+	if (track == nullptr) throw BragiException("Ошибочка", channel_id, HARD);
 	auto* chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
 	
 	while (!track->IsEnd()) {
@@ -24,7 +24,7 @@ void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, con
 		voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
 	
-	throw BragiException("Успех!", channel_id, Hard);
+	throw BragiException("Успех!", channel_id, HARD);
 }
 
 bool GuildPlayer::IsPLayerReady() {
@@ -43,15 +43,15 @@ dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id,
 
 	/* If the user isn't in a voice channel */
 	if (user_vc == nullptr)
-		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, Hard);
+		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, HARD);
 
 	/* If the user and a bot already in the same channel */
 	if (IsPLayerReady() && bot_vc != nullptr && bot_vc->id == user_vc->id)
-		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, Soft);
+		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, SOFT);
 
 	/* If bot can not connect to the channel or speak there */
 	if (!user_vc->get_user_permissions(&bot.me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot.me).can(dpp::p_speak))
-		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, Hard);
+		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, HARD);
 
 	/* If bot in the voice channel we need to disconnect */
 	if (bot_vc != nullptr) ds_client->disconnect_voice(guild_id);
@@ -64,7 +64,7 @@ dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id,
 dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (voiceconn == nullptr)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, Soft);
+		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
 
 	ds_client->disconnect_voice(guild_id);
 	return dpp::message(channel_id, DIC_LEFT);

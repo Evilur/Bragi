@@ -4,9 +4,9 @@
 #include "track.h"
 
 #include <dpp/dpp.h>
-#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio.hpp>
 
-enum AudioType : char {	wav, flac, mp3, ogg };
+enum AudioType : char {	WAV, FLAC, MP3, OGG };
 
 class AttachmentTrack : public Track {
 public:
@@ -15,8 +15,8 @@ public:
 	
 	int GetOpus(unsigned char *out) override;
 private:
-	boost::asio::ip::tcp::iostream stream;
-	AudioType type;
+	boost::asio::ip::tcp::iostream* _stream;
+	AudioType _type;
 };
 
 #endif
