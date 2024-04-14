@@ -1,8 +1,6 @@
 #include "join.h"
-#include "master.h"
 #include "exception/bragi_exception.h"
 #include "player/guild_player.h"
-#include "util/dictionary.h"
 
 void Join::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	/* Default user for connection */

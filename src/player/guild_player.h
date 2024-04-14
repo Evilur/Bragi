@@ -1,8 +1,9 @@
 #ifndef BRAGI_GUILD_PLAYER_H
 #define BRAGI_GUILD_PLAYER_H
 
-#include "dpp/cluster.h"
 #include "track.h"
+
+#include <dpp/dpp.h>
 
 class GuildPlayer {
 public:
@@ -12,7 +13,7 @@ public:
 	
 	/* Play track
 	 * throw a BragiException */
-	void PlayTrack(dpp::cluster &bot, dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
+	void PlayTrack(dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
 	/* Check player for ready */
 	bool IsPLayerReady();
 	/* Reconnect to the voice channel */
@@ -26,12 +27,12 @@ public:
 	 * return: a founded guild from the array */
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 private:
-	dpp::voiceconn* voiceconn;
+	dpp::voiceconn* _voiceconn;
 	
-	static inline const unsigned int guilds_delta = 8;
-	static inline unsigned int _max_guild_count = guilds_delta;
+	static inline const unsigned int GUILDS_DELTA = 8;
+	static inline unsigned int _max_guild_count = GUILDS_DELTA;
 	static inline unsigned int _guild_count = 0;
-	static inline GuildPlayer** _guilds = new GuildPlayer*[guilds_delta];
+	static inline GuildPlayer** _guilds = new GuildPlayer*[GUILDS_DELTA];
 	
 	/* Add a new guild to the array
 	 * return: a new guild object */

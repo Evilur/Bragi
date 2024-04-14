@@ -26,39 +26,39 @@ public:
 	template<typename T>
 	static void Fatal(T message) { Logger::Log(message, FATAL); }
 private:
-	inline static std::ofstream* stream = nullptr;  //Log file stream
+	inline static std::ofstream* _stream = nullptr;  //Log file stream
 	
 	/* Master log method */
 	template<typename T>
-	static void Log(T message, LogLevel logLevel) {
-		std::string color_code, log_level;
+	static void Log(T message, LogLevel log_level) {
+		std::string color_code_str, log_level_str;
 		
-		switch (logLevel) {
+		switch (log_level) {
 			case INFO:
-				color_code = "\033[34m";
-				log_level = " Info]:  ";
+				color_code_str = "\033[34m";
+				log_level_str = " Info]:  ";
 				break;
 
 			case WARN:
-				color_code = "\033[33m";
-				log_level = " Warn]:  ";
+				color_code_str = "\033[33m";
+				log_level_str = " Warn]:  ";
 				break;
 
 			case DEBUG:
-				color_code = "\033[35m";
-				log_level = " Debug]: ";
+				color_code_str = "\033[35m";
+				log_level_str = " Debug]: ";
 				break;
 
 			case FATAL:
-				color_code = "\033[31m";
-				log_level = " Fatal]: ";
+				color_code_str = "\033[31m";
+				log_level_str = " Fatal]: ";
 				break;
 		}
 		
 		
-		std::string data = '[' + Logger::Date() + log_level;
-		std::cout << color_code << data << message << "\033[0m" << std::endl;
-		*stream << data << message << std::endl;
+		std::string data = '[' + Logger::Date() + log_level_str;
+		std::cout << color_code_str << data << message << "\033[0m" << std::endl;
+		*_stream << data << message << std::endl;
 	}
 	
 	/* Clean the old log files */

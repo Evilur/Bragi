@@ -1,5 +1,4 @@
 #include "wav_to_opus.h"
-#include "util/logger.h"
 
 WavToOpus::WavToOpus() {
 	_encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);

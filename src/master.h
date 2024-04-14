@@ -1,7 +1,7 @@
 #ifndef BRAGI_MASTER_H
 #define BRAGI_MASTER_H
 
-#include <dpp/cluster.h>
+#include <dpp/dpp.h>
 
 inline dpp::discord_client* ds_client;
 

@@ -11,8 +11,8 @@ public:
 	static std::string GetBotToken();
 	static std::string GetArlToken();
 private:
-	static std::string bot_token;
-	static std::string arl_token;
+	static std::string _bot_token;
+	static std::string _arl_token;
 
 	static void ReinitTokens();
 };

@@ -2,7 +2,7 @@
 #define BRAGI_BRAGI_EXCEPTION_H
 
 #include <exception>
-#include "dpp/dpp.h"
+#include <dpp/dpp.h>
 
 enum ErrorType : char { HARD, SOFT };
 
@@ -12,9 +12,9 @@ public:
 	
 	dpp::message GetMessage();
 private:
-	const ErrorType e_type{};
-	const char* e_data;
-	const dpp::snowflake channel_id;
+	const ErrorType _e_type{};
+	const char* _e_data;
+	const dpp::snowflake _channel_id;
 
 	dpp::message ForceError();
 	dpp::message WeakError();

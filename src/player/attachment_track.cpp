@@ -7,9 +7,9 @@
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */
 	if (!attachment->content_type.starts_with("audio")) throw BragiException(DIC_ERROR_IS_NOT_A_FILE, channel_id, HARD);
-	
-	title = attachment->filename;
-	converter = new WavToOpus();
+
+	_title = attachment->filename;
+	_converter = new WavToOpus();
 	_type = WAV;
 	
 	Logger::Debug(attachment->url);

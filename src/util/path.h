@@ -8,10 +8,10 @@ namespace fs = std::filesystem;
 /* Class for getting the path in the different OS */
 class Path {
 public:
-	static const fs::path config_file;
-	static const fs::path log_dir;
+	static const fs::path CONFIG_FILE;
+	static const fs::path LOG_DIR;
 private:
-	static const fs::path user_root;
+	static const fs::path USER_ROOT;
 };
 
 #endif

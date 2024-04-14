@@ -1,8 +1,9 @@
 #ifndef BRAGI_TRACK_H
 #define BRAGI_TRACK_H
 
-#include <string>
 #include "converter/opus_converter.h"
+
+#include <string>
 
 class Track {
 public:
@@ -16,12 +17,12 @@ public:
 	
 	virtual int GetOpus(unsigned char *out) = 0;
 protected:
-	OpusConverter* converter;
-	std::string title;
-	std::string album;
-	std::string artist;
+	OpusConverter* _converter;
+	std::string _title;
+	std::string _album;
+	std::string _artist;
 	
-	bool is_end = false;
+	bool _is_end = false;
 };
 
 #endif

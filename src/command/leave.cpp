@@ -1,7 +1,5 @@
 #include "leave.h"
-#include "master.h"
 #include "player/guild_player.h"
-#include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 
 void Leave::Exec(const dpp::slashcommand_t &event) {

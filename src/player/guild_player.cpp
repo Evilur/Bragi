@@ -3,36 +3,32 @@
 #include "util/logger.h"
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
-#include "attachment_track.h"
 #include "converter/opus_converter.h"
-#include "converter/wav_to_opus.h"
-
-#include <opus/opus.h>
 
 std::ofstream fs;
 
 GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
-	this->voiceconn = ds_client->get_voice(*guild_id);
+	this->_voiceconn = ds_client->get_voice(*guild_id);
 }
 
-void GuildPlayer::PlayTrack(dpp::cluster &bot, const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
+void GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
 	if (track == nullptr) throw BragiException("Ошибочка", channel_id, HARD);
 	auto* chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
 	
 	while (!track->IsEnd()) {
 		int len = track->GetOpus(chunk);
-		voiceconn->voiceclient->send_audio_opus(chunk, len);
+		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
 	
 	throw BragiException("Успех!", channel_id, HARD);
 }
 
 bool GuildPlayer::IsPLayerReady() {
-	return voiceconn != nullptr && voiceconn->voiceclient != nullptr && voiceconn->voiceclient->is_ready();
+	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
 }
 
 void GuildPlayer::Reconnect() {
-	voiceconn = ds_client->get_voice(guild_id);
+	_voiceconn = ds_client->get_voice(guild_id);
 }
 
 dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
@@ -63,7 +59,7 @@ dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id,
 
 dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
-	if (voiceconn == nullptr)
+	if (_voiceconn == nullptr)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
 
 	ds_client->disconnect_voice(guild_id);
@@ -84,19 +80,19 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	_guild_count++;
 	
 	/* Try to get the empty place for the pointer */
-	for (unsigned int i = _max_guild_count - guilds_delta; i < _max_guild_count; i++) {
+	for (unsigned int i = _max_guild_count - GUILDS_DELTA; i < _max_guild_count; i++) {
 		if (_guilds[i] != nullptr) continue;
 		_guilds[i] = new GuildPlayer(&guild_id);
 		return _guilds[i];
 	}
 	
 	/* If the array with pointer is full we need to increase it */
-	auto** new_guilds = new GuildPlayer*[_max_guild_count + guilds_delta];
+	auto** new_guilds = new GuildPlayer*[_max_guild_count + GUILDS_DELTA];
 	for (unsigned int i = 0; i < _max_guild_count; i++) new_guilds[i] = _guilds[i];
 	delete[] _guilds;
 	_guilds = new_guilds;
 	
 	/* Add the new guild to the array */
 	_guilds[_max_guild_count] = new GuildPlayer(&guild_id);
-	return _guilds[_max_guild_count += guilds_delta];
+	return _guilds[_max_guild_count += GUILDS_DELTA];
 }

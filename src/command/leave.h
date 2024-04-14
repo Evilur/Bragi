@@ -1,7 +1,7 @@
 #ifndef BRAGI_LEAVE_H
 #define BRAGI_LEAVE_H
 
-#include <dpp/cluster.h>
+#include <dpp/dpp.h>
 
 class Leave {
 public:

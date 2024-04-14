@@ -1,5 +1,3 @@
-#include <dpp/dpp.h>
-
 #include "master.h"
 #include "util/dictionary.h"
 #include "command/ping.h"
@@ -9,22 +7,8 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
-#include "util/http_client.h"
-#include "exception/http_client_exception.h"
 
 int main() {
-	try {
-		HttpClient c("https://www.youtube.com/watch?v=9Te33x5dlRA");
-		char* buffer = new char[1024];
-		c.Read(buffer, 1024);
-		std::cout << buffer;
-	} catch (HttpClientException &exception) {
-		std::cout << exception.GetData();
-	}
-	
-	
-	
-	return 0;
 	Logger::Init();  //Init the logger
 	Settings::Init();  //Init the settings
 	
@@ -77,29 +61,27 @@ void on_ready(dpp::cluster &bot, const dpp::ready_t &event) {
 	ds_client = event.from;
 	
 	/* Add slash commands */
-	if (dpp::run_once<struct register_bot_commands>()) {
-		bot.global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot.me.id));
-		
-		bot.global_command_create(dpp::slashcommand("join", DIC_SLASH_JOIN, bot.me.id).add_option(
-				dpp::command_option(dpp::co_user, "user", DIC_SLASH_JOIN_USER, false)));
+	bot.global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot.me.id));
 
-		bot.global_command_create(dpp::slashcommand("leave", DIC_SLASH_LEAVE, bot.me.id));
-		
-		bot.global_command_create(dpp::slashcommand("play", DIC_SLASH_PLAY, bot.me.id).add_option(
-				dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
-		
-		bot.global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot.me.id).add_option(
-				dpp::command_option(dpp::co_attachment, "file", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file1", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file2", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file3", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file4", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file5", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file6", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file7", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file8", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-				dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));
-	}
+	bot.global_command_create(dpp::slashcommand("join", DIC_SLASH_JOIN, bot.me.id).add_option(
+			dpp::command_option(dpp::co_user, "user", DIC_SLASH_JOIN_USER, false)));
+
+	bot.global_command_create(dpp::slashcommand("leave", DIC_SLASH_LEAVE, bot.me.id));
+
+	bot.global_command_create(dpp::slashcommand("play", DIC_SLASH_PLAY, bot.me.id).add_option(
+			dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
+
+	bot.global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot.me.id).add_option(
+			dpp::command_option(dpp::co_attachment, "file", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file1", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file2", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file3", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file4", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file5", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file6", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file7", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file8", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
+			dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));
 	
 	Logger::Info("Bot is ready");
 }

@@ -1,7 +1,7 @@
 #ifndef BRAGI_PING_H
 #define BRAGI_PING_H
 
-#include <dpp/cluster.h>
+#include <dpp/dpp.h>
 #include <dpp/dispatcher.h>
 
 class Ping {
