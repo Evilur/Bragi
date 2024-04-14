@@ -1,6 +1,6 @@
 #include "join.h"
 #include "master.h"
-#include "util/bragi_exception.h"
+#include "exception/bragi_exception.h"
 #include "player/guild_player.h"
 #include "util/dictionary.h"
 

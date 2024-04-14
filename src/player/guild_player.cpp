@@ -2,7 +2,7 @@
 #include "master.h"
 #include "util/logger.h"
 #include "util/dictionary.h"
-#include "util/bragi_exception.h"
+#include "exception/bragi_exception.h"
 #include "attachment_track.h"
 #include "converter/opus_converter.h"
 #include "converter/wav_to_opus.h"

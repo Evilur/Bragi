@@ -29,4 +29,7 @@
 #define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
 #define DIC_ERROR_IS_NOT_A_FILE "**Файл из вложений не является аудио треком**"
 
+//http errors
+#define DIC_HTTP_ERROR_CON_CANNOT_BE_ESTABLISHED "Соединение не может быть установлено"
+
 #endif

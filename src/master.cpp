@@ -9,12 +9,20 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
-
 #include "util/http_client.h"
+#include "exception/http_client_exception.h"
+
 int main() {
-	HttpClient c("http://127.0.0.1/test.txt");
+	try {
+		HttpClient c("https://google.com/");
+		char* buffer = new char[1024 * 8];
+		c.Read(buffer, 1024 * 8);
+		std::cout << buffer;
+	} catch (HttpClientException &exception) {
+		std::cout << exception.GetData();
+	}
 	
-	while(c.CanRead()) std::cout << c.ReadLine() << std::endl;
+	
 	
 	return 0;
 	Logger::Init();  //Init the logger

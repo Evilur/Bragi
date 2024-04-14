@@ -1,6 +1,6 @@
 #include "play_attachment.h"
 #include "player/guild_player.h"
-#include "util/bragi_exception.h"
+#include "exception/bragi_exception.h"
 #include "player/attachment_track.h"
 #include "util/logger.h"
 #include "join.h"

@@ -7,7 +7,8 @@ INCLUDE(cmake/dpp.cmake)
 
 ADD_EXECUTABLE(Bragi
     src/master.cpp
-    src/util/bragi_exception.cpp
+    src/exception/bragi_exception.cpp
+    src/exception/http_client_exception.cpp
     src/command/play_attachment.cpp
     src/command/ping.cpp
     src/command/join.cpp

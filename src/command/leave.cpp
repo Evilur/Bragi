@@ -2,7 +2,7 @@
 #include "master.h"
 #include "player/guild_player.h"
 #include "util/dictionary.h"
-#include "util/bragi_exception.h"
+#include "exception/bragi_exception.h"
 
 void Leave::Exec(const dpp::slashcommand_t &event) {
 	try { event.reply(Exec(event.command.guild_id, event.command.channel_id)); }
