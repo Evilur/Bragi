@@ -20,13 +20,13 @@ HttpClient::HttpClient(const std::string &url) {
 	if (!_stream.good()) throw HttpClientException(CON_CANNOT_BE_ESTABLISHED);
 	
 	/* Read lines before there isn't an empty one (there is the end of the output headers) */
+	while (_stream.peek() != '\r') GetLine();
+	GetLine();
 }
 
 HttpClient::~HttpClient() { _stream.close(); }
 
-bool HttpClient::CanRead() {
-	return _stream.peek() != EOF;
-}
+bool HttpClient::CanRead() { return _stream.peek() != EOF; }
 
 std::string HttpClient::GetLine() {
 	std::string result;

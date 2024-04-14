@@ -14,9 +14,9 @@
 
 int main() {
 	try {
-		HttpClient c("https://google.com/");
-		char* buffer = new char[1024 * 8];
-		c.Read(buffer, 1024 * 8);
+		HttpClient c("https://www.youtube.com/watch?v=9Te33x5dlRA");
+		char* buffer = new char[1024];
+		c.Read(buffer, 1024);
 		std::cout << buffer;
 	} catch (HttpClientException &exception) {
 		std::cout << exception.GetData();
