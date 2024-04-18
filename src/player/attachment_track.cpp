@@ -1,8 +1,10 @@
 #include "attachment_track.h"
 #include "exception/bragi_exception.h"
-#include "util/logger.h"
 #include "util/dictionary.h"
 #include "converter/wav_to_opus.h"
+#include "converter/opus_converter.h"
+
+std::ofstream fffs("/tmp/F.wav");
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */
@@ -12,14 +14,17 @@ AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::at
 	_converter = new WavToOpus();
 	_type = WAV;
 	
-	Logger::Debug(attachment->url);
-	_stream = new boost::asio::ip::tcp::iostream(attachment->url, "http");
+	_http = new HttpClient(attachment->url);
 }
 
 AttachmentTrack::~AttachmentTrack() {
-	_stream->close();
+	delete _http;
 }
 
 int AttachmentTrack::GetOpus(unsigned char *out) {
-	return 0;
+	char* pcm_chunk = new char[OpusConverter::PCM_CHUNK_SIZE];
+	_http->Read(pcm_chunk, OpusConverter::PCM_CHUNK_SIZE);
+	int len = _converter->Convert(pcm_chunk, out);
+	delete[] pcm_chunk;
+	return len;
 }

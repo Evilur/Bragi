@@ -2,9 +2,9 @@
 #define BRAGI_ATTACHMENT_TRACK_H
 
 #include "track.h"
+#include "web/http_client.h"
 
 #include <dpp/dpp.h>
-#include <boost/asio.hpp>
 
 enum AudioType : char {	WAV, FLAC, MP3, OGG };
 
@@ -15,7 +15,7 @@ public:
 	
 	int GetOpus(unsigned char *out) override;
 private:
-	boost::asio::ip::tcp::iostream* _stream;
+	HttpClient* _http;
 	AudioType _type;
 };
 

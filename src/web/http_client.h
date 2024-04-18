@@ -1,23 +1,18 @@
 #ifndef BRAGI_HTTP_CLIENT_H
 #define BRAGI_HTTP_CLIENT_H
 
-#include <boost/asio.hpp>
+#include "web_client.h"
 
-class HttpClient {
+#include <asio.hpp>
+
+class HttpClient : WebClient {
 public:
-	static const inline char* const HTTP_PORT = "http";
-	static const inline char* const HTTP_VERSION = "1.1";
-	static const inline char* const HTTP_END = "\r\n\r\n";
-	
 	explicit HttpClient(const std::string &url);
-	~HttpClient();
+	~HttpClient() override;
 	
-	bool CanRead();
-	std::string GetLine();
-	void Read(char* buffer, int size);
+	void Read(char* buffer, int size) override;
 private:
-	boost::asio::ip::tcp::iostream _stream;
-	std::string _url;
+	asio::ip::tcp::iostream _stream;
 };
 
 #endif

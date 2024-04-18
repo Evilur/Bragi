@@ -1,6 +1,8 @@
 #include "play_attachment.h"
 #include "player/guild_player.h"
 #include "exception/bragi_exception.h"
+#include "util/logger.h"
+#include "player/attachment_track.h"
 
 void PlayAttachment::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 	try { event.reply(Exec(bot, event.command.usr.id, event.command.guild_id, event.command.channel_id, nullptr)); }
@@ -8,6 +10,9 @@ void PlayAttachment::Exec(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 }
 
 void PlayAttachment::Exec(dpp::cluster &bot, const dpp::message_create_t &event) {
+	Logger::Debug(event.msg.attachments[0].url);
+	return;
+	
 	try { event.send(Exec(bot, event.msg.author.id, event.msg.guild_id, event.msg.channel_id, nullptr)); }
 	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }

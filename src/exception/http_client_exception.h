@@ -5,9 +5,9 @@
 
 enum HttpClientErrorCode : char { CON_CANNOT_BE_ESTABLISHED };
 
-class HttpClientException : std::exception {
+class WebClientException : std::exception {
 public:
-	explicit HttpClientException(HttpClientErrorCode e_code);
+	explicit WebClientException(HttpClientErrorCode e_code);
 	
 	HttpClientErrorCode GetCode();
 	const char* GetData();
