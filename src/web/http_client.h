@@ -5,7 +5,7 @@
 
 class HttpClient {
 public:
-	static const inline char* const HTTP_PORT = "80";
+	static const inline char* const HTTP_PORT = "http";
 	static const inline char* const HTTP_VERSION = "1.1";
 	static const inline char* const HTTP_END = "\r\n\r\n";
 	

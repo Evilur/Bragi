@@ -12,7 +12,6 @@ IF (NOT LIB_OPUS OR NOT LIB_SODIUM)
     IF (NOT LIB_SODIUM)
         SET(ERROR_CODE "${ERROR_CODE}sodium library not found\n")
     ENDIF ()
-    MESSAGE(${LIB_OPUS})
     MESSAGE(FATAL_ERROR "${ERROR_CODE}Fatal! Aborting")
 ENDIF ()
 

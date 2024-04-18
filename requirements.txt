@@ -1,0 +1,4 @@
+libopus
+libsodium
+libopusenc
+libasio (not boost)
