@@ -4,19 +4,11 @@
 
 #include <asio.hpp>
 
-HttpClient::HttpClient(const std::string &url) {
-	/* Get delimiters */
-	int first_del = url.find_first_of("://") + 3;
-	int second_del = url.find_first_of('/', 8);
-	
-	/* Parse the url */
-	std::string host = url.substr(first_del, second_del - first_del);
-	std::string get = url.substr(second_del + 1);
-	
+HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 	/* Init the stream */
-	_stream = asio::ip::tcp::iostream(host, "80");
-	_stream << "GET " << get << " HTTP/1.1\n"
-			<< "Host:" << host << '\n'
+	_stream = asio::ip::tcp::iostream(_host, "80");
+	_stream << "GET " << _get << " HTTP/1.1\n"
+			<< "Host:" << _host << '\n'
 			<< "Connection: close\n"
 			<< "\r\n\r\n" << std::flush;
 	
@@ -24,8 +16,6 @@ HttpClient::HttpClient(const std::string &url) {
 	if (!_stream.good()) throw WebClientException(CON_CANNOT_BE_ESTABLISHED);
 }
 
-HttpClient::~HttpClient() { _stream.close(); }
+inline HttpClient::~HttpClient() { _stream.close(); }
 
-void HttpClient::Read(char* buffer, int size) { 
-	_stream.read(buffer, size); 
-}
+inline void HttpClient::Read(char* buffer, int size) { _stream.read(buffer, size); }

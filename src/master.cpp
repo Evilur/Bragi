@@ -7,13 +7,8 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
-#include "web/http_client.h"
-#include "web/https_client.h"
 
 int main() {
-	HttpClient client("https://cdn.discordapp.com/attachments/985959696160682114/1229492213122338847/CHSV.wav?ex=662fe0da&is=661d6bda&hm=7f04aa374fef529164557ad5f7c2d90a8fce43313286cba67290dfdd230ec26a&");
-	
-	return 0;
 	Logger::Init();  //Init the logger
 	Settings::Init();  //Init the settings
 	
