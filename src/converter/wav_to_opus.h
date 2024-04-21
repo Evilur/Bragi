@@ -6,7 +6,6 @@
 class WavToOpus final : public AudioToOpus {
 public:
 	WavToOpus();
-	~WavToOpus() override;
 	
 	int Convert(char *in, unsigned char *out) override;
 };

@@ -2,26 +2,27 @@
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
 #include "converter/wav_to_opus.h"
+#include "util/dictionary.h"
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */
-	/*if (!attachment->content_type.starts_with("audio")) throw BragiException(DIC_ERROR_IS_NOT_A_FILE, channel_id, HARD);
-
+	if (!attachment->content_type.starts_with("audio")) throw BragiException(DIC_ERROR_IS_NOT_A_FILE, channel_id, HARD);
+	
+	_http = new HttpClient(/*attachment->url*/"http://localhost/TEST.wav");
 	_title = attachment->filename;
-	_type = WAV;*/
+	_type = WAV;
 
 	_converter = new WavToOpus();
-	_http = new HttpClient("http://localhost/CHSV.wav");
 }
 
 AttachmentTrack::~AttachmentTrack() {
-	delete _http;
+	delete[] _http;
+	_http = nullptr;
 }
 
 int AttachmentTrack::GetOpus(unsigned char *out) {
-	char* pcm_chunk = new char[AudioToOpus::PCM_CHUNK_SIZE];
+	char pcm_chunk[AudioToOpus::PCM_CHUNK_SIZE];
 	_http->Read(pcm_chunk, AudioToOpus::PCM_CHUNK_SIZE);
 	int len = _converter->Convert(pcm_chunk, out);
-	delete[] pcm_chunk;
 	return len;
 }

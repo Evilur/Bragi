@@ -1,6 +1,9 @@
 #include "track.h"
 
-Track::~Track() { delete _converter; }
+Track::~Track() { 
+	delete _converter;
+	_converter = nullptr;
+}
 
 std::string Track::GetTitle() { return _title; }
 
