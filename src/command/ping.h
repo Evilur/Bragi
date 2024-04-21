@@ -4,7 +4,7 @@
 #include <dpp/dpp.h>
 #include <dpp/dispatcher.h>
 
-class Ping {
+class Ping final {
 public:
 	static void Exec(const dpp::slashcommand_t &event);
 	static void Exec(const dpp::message_create_t &event);

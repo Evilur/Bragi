@@ -8,7 +8,7 @@
 enum LogLevel : char {	INFO, WARN, DEBUG, FATAL };
 
 /* Class for logging important messages */
-class Logger {
+class Logger final {
 public:
 	/* Init the logger (for filesystem) */
 	static void Init();

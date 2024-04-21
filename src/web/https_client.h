@@ -5,7 +5,7 @@
 
 #include <string>
 
-class HttpsClient : WebClient {
+class HttpsClient final : WebClient {
 public:
 	explicit HttpsClient(const std::string &url);
 	~HttpsClient() override;

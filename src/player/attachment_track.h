@@ -8,7 +8,7 @@
 
 enum AudioType : char {	WAV, FLAC, MP3, OGG };
 
-class AttachmentTrack : public Track {
+class AttachmentTrack final : public Track {
 public:
 	explicit AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment);
 	~AttachmentTrack() override;

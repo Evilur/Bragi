@@ -6,7 +6,7 @@
 namespace fs = std::filesystem;
 
 /* Class for getting the path in the different OS */
-class Path {
+class Path final {
 public:
 	static const fs::path CONFIG_FILE;
 	static const fs::path LOG_DIR;

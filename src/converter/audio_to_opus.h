@@ -1,9 +1,9 @@
-#ifndef BRAGI_OPUS_CONVERTER_H
-#define BRAGI_OPUS_CONVERTER_H
+#ifndef BRAGI_AUDIO_TO_OPUS_H
+#define BRAGI_AUDIO_TO_OPUS_H
 
 #include "opus/opus.h"
 
-class OpusConverter {
+class AudioToOpus {
 public:
 	static const int FREQ = 48000;
 	static const int FRAME_SIZE = 960;
@@ -11,7 +11,7 @@ public:
 	static const int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(opus_int16);
 	static const int OPUS_CHUNK_SIZE = 1024;
 	
-	virtual ~OpusConverter() = default;
+	virtual ~AudioToOpus() = default;
 	virtual int Convert(char* in, unsigned char* out) = 0;
 	
 protected:

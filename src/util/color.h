@@ -1,7 +1,7 @@
 #ifndef BRAGI_COLOR_H
 #define BRAGI_COLOR_H
 
-class Color {
+class Color final {
 public:
 	static const int GREEN = 776781;
 	static const int RED = 16717825;

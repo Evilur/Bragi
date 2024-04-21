@@ -1,6 +1,6 @@
 #include "attachment_track.h"
 #include "exception/bragi_exception.h"
-#include "converter/opus_converter.h"
+#include "converter/audio_to_opus.h"
 #include "converter/wav_to_opus.h"
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
@@ -19,8 +19,8 @@ AttachmentTrack::~AttachmentTrack() {
 }
 
 int AttachmentTrack::GetOpus(unsigned char *out) {
-	char* pcm_chunk = new char[OpusConverter::PCM_CHUNK_SIZE];
-	_http->Read(pcm_chunk, OpusConverter::PCM_CHUNK_SIZE);
+	char* pcm_chunk = new char[AudioToOpus::PCM_CHUNK_SIZE];
+	_http->Read(pcm_chunk, AudioToOpus::PCM_CHUNK_SIZE);
 	int len = _converter->Convert(pcm_chunk, out);
 	delete[] pcm_chunk;
 	return len;

@@ -1,7 +1,7 @@
 #ifndef BRAGI_TRACK_H
 #define BRAGI_TRACK_H
 
-#include "converter/opus_converter.h"
+#include "converter/audio_to_opus.h"
 
 #include <string>
 
@@ -17,7 +17,7 @@ public:
 	
 	virtual int GetOpus(unsigned char *out) = 0;
 protected:
-	OpusConverter* _converter;
+	AudioToOpus* _converter;
 	std::string _title;
 	std::string _album;
 	std::string _artist;

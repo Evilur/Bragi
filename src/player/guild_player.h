@@ -5,7 +5,7 @@
 
 #include <dpp/dpp.h>
 
-class GuildPlayer {
+class GuildPlayer final {
 public:
 	const dpp::snowflake guild_id;
 	

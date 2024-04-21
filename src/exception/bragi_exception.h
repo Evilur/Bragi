@@ -6,7 +6,7 @@
 
 enum ErrorType : char { HARD, SOFT };
 
-class BragiException : public std::exception {
+class BragiException final : public std::exception {
 public:
 	BragiException(const char* e_data, const dpp::snowflake &channel_id, ErrorType e_type = ErrorType::HARD);
 	

@@ -3,7 +3,7 @@
 
 #include <dpp/dpp.h>
 
-class Leave {
+class Leave final {
 public:
 	static void Exec(const dpp::slashcommand_t &event);
 	static void Exec(const dpp::message_create_t &event);

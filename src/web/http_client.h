@@ -5,7 +5,7 @@
 
 #include <asio.hpp>
 
-class HttpClient : WebClient {
+class HttpClient final : WebClient {
 public:
 	explicit HttpClient(const std::string &url);
 	~HttpClient() override;

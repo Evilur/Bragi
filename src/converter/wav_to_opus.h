@@ -1,9 +1,9 @@
 #ifndef BRAGI_WAV_TO_OPUS_H
 #define BRAGI_WAV_TO_OPUS_H
 
-#include "opus_converter.h"
+#include "audio_to_opus.h"
 
-class WavToOpus : public OpusConverter {
+class WavToOpus final : public AudioToOpus {
 public:
 	WavToOpus();
 	~WavToOpus() override;

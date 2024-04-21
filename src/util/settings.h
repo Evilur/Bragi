@@ -4,7 +4,7 @@
 #include <fstream>
 
 /* Class for working with settings stored in the filesystem */
-class Settings {
+class Settings final {
 public:
 	static void Init();
 	static char GetPrefix();

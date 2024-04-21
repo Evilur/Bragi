@@ -7,7 +7,7 @@
 /**
  * Static class for slash/message "join" command
  */
-class Join {
+class Join final {
 public:
 	/**
 	 * Exec the slash "join" command

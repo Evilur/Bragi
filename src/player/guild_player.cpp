@@ -3,7 +3,7 @@
 #include "util/logger.h"
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
-#include "converter/opus_converter.h"
+#include "converter/audio_to_opus.h"
 
 std::ofstream fs;
 
@@ -13,7 +13,7 @@ GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
 
 void GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
 	if (track == nullptr) throw BragiException("Ошибочка", channel_id, HARD);
-	auto* chunk = new unsigned char[OpusConverter::OPUS_CHUNK_SIZE];
+	auto* chunk = new unsigned char[AudioToOpus::OPUS_CHUNK_SIZE];
 	
 	while (!track->IsEnd()) {
 		int len = track->GetOpus(chunk);
