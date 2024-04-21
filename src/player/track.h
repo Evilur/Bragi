@@ -13,16 +13,13 @@ public:
 	std::string GetAlbum();
 	std::string GetArtist();
 	
-	bool IsEnd() const;
-	
 	virtual int GetOpus(unsigned char *out) = 0;
+	virtual bool CanRead() = 0;
 protected:
 	AudioToOpus* _converter;
 	std::string _title;
 	std::string _album;
 	std::string _artist;
-	
-	bool _is_end = false;
 };
 
 #endif

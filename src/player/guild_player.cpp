@@ -15,7 +15,7 @@ void GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake c
 	if (track == nullptr) throw BragiException("Ошибочка", channel_id, HARD);
 	auto* chunk = new unsigned char[AudioToOpus::OPUS_CHUNK_SIZE];
 	
-	while (!track->IsEnd()) {
+	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
 		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}

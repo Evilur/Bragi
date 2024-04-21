@@ -11,6 +11,7 @@ public:
 	~HttpsClient() override;
 	
 	void Read(char *buffer, int size) override;
+	bool CanRead() override;
 };
 
 #endif

@@ -13,8 +13,8 @@ public:
 	
 	AudioToOpus();
 	virtual ~AudioToOpus();
-	virtual int Convert(char* in, unsigned char* out) = 0;
 	
+	virtual int Convert(char* in, unsigned char* out) = 0;
 protected:
 	OpusEncoder* _encoder;
 };

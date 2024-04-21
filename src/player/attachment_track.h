@@ -14,8 +14,9 @@ public:
 	~AttachmentTrack() override;
 	
 	int GetOpus(unsigned char *out) override;
+	bool CanRead() override;
 private:
-	HttpClient* _http;
+	HttpClient* _http_client;
 	AudioType _type;
 };
 

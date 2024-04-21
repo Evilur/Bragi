@@ -31,3 +31,5 @@ void HttpsClient::Read(char* buffer, int size) {
 }
 
 HttpsClient::~HttpsClient() = default;
+
+bool HttpsClient::CanRead() { return false; }

@@ -4,12 +4,16 @@
 #include "player/attachment_track.h"
 
 void PlayAttachment::Exec(const dpp::slashcommand_t &event) {
-	try { event.reply(Exec(event.command.guild_id, event.command.usr.id, event.command.channel_id, nullptr)); }
+	Track* track = new AttachmentTrack(event.command.channel_id, nullptr);
+	
+	try { event.reply(Exec(event.command.guild_id, event.command.usr.id, event.command.channel_id, track)); }
 	catch (BragiException &exception) { event.reply(exception.GetMessage()); }
 }
 
 void PlayAttachment::Exec(const dpp::message_create_t &event) {
-	try { event.send(Exec(event.msg.guild_id, event.msg.author.id, event.msg.channel_id, nullptr)); }
+	Track* track = new AttachmentTrack(event.msg.channel_id, nullptr);
+	
+	try { event.send(Exec(event.msg.guild_id, event.msg.author.id, event.msg.channel_id, track)); }
 	catch (BragiException &exception) { event.send(exception.GetMessage()); }
 }
 

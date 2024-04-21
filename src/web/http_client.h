@@ -11,6 +11,7 @@ public:
 	~HttpClient() override;
 	
 	void Read(char* buffer, int size) override;
+	bool CanRead() override;
 private:
 	asio::ip::tcp::iostream _stream;
 };
