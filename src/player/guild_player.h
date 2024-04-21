@@ -19,7 +19,7 @@ public:
 	/* Reconnect to the voice channel */
 	void Reconnect();
 	/* Join to the voice channel */
-	dpp::message Join(dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 	/*  Leave the voice channel */
 	dpp::message Leave(const dpp::snowflake &channel_id);
 	

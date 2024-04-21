@@ -31,10 +31,10 @@ void GuildPlayer::Reconnect() {
 	_voiceconn = ds_client->get_voice(guild_id);
 }
 
-dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
-	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot.me.id)->second.channel_id);
+	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
 	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
 
 	/* If the user isn't in a voice channel */
@@ -46,7 +46,7 @@ dpp::message GuildPlayer::Join(dpp::cluster &bot, const dpp::snowflake &user_id,
 		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, SOFT);
 
 	/* If bot can not connect to the channel or speak there */
-	if (!user_vc->get_user_permissions(&bot.me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot.me).can(dpp::p_speak))
+	if (!user_vc->get_user_permissions(&bot->me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot->me).can(dpp::p_speak))
 		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, HARD);
 
 	/* If bot in the voice channel we need to disconnect */

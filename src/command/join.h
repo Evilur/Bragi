@@ -4,14 +4,21 @@
 #include <dpp/dpp.h>
 #include <dpp/dispatcher.h>
 
+/**
+ * Static class for slash/message "join" command
+ */
 class Join {
 public:
-	static void Exec(dpp::cluster &bot, const dpp::slashcommand_t &event);
-	static void Exec(dpp::cluster &bot, const dpp::message_create_t &event);
+	/**
+	 * Exec the slash "join" command
+	 * @param event A slash event reference
+	 */
+	static void Exec(const dpp::slashcommand_t &event);
+	static void Exec(const dpp::message_create_t &event);
 	
 	/* return the message with status of the executing
 	 * throw a BragiException */
-	static dpp::message Exec(dpp::cluster &bot, const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	static dpp::message Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 };
 
 
