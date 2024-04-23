@@ -1,6 +1,5 @@
 #include "guild_player.h"
 #include "master.h"
-#include "util/logger.h"
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
@@ -10,12 +9,7 @@ GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
-	while (track->CanRead()) {
-		int len = track->GetOpus(chunk);
-		_voiceconn->voiceclient->send_audio_opus(chunk, len);
-	}
-
+	SendOpus(track);
 	throw BragiException("Успех!", channel_id, HARD);
 }
 
@@ -66,6 +60,14 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	
 	/* If there is not a such guild we need to add it to the array */
 	return Add(guild_id);
+}
+
+void GuildPlayer::SendOpus(Track* track) {
+	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
+	while (track->CanRead()) {
+		int len = track->GetOpus(chunk);
+		_voiceconn->voiceclient->send_audio_opus(chunk, len);
+	}
 }
 
 bool GuildPlayer::IsPLayerReady() {

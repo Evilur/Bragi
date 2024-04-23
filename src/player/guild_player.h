@@ -21,7 +21,7 @@ public:
 private:
 	dpp::voiceconn* _voiceconn;
 
-	void SendOpus();
+	void SendOpus(Track* track);
 	
 	bool IsPLayerReady();
 	
