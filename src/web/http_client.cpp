@@ -16,11 +16,9 @@ HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 	if (!_stream.good()) throw WebClientException(CON_CANNOT_BE_ESTABLISHED);
 	
 	/* Skip http response headers */
-	char* buffer = new char[1024];
+	char buffer[1024];
 	while (_stream.peek() != '\r') _stream.getline(buffer, 1024);
 	_stream.getline(buffer, 1024);
-	delete[] buffer;
-	buffer = nullptr;
 }
 
 inline HttpClient::~HttpClient() { _stream.close(); }

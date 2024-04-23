@@ -23,7 +23,6 @@ AttachmentTrack::~AttachmentTrack() {
 int AttachmentTrack::GetOpus(unsigned char *out) {
 	char pcm_chunk[AudioToOpus::PCM_CHUNK_SIZE];
 	_http_client->Read(pcm_chunk, AudioToOpus::PCM_CHUNK_SIZE);
-	std::cout << pcm_chunk;
 	int len = _converter->Convert(pcm_chunk, out);
 	return len;
 }

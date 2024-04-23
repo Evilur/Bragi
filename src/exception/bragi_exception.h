@@ -8,7 +8,7 @@ enum ErrorType : char { HARD, SOFT };
 
 class BragiException final : public std::exception {
 public:
-	BragiException(const char* e_data, const dpp::snowflake &channel_id, ErrorType e_type = ErrorType::HARD);
+	BragiException(const char* e_data, const dpp::snowflake &channel_id, ErrorType e_type);
 	
 	dpp::message GetMessage();
 private:

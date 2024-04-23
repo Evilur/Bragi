@@ -5,33 +5,21 @@
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
 
-std::ofstream fs;
-
 GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
 	this->_voiceconn = ds_client->get_voice(*guild_id);
 }
 
-void GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
-	if (track == nullptr) throw BragiException("Ошибочка", channel_id, HARD);
-	auto* chunk = new unsigned char[AudioToOpus::OPUS_CHUNK_SIZE];
-	
+dpp::message GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
+	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
 		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
-	
+
 	throw BragiException("Успех!", channel_id, HARD);
 }
 
-bool GuildPlayer::IsPLayerReady() {
-	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
-}
-
-void GuildPlayer::Reconnect() {
-	_voiceconn = ds_client->get_voice(guild_id);
-}
-
-dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
@@ -53,17 +41,22 @@ dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowfla
 	if (bot_vc != nullptr) ds_client->disconnect_voice(guild_id);
 
 	/* If all is OK */
-	ds_client->connect_voice(guild_id, user_vc->id); //Connect the new voice channel
-	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
+	ds_client->connect_voice(guild_id, user_vc->id);
+	return std::format(DIC_JOINED, user_vc->name);
 }
 
-dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
+std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (_voiceconn == nullptr)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
 
 	ds_client->disconnect_voice(guild_id);
-	return dpp::message(channel_id, DIC_LEFT);
+	_voiceconn = nullptr;
+	return DIC_LEFT;
+}
+
+void GuildPlayer::Reconnect() {
+	_voiceconn = ds_client->get_voice(guild_id);
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
@@ -73,6 +66,10 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	
 	/* If there is not a such guild we need to add it to the array */
 	return Add(guild_id);
+}
+
+bool GuildPlayer::IsPLayerReady() {
+	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
 }
 
 GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {

@@ -11,23 +11,17 @@ public:
 	
 	explicit GuildPlayer(const dpp::snowflake* guild_id);
 	
-	/* Play track
-	 * throw a BragiException */
-	void PlayTrack(dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
-	/* Check player for ready */
-	bool IsPLayerReady();
-	/* Reconnect to the voice channel */
+	dpp::message PlayTrack(dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
+	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	std::string Leave(const dpp::snowflake &channel_id);
+
 	void Reconnect();
-	/* Join to the voice channel */
-	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
-	/*  Leave the voice channel */
-	dpp::message Leave(const dpp::snowflake &channel_id);
 	
-	/* Get a guild from the array
-	 * return: a founded guild from the array */
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 private:
 	dpp::voiceconn* _voiceconn;
+
+	bool IsPLayerReady();
 	
 	static inline const unsigned int GUILDS_DELTA = 8;
 	static inline unsigned int _max_guild_count = GUILDS_DELTA;

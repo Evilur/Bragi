@@ -28,5 +28,5 @@ void Join::Exec(const dpp::message_create_t &event) {
 }
 
 dpp::message Join::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
-	return GuildPlayer::Get(guild_id)->Join(user_id, channel_id);
+	return dpp::message(channel_id, GuildPlayer::Get(guild_id)->Join(user_id, channel_id));
 }
