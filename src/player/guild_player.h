@@ -11,7 +11,7 @@ public:
 	
 	explicit GuildPlayer(const dpp::snowflake &guild_id);
 	
-	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track *track);
+	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 	dpp::message Leave(const dpp::snowflake &channel_id);
 
@@ -21,6 +21,8 @@ public:
 private:
 	dpp::voiceconn* _voiceconn;
 
+	void SendOpus();
+	
 	bool IsPLayerReady();
 	
 	static inline const unsigned int GUILDS_DELTA = 8;

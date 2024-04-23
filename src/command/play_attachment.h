@@ -25,7 +25,7 @@ private:
 	 * @throws BragiException If cannot exec the command correctly
 	 * @return The message object to send to the channel
 	 */
-	static dpp::message Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track *track);
+	static dpp::message Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 };
 
 #endif

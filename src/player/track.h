@@ -13,7 +13,7 @@ public:
 	std::string GetAlbum();
 	std::string GetArtist();
 	
-	virtual int GetOpus(unsigned char *out) = 0;
+	virtual int GetOpus(unsigned char* out) = 0;
 	virtual bool CanRead() = 0;
 protected:
 	AudioToOpus* _converter;

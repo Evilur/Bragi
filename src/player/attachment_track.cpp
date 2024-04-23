@@ -20,7 +20,7 @@ AttachmentTrack::~AttachmentTrack() {
 	_http_client = nullptr;
 }
 
-int AttachmentTrack::GetOpus(unsigned char *out) {
+int AttachmentTrack::GetOpus(unsigned char* out) {
 	char pcm_chunk[AudioToOpus::PCM_CHUNK_SIZE];
 	_http_client->Read(pcm_chunk, AudioToOpus::PCM_CHUNK_SIZE);
 	int len = _converter->Convert(pcm_chunk, out);

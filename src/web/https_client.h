@@ -10,7 +10,7 @@ public:
 	explicit HttpsClient(const std::string &url);
 	~HttpsClient() override;
 	
-	void Read(char *buffer, int size) override;
+	void Read(char* buffer, int size) override;
 	bool CanRead() override;
 };
 
