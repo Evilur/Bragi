@@ -9,11 +9,11 @@ class GuildPlayer final {
 public:
 	const dpp::snowflake guild_id;
 	
-	explicit GuildPlayer(const dpp::snowflake* guild_id);
+	explicit GuildPlayer(const dpp::snowflake &guild_id);
 	
-	dpp::message PlayTrack(dpp::snowflake user_id, dpp::snowflake channel_id, Track *track);
-	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
-	std::string Leave(const dpp::snowflake &channel_id);
+	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track *track);
+	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	dpp::message Leave(const dpp::snowflake &channel_id);
 
 	void Reconnect();
 	

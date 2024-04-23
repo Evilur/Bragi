@@ -12,9 +12,9 @@ public:
 	
 	dpp::message GetMessage();
 private:
-	const ErrorType _e_type{};
 	const char* _e_data;
 	const dpp::snowflake _channel_id;
+	const ErrorType _e_type{};
 
 	dpp::message ForceError();
 	dpp::message WeakError();

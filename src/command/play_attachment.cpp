@@ -19,6 +19,6 @@ void PlayAttachment::Exec(const dpp::message_create_t &event) {
 
 dpp::message PlayAttachment::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track *track) {
 	GuildPlayer* guild_player = GuildPlayer::Get(guild_id);
-	guild_player->PlayTrack(user_id, channel_id, track);
+	guild_player->HandleTrack(user_id, channel_id, track);
 	return nullptr;
 }

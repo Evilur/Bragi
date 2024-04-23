@@ -5,11 +5,11 @@
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
 
-GuildPlayer::GuildPlayer(const dpp::snowflake* guild_id) : guild_id(*guild_id) {
-	this->_voiceconn = ds_client->get_voice(*guild_id);
+GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
+	this->_voiceconn = ds_client->get_voice(guild_id);
 }
 
-dpp::message GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::snowflake channel_id, Track *track) {
+dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track *track) {
 	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
@@ -19,7 +19,7 @@ dpp::message GuildPlayer::PlayTrack(const dpp::snowflake user_id, const dpp::sno
 	throw BragiException("Успех!", channel_id, HARD);
 }
 
-std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
@@ -42,17 +42,17 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 
 	/* If all is OK */
 	ds_client->connect_voice(guild_id, user_vc->id);
-	return std::format(DIC_JOINED, user_vc->name);
+	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
 }
 
-std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
+dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (_voiceconn == nullptr)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
 
 	ds_client->disconnect_voice(guild_id);
 	_voiceconn = nullptr;
-	return DIC_LEFT;
+	return dpp::message(channel_id, DIC_LEFT);
 }
 
 void GuildPlayer::Reconnect() {
@@ -79,7 +79,7 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Try to get the empty place for the pointer */
 	for (unsigned int i = _max_guild_count - GUILDS_DELTA; i < _max_guild_count; i++) {
 		if (_guilds[i] != nullptr) continue;
-		_guilds[i] = new GuildPlayer(&guild_id);
+		_guilds[i] = new GuildPlayer(guild_id);
 		return _guilds[i];
 	}
 	
@@ -90,6 +90,6 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	_guilds = new_guilds;
 	
 	/* Add the new guild to the array */
-	_guilds[_max_guild_count] = new GuildPlayer(&guild_id);
+	_guilds[_max_guild_count] = new GuildPlayer(guild_id);
 	return _guilds[_max_guild_count += GUILDS_DELTA];
 }
