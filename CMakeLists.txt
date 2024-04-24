@@ -25,6 +25,7 @@ ADD_EXECUTABLE(Bragi
     src/converter/wav_to_opus.cpp
     src/web/https_client.cpp
     src/web/web_client.cpp
+    src/player/playlist.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi dpp opusenc)

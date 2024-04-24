@@ -56,7 +56,7 @@ void on_message_create(const dpp::message_create_t &event) {
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->Reconnect();
+	GuildPlayer::Get(event.voice_client->server_id)->UpdateVoice();
 }
 
 void on_ready(const dpp::ready_t &event) {

@@ -3,12 +3,17 @@
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
+#include "util/logger.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 	this->_voiceconn = ds_client->get_voice(guild_id);
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
+	_playlist->Add(track);
+	
+	if (!IsPLayerReady()) Join(user_id, channel_id);
+	
 	SendOpus(track);
 	throw BragiException("Успех!", channel_id, HARD);
 }
@@ -49,7 +54,7 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	return dpp::message(channel_id, DIC_LEFT);
 }
 
-void GuildPlayer::Reconnect() {
+void GuildPlayer::UpdateVoice() {
 	_voiceconn = ds_client->get_voice(guild_id);
 }
 

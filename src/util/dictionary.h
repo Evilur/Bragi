@@ -21,6 +21,13 @@
 #define DIC_SLASH_PLAY_ATTACHMENT "Воспроизвести трек из вложений"
 #define DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT "Трек для воспроизведения"
 
+//track
+#define DIC_TRACK_PLAYING_NOW "**:notes: Сейчас играет: `{}`"
+#define DIC_TRACK_ADD_TO_PLAYLIST "**:notes: В плейлист добавлено: `{}`"
+#define DIC_TRACK_DURATION ":watch: Продолжительность: `{}`**"
+#define DIC_TRACK_ALBUM "**Альбом**"
+#define DIC_TRACK_ARTIST "**Исполнитель**"
+
 //errors
 #define DIC_ERROR "**Ошибка**"
 #define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
