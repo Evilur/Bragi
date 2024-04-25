@@ -10,12 +10,18 @@ GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	_playlist->Add(track);
+	_playlist.Add(track);
+	bool is_playing_now = _playlist.GetSize() == 1;
+	dpp::message result_msg = track->GetMessage(is_playing_now, channel_id);
 	
-	if (!IsPLayerReady()) Join(user_id, channel_id);
-	
-	SendOpus(track);
-	throw BragiException("Успех!", channel_id, HARD);
+	if (IsPLayerReady()) {
+		if (is_playing_now) SendOpus(track);
+		return result_msg;
+	}
+
+	result_msg.content.insert(0, Join(user_id, channel_id).content + '\n');
+	_need_to_play_first_track = true;
+	return result_msg;
 }
 
 dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
@@ -56,6 +62,13 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 
 void GuildPlayer::UpdateVoice() {
 	_voiceconn = ds_client->get_voice(guild_id);
+	if (!_need_to_play_first_track) return;
+	_need_to_play_first_track = false;
+	SendOpus(_playlist[0]);
+}
+
+void GuildPlayer::EndOfTrack() {
+	_playlist.Skip();
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
@@ -73,6 +86,7 @@ void GuildPlayer::SendOpus(Track* track) {
 		int len = track->GetOpus(chunk);
 		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
+	_voiceconn->voiceclient->insert_marker();
 }
 
 bool GuildPlayer::IsPLayerReady() {

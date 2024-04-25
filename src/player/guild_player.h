@@ -17,12 +17,13 @@ public:
 	dpp::message Leave(const dpp::snowflake &channel_id);
 	
 	void UpdateVoice();
+	void EndOfTrack();
 
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 private:
 	bool _need_to_play_first_track = false;
 	dpp::voiceconn* _voiceconn;
-	Playlist* _playlist = new Playlist();
+	Playlist _playlist;
 	
 	void SendOpus(Track* track);
 	bool IsPLayerReady();

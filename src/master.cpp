@@ -20,6 +20,7 @@ int main() {
 	bot->on_slashcommand([](const dpp::slashcommand_t &event) { on_slashcommand(event); });
 	bot->on_message_create([](const dpp::message_create_t &event) { on_message_create(event); });
 	bot->on_voice_ready([](const dpp::voice_ready_t &event) { on_voice_ready(event); });
+	bot->on_voice_track_marker([](const dpp::voice_track_marker_t &event) { on_voice_track_marker(event); });
 	bot->on_ready([](const dpp::ready_t &event) { on_ready(event); });
 
 	/* Start the bot */
@@ -57,6 +58,10 @@ void on_message_create(const dpp::message_create_t &event) {
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
 	GuildPlayer::Get(event.voice_client->server_id)->UpdateVoice();
+}
+
+void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
+	GuildPlayer::Get(event.voice_client->server_id)->EndOfTrack();
 }
 
 void on_ready(const dpp::ready_t &event) {
