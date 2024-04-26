@@ -1,16 +1,8 @@
 #include "http_client_exception.h"
-#include "util/dictionary.h"
+#include "util/logger.h"
 
-WebClientException::WebClientException(const HttpClientErrorCode e_code) : _e_code(e_code), _e_data(GetData(e_code)) { }
+#include <format>
 
-const char* WebClientException::GetData(const HttpClientErrorCode e_code) {
-	switch (e_code) {
-		case CON_CANNOT_BE_ESTABLISHED:
-			return DIC_HTTP_ERROR_CON_CANNOT_BE_ESTABLISHED;
-	}
-	return nullptr;
-}
+WebClientException::WebClientException(const char* response, const char* url) : _response(response), _url(url) { }
 
-HttpClientErrorCode WebClientException::GetCode() { return _e_code; }
-
-const char* WebClientException::GetData() { return _e_data; }
+void WebClientException::Log() const { Logger::Debug(std::format("URL: {}\nResponse: {}", _url, _response)); }
