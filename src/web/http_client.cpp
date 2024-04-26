@@ -23,6 +23,6 @@ HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 
 inline HttpClient::~HttpClient() { _stream.close(); }
 
-inline void HttpClient::Read(char* buffer, int size) { _stream.read(buffer, size); }
+void HttpClient::Read(char* buffer, int size) { _stream.read(buffer, size); }
 
 bool HttpClient::CanRead() { return !_stream.eof(); }
