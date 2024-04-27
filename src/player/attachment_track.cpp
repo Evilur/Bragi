@@ -1,8 +1,4 @@
-#include "attachment_track.h"
-#include "exception/bragi_exception.h"
-#include "converter/audio_to_opus.h"
-#include "converter/wav_to_opus.h"
-#include "util/dictionary.h"
+#include "master.h"
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */

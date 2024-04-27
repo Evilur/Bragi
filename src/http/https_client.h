@@ -1,11 +1,13 @@
 #ifndef BRAGI_HTTPS_CLIENT_H
 #define BRAGI_HTTPS_CLIENT_H
 
-#include "web_client.h"
+#include "http_client.h"
 
 #include <string>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
-class HttpsClient final : WebClient {
+class HttpsClient final : HttpClient {
 public:
 	explicit HttpsClient(const std::string &url);
 	~HttpsClient() override;
