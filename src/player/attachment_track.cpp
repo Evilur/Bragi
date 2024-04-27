@@ -1,4 +1,5 @@
-#include "master.h"
+#include "attachment_track.h"
+#include "converter/wav_to_opus.h"
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */

@@ -8,7 +8,6 @@ INCLUDE(cmake/dpp.cmake)
 ADD_EXECUTABLE(Bragi
     src/master.cpp
     src/exception/bragi_exception.cpp
-    src/exception/http_client_exception.cpp
     src/command/play_attachment.cpp
     src/command/ping.cpp
     src/command/join.cpp
@@ -20,11 +19,10 @@ ADD_EXECUTABLE(Bragi
     src/player/guild_player.cpp
     src/player/attachment_track.cpp
     src/player/track.cpp
-    src/web/http_client.cpp
+    src/http/http_client.cpp
     src/converter/audio_to_opus.cpp
     src/converter/wav_to_opus.cpp
-    src/web/https_client.cpp
-    src/web/web_client.cpp
+    src/http/https_client.cpp
     src/player/playlist.cpp
 )
 

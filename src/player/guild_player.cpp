@@ -1,9 +1,8 @@
-#include "guild_player.h"
 #include "master.h"
+#include "guild_player.h"
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
-#include "util/logger.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 	this->_voiceconn = ds_client->get_voice(guild_id);
