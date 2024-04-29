@@ -22,7 +22,6 @@ ADD_EXECUTABLE(Bragi
     src/http/http_client.cpp
     src/converter/audio_to_opus.cpp
     src/converter/wav_to_opus.cpp
-    src/http/https_client.cpp
     src/player/playlist.cpp
 )
 

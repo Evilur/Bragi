@@ -3,18 +3,18 @@
 
 #include <asio.hpp>
 
-class HttpClient {
+class HttpClient final {
 public:
 	explicit HttpClient(const std::string &url);
-	virtual ~HttpClient();
+	~HttpClient();
 	
-	virtual void Read(char* buffer, int size);
-	virtual bool CanRead();
+	void Read(char* buffer, int size);
+	bool CanRead();
 protected:
 	std::string _host;
 	std::string _get;
 private:
-	asio::ip::tcp::iostream _stream;
+	asio::ip::tcp::iostream* _stream;
 };
 
 #endif

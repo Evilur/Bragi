@@ -26,7 +26,8 @@ private:
 	Playlist _playlist;
 	
 	void SendOpus(Track* track);
-	bool IsPLayerReady();
+	bool PlayFirstTrack();
+	bool IsPlayerReady();
 
 	static inline constexpr unsigned short GUILDS_DELTA = 4;
 	static inline unsigned int _max_guild_count = GUILDS_DELTA;

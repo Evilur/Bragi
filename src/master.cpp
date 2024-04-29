@@ -7,16 +7,11 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
-#include "http/http_client.h"
 
 int main() {
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
-	
-	HttpClient client("https://cdn.discordapp.com/attachments/985959696160682114/1233250663899598909/TEST.pcm?ex=662c69ae&is=662b182e&hm=1a5082065b57e08d2939491103bc2dd7c1f16ba9d5d93108265f6f26aba4b5ee&");
-	
-	return 0;
 	
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
@@ -27,6 +22,7 @@ int main() {
 	bot->on_voice_ready([](const dpp::voice_ready_t &event) { on_voice_ready(event); });
 	bot->on_voice_track_marker([](const dpp::voice_track_marker_t &event) { on_voice_track_marker(event); });
 	bot->on_ready([](const dpp::ready_t &event) { on_ready(event); });
+	
 
 	/* Start the bot */
 	Logger::Info("Starting the bot");

@@ -3,24 +3,31 @@
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
+#include "util/logger.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 	this->_voiceconn = ds_client->get_voice(guild_id);
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	_playlist.Add(track);
-	bool is_playing_now = _playlist.GetSize() == 1;
-	dpp::message result_msg = track->GetMessage(is_playing_now, channel_id);
+	_playlist.Add(track);  //Add a track to the playlist
+	bool is_playing_now = _playlist.GetSize() == 1;  //If there is only 1 track in the playlist this track will be played right now
+	dpp::message result_msg = track->GetMessage(is_playing_now, channel_id);  //Get track message
 	
-	if (IsPLayerReady()) {
-		if (is_playing_now) SendOpus(track);
-		return result_msg;
+	/* If player is ready */
+	if (IsPlayerReady()) {
+		/* If we need to play the track right now */
+		if (is_playing_now) {
+			_need_to_play_first_track = true;  //We need to play the first track in the playlist
+			_voiceconn->voiceclient->insert_marker();  //Insert a marker to the voiceclient for call the 'on_voice_track_marker' event
+		}
+		return result_msg;  //Return a track message
 	}
 
-	result_msg.content.insert(0, Join(user_id, channel_id).content + '\n');
-	_need_to_play_first_track = true;
-	return result_msg;
+	/* If player is not ready */
+	result_msg.content.insert(0, Join(user_id, channel_id).content + '\n');  //Join to the channel and insert it to the track message
+	_need_to_play_first_track = true;  //We need to play the first track in the playlist
+	return result_msg;  //Return a track message
 }
 
 dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
@@ -34,7 +41,7 @@ dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowfla
 		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, HARD);
 
 	/* If the user and a bot already in the same channel */
-	if (IsPLayerReady() && bot_vc != nullptr && bot_vc->id == user_vc->id)
+	if (IsPlayerReady() && bot_vc != nullptr && bot_vc->id == user_vc->id)
 		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, SOFT);
 
 	/* If bot can not connect to the channel or speak there */
@@ -61,13 +68,11 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 
 void GuildPlayer::UpdateVoice() {
 	_voiceconn = ds_client->get_voice(guild_id);
-	if (!_need_to_play_first_track) return;
-	_need_to_play_first_track = false;
-	SendOpus(_playlist[0]);
+	PlayFirstTrack();
 }
 
 void GuildPlayer::EndOfTrack() {
-	_playlist.Skip();
+	if (!PlayFirstTrack()) _playlist.Skip();
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
@@ -79,7 +84,7 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	return Add(guild_id);
 }
 
-void GuildPlayer::SendOpus(Track* track) {
+void GuildPlayer::SendOpus(Track *track) {
 	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
@@ -88,7 +93,14 @@ void GuildPlayer::SendOpus(Track* track) {
 	_voiceconn->voiceclient->insert_marker();
 }
 
-bool GuildPlayer::IsPLayerReady() {
+bool GuildPlayer::PlayFirstTrack() {
+	if (!_need_to_play_first_track) return false;
+	_need_to_play_first_track = false;
+	SendOpus(_playlist[0]);
+	return true;
+}
+
+bool GuildPlayer::IsPlayerReady() {
 	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
 }
 

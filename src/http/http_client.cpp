@@ -10,17 +10,29 @@ HttpClient::HttpClient(const std::string &url) {
 
 	/* Parse the url */
 	_host = url.substr(first_del, second_del - first_del);
-	_get = url.substr(second_del + 1);
+	_get = url.substr(second_del);
 	
 	/* Init the stream */
-	//_stream = asio::ip::tcp::iostream(_host, "443");
+	_stream = new asio::ip::tcp::iostream(_host, "80");
 	
 	/* Send the request */
-	//_stream << "" << std::flush;
+	*_stream << "GET " << _get << " HTTP/1.1\n" 
+			 << "Host: " << _host << "\n"
+			 << "Connection: close\n"
+			 << "\r\n\r\n" << std::flush;
+	
+	char buffer[1024];
+	while(buffer[0] != '\r') _stream->getline(buffer, 1024);
 }
 
-HttpClient::~HttpClient() { _stream.close(); }
+HttpClient::~HttpClient() {
+	_stream->close();
+	delete _stream;
+	_stream = nullptr;
+}
 
-void HttpClient::Read(char* buffer, int size) { _stream.read(buffer, size); }
+void HttpClient::Read(char* buffer, int size) { 
+	_stream->read(buffer, size);
+}
 
-bool HttpClient::CanRead() { return !_stream.eof(); }
+bool HttpClient::CanRead() { return !_stream->eof(); }
