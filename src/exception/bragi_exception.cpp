@@ -4,8 +4,8 @@
 
 BragiException::BragiException(const char* e_data, const dpp::snowflake &channel_id, const ErrorType e_type)
 													: _e_data(e_data), _channel_id(channel_id), _e_type(e_type) { }
-
-BragiException::operator dpp::message() const {
+													
+dpp::message BragiException::Message() const {
 	if (_e_type == ErrorType::HARD) return ForceError();
 	else return WeakError();
 }

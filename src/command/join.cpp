@@ -12,7 +12,7 @@ void Join::Exec(const dpp::slashcommand_t &event) {
 	
 	/* Send message to channel */
 	try { event.reply(Exec(event.command.guild_id, user_id, event.command.channel_id));	} 
-	catch (BragiException &exception) { event.reply((dpp::message)exception); }
+	catch (BragiException &exception) { event.reply(exception.Message()); }
 }
 
 void Join::Exec(const dpp::message_create_t &event) {
@@ -24,7 +24,7 @@ void Join::Exec(const dpp::message_create_t &event) {
 
 	/* Send message to channel */
 	try { event.send(Exec(event.msg.guild_id, user_id, event.msg.channel_id)); } 
-	catch (BragiException &exception) { event.send((dpp::message)exception); }
+	catch (BragiException &exception) { event.send(exception.Message()); }
 }
 
 dpp::message Join::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
