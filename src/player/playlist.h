@@ -8,6 +8,7 @@ public:
 	void Add(Track* track);
 	void Skip();
 	
+	bool IsEmpty();
 	unsigned short GetSize();
 
 	Track* operator[](unsigned short index);

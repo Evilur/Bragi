@@ -22,7 +22,6 @@ int main() {
 	bot->on_voice_ready([](const dpp::voice_ready_t &event) { on_voice_ready(event); });
 	bot->on_voice_track_marker([](const dpp::voice_track_marker_t &event) { on_voice_track_marker(event); });
 	bot->on_ready([](const dpp::ready_t &event) { on_ready(event); });
-	
 
 	/* Start the bot */
 	Logger::Info("Starting the bot");
@@ -58,11 +57,11 @@ void on_message_create(const dpp::message_create_t &event) {
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->UpdateVoice();
+	GuildPlayer::Get(event.voice_client->server_id)->HandleReadyState();
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->EndOfTrack();
+	GuildPlayer::Get(event.voice_client->server_id)->HandleMarker(event.track_meta);
 }
 
 void on_ready(const dpp::ready_t &event) {

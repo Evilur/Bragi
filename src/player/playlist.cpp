@@ -8,6 +8,8 @@ void Playlist::Skip() {
 	_track_count = 0;
 }
 
+bool Playlist::IsEmpty() { return _track_count == 0; }
+
 unsigned short Playlist::GetSize() { return _track_count; }
 
 Track* Playlist::operator[](unsigned short index) {

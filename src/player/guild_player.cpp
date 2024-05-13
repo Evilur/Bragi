@@ -10,23 +10,19 @@ GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
+	bool is_playing_now = _playlist.IsEmpty();  //If the playlist is empty this track will be played right now
 	_playlist.Add(track);  //Add a track to the playlist
-	bool is_playing_now = _playlist.GetSize() == 1;  //If there is only 1 track in the playlist this track will be played right now
 	dpp::message result_msg = track->GetMessage(is_playing_now, channel_id);  //Get track message
 	
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		/* If we need to play the track right now */
-		if (is_playing_now) {
-			_need_to_play_first_track = true;  //We need to play the first track in the playlist
-			_voiceconn->voiceclient->insert_marker();  //Insert a marker to the voiceclient for call the 'on_voice_track_marker' event
-		}
+		if (is_playing_now) _voiceconn->voiceclient->insert_marker("PFT");  //Insert a marker to the voiceclient for call the 'on_voice_track_marker' event
 		return result_msg;  //Return a track message
 	}
 
 	/* If player is not ready */
 	result_msg.content.insert(0, Join(user_id, channel_id).content + '\n');  //Join to the channel and insert it to the track message
-	_need_to_play_first_track = true;  //We need to play the first track in the playlist
 	return result_msg;  //Return a track message
 }
 
@@ -66,14 +62,17 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	return dpp::message(channel_id, DIC_LEFT);
 }
 
-void GuildPlayer::UpdateVoice() {
-	_voiceconn = ds_client->get_voice(guild_id);
-	PlayFirstTrack();
+void GuildPlayer::HandleMarker(const std::string &meta) {
+	/* meta can be "PFT" (play first track) or "EOF" (end of file) */
+	if (meta == "PFT") SendOpus(_playlist[0]);  //If we need to play first track
+	else _playlist.Skip();  //If there is the end of the file
 }
 
-void GuildPlayer::EndOfTrack() {
-	if (!PlayFirstTrack()) _playlist.Skip();
+void GuildPlayer::HandleReadyState() {
+	UpdateVoice();  //Update the voice
+	if (!_playlist.IsEmpty()) SendOpus(_playlist[0]);  //If the playlist is not empty play the first track
 }
+
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the array */
@@ -84,20 +83,15 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	return Add(guild_id);
 }
 
+void GuildPlayer::UpdateVoice() { _voiceconn = ds_client->get_voice(guild_id); }
+
 void GuildPlayer::SendOpus(Track *track) {
 	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
 		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
-	_voiceconn->voiceclient->insert_marker();
-}
-
-bool GuildPlayer::PlayFirstTrack() {
-	if (!_need_to_play_first_track) return false;
-	_need_to_play_first_track = false;
-	SendOpus(_playlist[0]);
-	return true;
+	_voiceconn->voiceclient->insert_marker("EOF");
 }
 
 bool GuildPlayer::IsPlayerReady() {

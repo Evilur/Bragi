@@ -16,17 +16,16 @@ public:
 	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 	dpp::message Leave(const dpp::snowflake &channel_id);
 	
-	void UpdateVoice();
-	void EndOfTrack();
+	void HandleReadyState();
+	void HandleMarker(const std::string &meta);
 
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 private:
-	bool _need_to_play_first_track = false;
 	dpp::voiceconn* _voiceconn;
 	Playlist _playlist;
-	
+
+	void UpdateVoice();
 	void SendOpus(Track* track);
-	bool PlayFirstTrack();
 	bool IsPlayerReady();
 
 	static inline constexpr unsigned short GUILDS_DELTA = 4;
