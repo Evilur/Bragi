@@ -7,29 +7,31 @@ INCLUDE_DIRECTORIES(src)
 ADD_EXECUTABLE(Bragi
     # A master file
     src/master.cpp
-    
+
     # Slash/mesage commands
     src/command/play_attachment.cpp
     src/command/ping.cpp
     src/command/join.cpp
     src/command/leave.cpp
-    
+
     # Audio to OPUS convertters
     src/converter/audio_to_opus.cpp
     src/converter/wav_to_opus.cpp
-    
+
     # Exceptions
     src/exception/bragi_exception.cpp
-    
-    # Web clients
+
+    # Http clients
     src/http/http_client.cpp
+    src/http/https_client.cpp
+    src/http/web_client.cpp
 
     # Guild player and its components
     src/player/guild_player.cpp
     src/player/attachment_track.cpp
     src/player/track.cpp
     src/player/playlist.cpp
-    
+
     # Some different utils
     src/util/logger.cpp
     src/util/path.cpp
@@ -37,4 +39,4 @@ ADD_EXECUTABLE(Bragi
     src/util/color.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi opus sodium dpp opusenc)
+TARGET_LINK_LIBRARIES(Bragi opus sodium opusenc crypto ssl dpp)
