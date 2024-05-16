@@ -1,14 +1,18 @@
 #include "attachment_track.h"
+#include "util/dictionary.h"
 #include "converter/wav_to_opus.h"
+#include "exception/bragi_exception.h"
 
 AttachmentTrack::AttachmentTrack(const dpp::snowflake &channel_id, const dpp::attachment* attachment) {
 	/* Check the filetype */
-	//if (!attachment->content_type.starts_with("audio")) throw BragiException(DIC_ERROR_IS_NOT_A_FILE, channel_id, HARD);
+	if (!attachment->content_type.starts_with("audio")) throw BragiException(DIC_ERROR_IS_NOT_A_FILE, channel_id, HARD);
 
-	_http_client = new HttpClient(/*attachment->url*/"http://localhost/TEST.pcm");
-	_title = "attachment->filename";
+	/* Fill the fields */
+	_http_client = new HttpsClient(attachment->url);
+	_title = attachment->filename;
 	_type = WAV;
 
+	/* Init the converter */
 	_converter = new WavToOpus();
 }
 

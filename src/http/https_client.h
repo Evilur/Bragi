@@ -22,6 +22,8 @@ private:
 	std::iostream* _stream;
 	unsigned short _current_len = 0;
 	asio::ssl::stream<asio::ip::tcp::socket>* _socket;
+
+	void ReadHeaders() override;
 };
 
 #endif

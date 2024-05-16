@@ -7,18 +7,8 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
-#include "http/https_client.h"
 
 int main() {
-	HttpsClient client("https://cdn.discordapp.com/attachments/985959696160682114/1240430466281111633/TEST.pcm?ex=66468865&is=664536e5&hm=cfdd0e4b279ccac17191bcddbc58032093ceee908b58a96978780128dbbc3a0b&");
-
-	char buffer[1024];
-	while (client.CanRead()) {
-		client.Read(buffer, 1024);
-		std::cout << buffer;
-	}
-
-	return 0;
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();

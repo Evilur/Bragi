@@ -13,8 +13,7 @@ HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 			 << "Connection: close\n"
 			 << "\r\n\r\n" << std::flush;
 
-	char buffer[1024];
-	while (buffer[0] != '\r') _stream->getline(buffer, 1024);
+	ReadHeaders();
 }
 
 HttpClient::~HttpClient() {
@@ -26,3 +25,8 @@ HttpClient::~HttpClient() {
 bool HttpClient::CanRead() const { return !_stream->eof(); }
 
 void HttpClient::Read(char* buffer, const int size) { _stream->read(buffer, size); }
+
+void HttpClient::ReadHeaders() {
+	char buffer[1024];
+	while (buffer[0] != '\r') _stream->getline(buffer, 1024);
+}

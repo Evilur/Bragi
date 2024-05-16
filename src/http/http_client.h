@@ -17,6 +17,8 @@ public:
 
 private:
 	asio::ip::tcp::iostream* _stream;
+
+	void ReadHeaders() override;
 };
 
 #endif

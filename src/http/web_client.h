@@ -15,6 +15,9 @@ protected:
 
 	std::string _host;
 	std::string _get;
+
+private:
+	virtual void ReadHeaders() = 0;
 };
 
 #endif

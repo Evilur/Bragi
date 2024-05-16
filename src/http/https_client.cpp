@@ -17,6 +17,7 @@ HttpsClient::HttpsClient(const std::string &url) : WebClient(url) {
 	                                  "Connection: close\n"
 	                                  "\r\n\r\n", _get, _host);
 	asio::write(*_socket, asio::buffer(request));
+	ReadHeaders();
 }
 
 HttpsClient::~HttpsClient() {
@@ -29,13 +30,31 @@ bool HttpsClient::CanRead() const {
 }
 
 void HttpsClient::Read(char* buffer, const int size) {
-	char tmp_buffer[1024];
 	while (_current_len < size && !_ec) {
-		int len = _socket->read_some(asio::buffer(tmp_buffer, 1024), _ec);
+		int len = _socket->read_some(asio::buffer(buffer, size), _ec);
 		_current_len += len;
-		_stream->write(tmp_buffer, len);
+		_stream->write(buffer, len);
 	}
 
 	_stream->read(buffer, size);
 	_current_len -= size;
+}
+
+void HttpsClient::ReadHeaders() {
+	constexpr unsigned short buffer_size = 2048;
+	char buffer[buffer_size];
+
+	/* Read a data from the socket 3 times */
+	int len = _socket->read_some(asio::buffer(buffer, buffer_size), _ec);
+	_current_len += len;
+	_stream->write(buffer, len);
+	len = _socket->read_some(asio::buffer(buffer, buffer_size), _ec);
+	_current_len += len;
+	_stream->write(buffer, len);
+	len = _socket->read_some(asio::buffer(buffer, buffer_size), _ec);
+	_current_len += len;
+	_stream->write(buffer, len);
+
+	do _current_len -= _stream->getline(buffer, buffer_size).gcount();
+	while (buffer[0] != '\r');
 }
