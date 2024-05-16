@@ -14,8 +14,8 @@ void PlayAttachment::Exec(const dpp::slashcommand_t &event) {
 
 void PlayAttachment::Exec(const dpp::message_create_t &event) {
 	const unsigned char attachments_count = event.msg.attachments.size();
-	dpp::attachment* attachments[10];
-	for (unsigned char i = 0; i < attachments_count; i++) *attachments[i] = event.msg.attachments[i];
+	const dpp::attachment* attachments[10];
+	for (unsigned char i = 0; i < attachments_count; i++) attachments[i] = &event.msg.attachments[i];
 
 	try { event.send(Exec(event.msg.guild_id, event.msg.author.id, event.msg.channel_id, attachments, attachments_count)); }
 	catch (BragiException &exception) { event.send(exception.Message()); }
