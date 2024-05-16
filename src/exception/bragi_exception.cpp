@@ -3,13 +3,13 @@
 #include "util/dictionary.h"
 
 BragiException::BragiException(const char* e_data, const dpp::snowflake &channel_id, const ErrorType e_type)
-													: _e_data(e_data), _channel_id(channel_id), _e_type(e_type) { }
-													
+		: _e_data(e_data), _channel_id(channel_id), _e_type(e_type) { }
+
 dpp::message BragiException::Message() const {
 	if (_e_type == ErrorType::HARD) return ForceError();
 	else return WeakError();
 }
-													
+
 dpp::message BragiException::ForceError() const {
 	return dpp::message(_channel_id, dpp::embed()
 			.set_color(Color::RED)
