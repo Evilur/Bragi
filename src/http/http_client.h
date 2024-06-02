@@ -15,6 +15,8 @@ public:
 
 	void Read(char* buffer, int size) override;
 
+	void ReadAll(char*&buffer, int &size, int delta_size = 1024 * 8);
+
 private:
 	asio::ip::tcp::iostream* _stream;
 

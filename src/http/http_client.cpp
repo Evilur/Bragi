@@ -26,6 +26,19 @@ bool HttpClient::CanRead() const { return !_stream->eof(); }
 
 void HttpClient::Read(char* buffer, const int size) { _stream->read(buffer, size); }
 
+void HttpClient::ReadAll(char*&buffer, int &size, const int delta_size) {
+	Read(buffer, size);
+
+	while (CanRead()) {
+		char* temp_buffer = new char[size + delta_size];
+		for (unsigned int i = 0; i < size; i++) temp_buffer[i] = buffer[i];
+		delete[] buffer;
+		buffer = temp_buffer;
+		Read(buffer + size, delta_size);
+		size += delta_size;
+	}
+}
+
 void HttpClient::ReadHeaders() {
 	char buffer[1024];
 	while (buffer[0] != '\r') _stream->getline(buffer, 1024);
