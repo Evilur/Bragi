@@ -26,8 +26,8 @@ public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 
 private:
-	dpp::voiceconn* voiceconn_;
-	Playlist playlist_;
+	dpp::voiceconn* _voiceconn;
+	Playlist _playlist;
 
 	void SendOpus(Track* track);
 
@@ -35,9 +35,9 @@ private:
 
 private:
 	static inline constexpr unsigned short PLAYERS_DELTA = 4;
-	static inline unsigned int max_players_count_ = PLAYERS_DELTA;
-	static inline unsigned int players_count_ = 0;
-	static inline GuildPlayer** players_ = new GuildPlayer* [PLAYERS_DELTA];
+	static inline unsigned int _max_players_count = PLAYERS_DELTA;
+	static inline unsigned int _players_count = 0;
+	static inline GuildPlayer** _players = new GuildPlayer* [PLAYERS_DELTA];
 
 	static GuildPlayer* Add(const dpp::snowflake &guild_id);
 };

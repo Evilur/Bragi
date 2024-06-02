@@ -6,18 +6,18 @@
 #include "util/logger.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
-	this->voiceconn_ = ds_client->get_voice(guild_id);
+	this->_voiceconn = ds_client->get_voice(guild_id);
 }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	bool is_playing_now = playlist_.IsEmpty();  //If the playlist is empty this track will be played right now
-	playlist_.Add(track);  //Add a track to the playlist
+	bool is_playing_now = _playlist.IsEmpty();  //If the playlist is empty this track will be played right now
+	_playlist.Add(track);  //Add a track to the playlist
 	dpp::message result_msg = track->GetMessage(is_playing_now, channel_id);  //Get track message
 
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		/* If we need to play the track right now */
-		if (is_playing_now) voiceconn_->voiceclient->insert_marker("PFT");  //Insert a marker to the voiceclient for call the 'on_voice_track_marker' event
+		if (is_playing_now) _voiceconn->voiceclient->insert_marker("PFT");  //Insert a marker to the voiceclient for call the 'on_voice_track_marker' event
 		return result_msg;  //Return a track message
 	}
 
@@ -54,29 +54,29 @@ dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowfla
 
 dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
-	if (voiceconn_ == nullptr)
+	if (_voiceconn == nullptr)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
 
 	ds_client->disconnect_voice(guild_id);
-	voiceconn_ = nullptr;
+	_voiceconn = nullptr;
 	return dpp::message(channel_id, DIC_LEFT);
 }
 
 void GuildPlayer::HandleMarker(const std::string &meta) {
 	/* meta can be "PFT" (play first track) or "EOF" (end of file) */
-	if (meta == "PFT") SendOpus(playlist_[0]);  //If we need to play first track
-	else playlist_.Skip();  //If there is the end of the file
+	if (meta == "PFT") SendOpus(_playlist[0]);  //If we need to play first track
+	else _playlist.Skip();  //If there is the end of the file
 }
 
 void GuildPlayer::HandleReadyState() {
-	voiceconn_ = ds_client->get_voice(guild_id);  //Update the voice
-	if (!playlist_.IsEmpty()) SendOpus(playlist_[0]);  //If the playlist is not empty play the first track
+	_voiceconn = ds_client->get_voice(guild_id);  //Update the voice
+	if (!_playlist.IsEmpty()) SendOpus(_playlist[0]);  //If the playlist is not empty play the first track
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the array */
-	for (unsigned int i = 0; i < players_count_; i++)
-		if (players_[i]->guild_id == guild_id) return players_[i];
+	for (unsigned int i = 0; i < _players_count; i++)
+		if (_players[i]->guild_id == guild_id) return _players[i];
 
 	/* If there is not a such guild we need to add it to the array */
 	return Add(guild_id);
@@ -86,33 +86,33 @@ void GuildPlayer::SendOpus(Track* track) {
 	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);
-		voiceconn_->voiceclient->send_audio_opus(chunk, len);
+		_voiceconn->voiceclient->send_audio_opus(chunk, len);
 	}
-	voiceconn_->voiceclient->insert_marker("EOF");
+	_voiceconn->voiceclient->insert_marker("EOF");
 }
 
 bool GuildPlayer::IsPlayerReady() {
-	return voiceconn_ != nullptr && voiceconn_->voiceclient != nullptr && voiceconn_->voiceclient->is_ready();
+	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
 }
 
 GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Increase the number of guilds */
-	players_count_++;
+	_players_count++;
 
 	/* Try to get the empty place for the pointer */
-	for (unsigned int i = max_players_count_ - PLAYERS_DELTA; i < max_players_count_; i++) {
-		if (players_[i] != nullptr) continue;
-		players_[i] = new GuildPlayer(guild_id);
-		return players_[i];
+	for (unsigned int i = _max_players_count - PLAYERS_DELTA; i < _max_players_count; i++) {
+		if (_players[i] != nullptr) continue;
+		_players[i] = new GuildPlayer(guild_id);
+		return _players[i];
 	}
 
 	/* If the array with pointer is full we need to increase it */
-	auto** new_guilds = new GuildPlayer* [max_players_count_ + PLAYERS_DELTA];
-	for (unsigned int i = 0; i < max_players_count_; i++) new_guilds[i] = players_[i];
-	delete[] players_;
-	players_ = new_guilds;
+	auto** new_guilds = new GuildPlayer* [_max_players_count + PLAYERS_DELTA];
+	for (unsigned int i = 0; i < _max_players_count; i++) new_guilds[i] = _players[i];
+	delete[] _players;
+	_players = new_guilds;
 
 	/* Add the new guild to the array */
-	players_[max_players_count_] = new GuildPlayer(guild_id);
-	return players_[max_players_count_ += PLAYERS_DELTA];
+	_players[_max_players_count] = new GuildPlayer(guild_id);
+	return _players[_max_players_count += PLAYERS_DELTA];
 }

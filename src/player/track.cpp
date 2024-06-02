@@ -18,7 +18,7 @@ dpp::message Track::GetMessage(const bool &is_playing_now, const dpp::snowflake 
 	_title = "Test title";
 	_album = "Test album";
 	_artist = "Test artist";
-	_duration = "4m20c";
+	_duration = "14m88c";
 	/* END TEMP REGION */
 	
 	std::stringstream msg_body;
