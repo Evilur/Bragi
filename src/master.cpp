@@ -8,9 +8,11 @@
 #include "util/logger.h"
 #include "util/settings.h"
 #include "http/http_client.h"
+#include "util/json.h"
 
 int main() {
 	HttpClient cl("https://api.deezer.com/search?q=Korpiklaani Vodka");
+	JSON json(cl);
 	return 0;
 	/* Init static classes */
 	Logger::Init();
