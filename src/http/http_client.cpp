@@ -10,8 +10,8 @@ HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 	/* Send the request */
 	*_stream << "GET " << _get << " HTTP/1.1\n"
 	         << "Host: " << _host << "\n"
-			 << "Connection: close\n"
-			 << "\r\n\r\n" << std::flush;
+	         << "Connection: close\n"
+	         << "\r\n\r\n" << std::flush;
 
 	ReadHeaders();
 }

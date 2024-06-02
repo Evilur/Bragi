@@ -1,3 +1,4 @@
+#include <regex>
 #include "web_client.h"
 
 WebClient::WebClient(const std::string &url) {
@@ -7,5 +8,5 @@ WebClient::WebClient(const std::string &url) {
 
 	/* Parse the url */
 	_host = url.substr(first_del, second_del - first_del);
-	_get = url.substr(second_del);
+	_get = std::regex_replace(url.substr(second_del), std::regex("[[:space:]]"), "%20");
 }
