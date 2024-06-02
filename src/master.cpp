@@ -7,8 +7,11 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
+#include "http/http_client.h"
 
 int main() {
+	HttpClient cl("https://api.deezer.com/search?q=Korpiklaani Vodka");
+	return 0;
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
