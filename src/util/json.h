@@ -21,9 +21,9 @@ private:
 
 	static bool CompareKey(const char* json, const char* key, int size);
 
-	static int ToInt(const char* data, int size);
+	static int ToInt(const char* data);
 
-	static int ToUnsignedInt(const char* data, int size);
+	static int ToUnsignedInt(const char* data);
 };
 
 #endif

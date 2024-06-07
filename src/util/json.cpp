@@ -16,7 +16,7 @@ const char* JSON::GetString(const char* query) const {
 const char* JSON::GetData(const char* query) const {
 	unsigned short bracket_level = 0;  //Number of bracket levels
 	bool in_string = false;  //true if caret in the string type; false if not
-
+	
 	return nullptr;
 
 	int c = 0;
@@ -60,14 +60,13 @@ bool JSON::CompareKey(const char* json, const char* key, const int size) {
 	return *json == ':';
 }
 
-int JSON::ToInt(const char* data, const int size) {
-	if (data[0] != '-') return ToUnsignedInt(data, size);
-	else return -ToUnsignedInt(++data, size);
+int JSON::ToInt(const char* data) {
+	if (data[0] != '-') return ToUnsignedInt(data);
+	else return -ToUnsignedInt(data + 1);
 }
 
-int JSON::ToUnsignedInt(const char* data, int size) {
+int JSON::ToUnsignedInt(const char* data) {
 	int result = 0;
-	for (int ten_pow = size - 1; ten_pow >= 0; ten_pow--)
-		result += std::pow(10, ten_pow) * (*data++ - 48);  //48 is an index of the '0' char in the ASCII
+	while (*data >= '0' and *data <= '9') result = result * 10 + (*data++ - '0');
 	return result;
 }
