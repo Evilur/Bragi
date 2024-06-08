@@ -12,11 +12,11 @@
 
 int main() {
 	HttpClient cl("https://api.deezer.com/search?q=Korpiklaani Vodka");
-	int json_size = 1024 * 1;
+	int json_size = 1024 * 8;
 	char* json_data = new char[json_size];
-	cl.ReadAll(json_data, json_size, json_size);
-	JSON json(json_data, json_size);
-	std::cout << json.GetString(".data[0][1][2].fuck.md5_image[333][666]");
+	cl.ReadAll(json_data, json_size);
+	JSON json(json_data);
+	std::cout << json.GetString(".data[0].md5_image");
 	return 0;
 	/* Init static classes */
 	Logger::Init();

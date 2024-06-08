@@ -3,7 +3,7 @@
 #include <iostream>
 #include <complex>
 
-JSON::JSON(const char* data, const int &data_size) : _data(data), _data_size(data_size) { }
+JSON::JSON(const char* data) : _data(data) { }
 
 JSON JSON::Get(const char* query) const {
 	throw std::logic_error("Not implemented yet");
@@ -14,44 +14,34 @@ const char* JSON::GetString(const char* query) const {
 }
 
 const char* JSON::GetData(const char* query) const {
-	unsigned short bracket_level = 0;  //Number of bracket levels
-	bool in_string = false;  //true if caret in the string type; false if not
+	unsigned short bracket_level;  //Number of bracket levels
+	bool in_string;  //true if caret in the string type; false if not
 
 	while (*query != '\0') {
 		const char* end_ptr;
+		bracket_level = 0;
 
 		/* If this iteration is an array acessing */
 		if (*query++ == '[') {
 			end_ptr = std::strchr(query, ']') + 1;
 			const unsigned int index = ToUnsignedInt(query);
-			std::cout << index << '\n';
 		} else {
 			end_ptr = std::strchr(query, '.');  //Get index of a dot char
 			if (!end_ptr) end_ptr = std::strchr(query, '\0'); //If there isn't any dot chars get the null char ptr
 			if (*(end_ptr - 1) == ']') end_ptr = std::strchr(query, '[');  //If there is a second square braket the index of the first one
 			const int query_size = end_ptr - query; //Get the size of the query
 
-			for (int i = 0; i < query_size; i++) std::cout << query[i];
-			std::cout << '\n';
+			while (bracket_level == 0 && *query++ != '\n') {
+
+			}
 		}
 
 		query = end_ptr;  //Go the next key
 	}
 
 	return nullptr;
-
-	int c = 0;
-	while (*query != '\0') {
-		std::cout << c++ << '\n';
-		query = std::strchr(query, '.') + 1;
-		const char* query_end = std::strchr(query, '.');
-
-		std::cout << c++ << '\n';
-	}
-
-	return nullptr;
 	int query_size = 0;
-	for (int i = 0; i < _data_size && _data[i] != '\0'; i++) {
+	for (int i = 0; i < 1 && _data[i] != '\0'; i++) {
 		/* Increase or descrease the bracket level var and compare the json to the key */
 		if (!in_string) {
 			if (_data[i] == '{') bracket_level++;

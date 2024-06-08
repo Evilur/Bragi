@@ -7,7 +7,7 @@
 
 class JSON final {
 public:
-	JSON(const char* data, const int &data_size);
+	JSON(const char* data);
 
 	JSON Get(const char* query) const;
 
@@ -15,7 +15,6 @@ public:
 
 private:
 	const char* _data;
-	const int _data_size;
 
 	const char* GetData(const char* query) const;
 
