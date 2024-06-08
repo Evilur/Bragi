@@ -16,7 +16,28 @@ const char* JSON::GetString(const char* query) const {
 const char* JSON::GetData(const char* query) const {
 	unsigned short bracket_level = 0;  //Number of bracket levels
 	bool in_string = false;  //true if caret in the string type; false if not
-	
+
+	while (*query != '\0') {
+		const char* end_ptr;
+
+		/* If this iteration is an array acessing */
+		if (*query++ == '[') {
+			end_ptr = std::strchr(query, ']') + 1;
+			const unsigned int index = ToUnsignedInt(query);
+			std::cout << index << '\n';
+		} else {
+			end_ptr = std::strchr(query, '.');  //Get index of a dot char
+			if (!end_ptr) end_ptr = std::strchr(query, '\0'); //If there isn't any dot chars get the null char ptr
+			if (*(end_ptr - 1) == ']') end_ptr = std::strchr(query, '[');  //If there is a second square braket the index of the first one
+			const int query_size = end_ptr - query; //Get the size of the query
+
+			for (int i = 0; i < query_size; i++) std::cout << query[i];
+			std::cout << '\n';
+		}
+
+		query = end_ptr;  //Go the next key
+	}
+
 	return nullptr;
 
 	int c = 0;
