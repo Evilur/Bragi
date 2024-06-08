@@ -20,6 +20,7 @@ ADD_EXECUTABLE(Bragi
 
     # Exceptions
     src/exception/bragi_exception.cpp
+    src/exception/json_exception.cpp
 
     # Http clients
     src/http/http_client.cpp

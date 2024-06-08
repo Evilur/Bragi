@@ -1,24 +1,26 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCInconsistentNamingInspection"
 #ifndef BRAGI_JSON_H
 #define BRAGI_JSON_H
 
 #include "http/http_client.h"
 
-class JSON final {
+class Json final {
 public:
-	JSON(const char* data);
+	explicit Json(const char* data);
 
-	JSON Get(const char* query) const;
+	Json GetObject(const char* query) const;
 
 	const char* GetString(const char* query) const;
 
+	unsigned int GetUInt(const char* query) const;
+
 private:
-	const char* _data;
+	const char* const _data;
 
 	const char* GetData(const char* query) const;
 
-	static bool CompareKey(const char* json, const char* key, int size);
+	static bool FindObject(const char*&data, const char* key, const char* key_end);
+
+	static bool CompareKey(const char* data, const char* key, const char* key_end);
 
 	static int ToInt(const char* data);
 
@@ -26,4 +28,3 @@ private:
 };
 
 #endif
-#pragma clang diagnostic pop

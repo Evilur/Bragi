@@ -15,8 +15,8 @@ int main() {
 	int json_size = 1024 * 8;
 	char* json_data = new char[json_size];
 	cl.ReadAll(json_data, json_size);
-	JSON json(json_data);
-	std::cout << json.GetString(".data[0].md5_image");
+	Json json(json_data);
+	/*std::cout << */json.GetString(".data[0].md5_image");
 	return 0;
 	/* Init static classes */
 	Logger::Init();
