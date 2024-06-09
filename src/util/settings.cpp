@@ -11,12 +11,12 @@ std::string Settings::_arl_token;
 void Settings::Init() {
 	std::ifstream cfg_stream(Path::CONFIG_FILE);  //Open config file for reading
 	Logger::Info("Initializing tokens");
-	
+
 	if (!cfg_stream.is_open()) {  //If there is not such file
 		Logger::Warn("Cannot open config file");
 	} else {
 		Logger::Info("Reading config file");
-		for(std::string line; getline(cfg_stream, line);) {  //Read config file line by line
+		for (std::string line; getline(cfg_stream, line);) {  //Read config file line by line
 			std::regex regex(R"([^=\s]+\s*=\s*)");
 			if (line.starts_with("bot_token")) _bot_token = std::regex_replace(line, regex, "");
 			else if (line.starts_with("arl_token")) _arl_token = std::regex_replace(line, regex, "");
@@ -28,22 +28,16 @@ void Settings::Init() {
 	Logger::Info("Tokens have been initialized");
 }
 
-char Settings::GetPrefix() { 
-	return '!';
-}
+char Settings::GetPrefix() { return '!'; }
 
-std::string Settings::GetBotToken() {
-	return _bot_token;
-}
+std::string const &Settings::GetBotToken() { return _bot_token; }
 
-std::string Settings::GetArlToken() {
-	return _arl_token;
-}
+std::string const &Settings::GetArlToken() { return _arl_token; }
 
 
 void Settings::ReinitTokens() {
 	bool need_to_rewrite = false;
-	
+
 	/* Get tokens */
 	if (_bot_token.empty()) {
 		need_to_rewrite = true;
@@ -57,7 +51,7 @@ void Settings::ReinitTokens() {
 		std::cin >> _arl_token;
 		Logger::Info("Arl token has been gotten from the user input");
 	}
-	
+
 	/* Write config file to the disk */
 	if (!need_to_rewrite) return;
 	Logger::Info("Writing new data to the config file");
