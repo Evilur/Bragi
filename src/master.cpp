@@ -17,6 +17,10 @@ int main() {
 	cl.ReadAll(json_data, json_size);
 	Json json(json_data);
 	std::cout << json.GetString(".data[5].album.cover_xl");
+
+
+
+	/* "User-Agent", "Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0" */
 	return 0;
 	/* Init static classes */
 	Logger::Init();

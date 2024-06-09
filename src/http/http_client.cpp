@@ -10,6 +10,12 @@ HttpClient::HttpClient(const std::string &url) : WebClient(url) {
 	/* Send the request */
 	*_stream << "GET " << _get << " HTTP/1.1\n"
 	         << "Host: " << _host << "\n"
+	         << "Accept: application/json, text/plain, */*\n"
+	         << "Content-Type: text/plain;charset=UTF-8\n"
+	         << "Cache-Control: max-age=0\n"
+	         << "Accept-Language: en-US,en;q=0.9,en-US;q=0.8,en;q=0.7\n"
+	         << "Accept-Charset: utf-8,ISO-8859-1;q=0.8,*;q=0.7\n"
+	         << "User-Agent: Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0\n"
 	         << "Connection: close\n"
 	         << "\r\n\r\n" << std::flush;
 
