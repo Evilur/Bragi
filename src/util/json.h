@@ -10,7 +10,7 @@ class Json final {
 public:
 	explicit Json(const char* data);
 
-	Json GetObject(const char* query) const;
+	Json Get(const char* query) const;
 
 	std::string GetString(const char* query) const;
 

@@ -5,7 +5,7 @@
 
 Json::Json(const char* data) : _data(data) { }
 
-Json Json::GetObject(const char* const query) const {
+Json Json::Get(const char* const query) const {
 	return Json(GetData(query));
 }
 

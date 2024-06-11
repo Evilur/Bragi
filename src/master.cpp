@@ -17,7 +17,7 @@ int main() {
 	char* buffer = new char[1024 * 8];
 	cl.ReadAll(buffer, 1024 * 8);
 
-	Json json(buffer);
+	const Json json(buffer);
 	std::cout << json.GetString(".data[0].title");
 
 	return 0;
