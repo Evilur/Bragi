@@ -3,21 +3,33 @@
 
 #include <asio.hpp>
 
-HttpClient::HttpClient(const std::string &url) : WebClient(url) {
-	/* Init the stream */
-	_stream = new asio::ip::tcp::iostream(_host, "80");
+HttpClient::HttpClient(const char* const url, const char* const headers, const char* const body) {
+	/* Get the hostname and the get request from the url */
+	const char* host_ptr = std::strncmp(url, "http://", 7) == 0 ? std::strchr(url, ':') + 3 : url;
+	const char* get_ptr = std::strchr(host_ptr, '/');
+	const unsigned short host_size = get_ptr - host_ptr;
+	const unsigned short get_size = std::strlen(get_ptr);
 
-	/* Send the request */
+	/* Write the data to the fields */
+	std::strncpy(_host = new char[host_size + 1], host_ptr, host_size);
+	std::strncpy(_get = new char[get_size + 1], get_ptr, get_size);
+	_host[host_size] = '\0';
+	_get[get_size] = '\0';
+
+	/* Init the stream and send the request */
+	_stream = new asio::ip::tcp::iostream(_host, "80");
 	*_stream << "GET " << _get << " HTTP/1.1\n"
-	         << "Host: " << _host << "\n"
-	         << "Accept: application/json, text/plain, */*\n"
-	         << "Content-Type: text/plain;charset=UTF-8\n"
-	         << "Cache-Control: max-age=0\n"
-	         << "Accept-Language: en-US,en;q=0.9,en-US;q=0.8,en;q=0.7\n"
-	         << "Accept-Charset: utf-8,ISO-8859-1;q=0.8,*;q=0.7\n"
-	         << "User-Agent: Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0\n"
-	         << "Connection: close\n"
-	         << "\r\n\r\n" << std::flush;
+	         << "Host: " << _host << '\n'
+	         << "Connection: close\n" << "\r\n\r\n" << std::flush;
+
+	/* Add custom headers (if exists) */
+	if (headers) *_stream << headers << '\n';
+
+	/* Add a request body (if exists) */
+	if (body) {
+		*_stream << "Content-Length: " << std::strlen(body) << '\n'
+		         << "\r\n\r\n" << body << std::flush;
+	} else *_stream << "\r\n\r\n" << std::flush;
 
 	ReadHeaders();
 }

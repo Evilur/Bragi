@@ -1,26 +1,26 @@
 #ifndef BRAGI_HTTP_CLIENT_H
 #define BRAGI_HTTP_CLIENT_H
 
-#include "web_client.h"
-
 #include <asio.hpp>
 
-class HttpClient final : private WebClient {
+class HttpClient final {
 public:
-	explicit HttpClient(const std::string &url);
+	explicit HttpClient(const char* url, const char* headers = nullptr, const char* body = nullptr);
 
-	~HttpClient() override;
+	~HttpClient();
 
-	bool CanRead() const override;
+	bool CanRead() const;
 
-	void Read(char* buffer, int size) override;
+	void Read(char* buffer, int size);
 
 	int ReadAll(char*&buffer, int size, int delta_size = 1024 * 8);
 
 private:
+	char* _host;
+	char* _get;
 	asio::ip::tcp::iostream* _stream;
 
-	void ReadHeaders() override;
+	void ReadHeaders();
 };
 
 #endif
