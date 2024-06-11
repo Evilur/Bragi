@@ -12,16 +12,6 @@
 #include "util/json.h"
 
 int main() {
-	HttpClient cl("api.deezer.com/search?q=Korpiklaani%20Vodka");
-
-	char* buffer = new char[1024 * 8];
-	cl.ReadAll(buffer, 1024 * 8);
-
-	const Json json(buffer);
-	std::cout << json.GetString(".data[0].title");
-
-	return 0;
-
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();

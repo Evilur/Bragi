@@ -3,7 +3,7 @@
 
 #include <asio.hpp>
 
-HttpClient::HttpClient(const char* const url, const char* const headers, const char* const body) {
+HttpClient::HttpClient(const char* const url, const char* const headers) {
 	/* !!! DELETE THIS IN PRODUCTION !!! */
 	if (std::strncmp(url, "https://", 8) == 0) throw std::runtime_error("This if a fucking https, not a http!");
 	/* !!! DELETE THIS IN PRODUCTION !!! */
@@ -24,16 +24,13 @@ HttpClient::HttpClient(const char* const url, const char* const headers, const c
 	_stream = new asio::ip::tcp::iostream(_host, "80");
 	*_stream << "GET " << _get << " HTTP/1.1\n"
 	         << "Host: " << _host << '\n'
-	         << "Connection: close\n" << "\r\n\r\n" << std::flush;
+	         << "Connection: close\n";
 
 	/* Add custom headers (if exists) */
 	if (headers) *_stream << headers << '\n';
 
-	/* Add a request body (if exists) */
-	if (body) {
-		*_stream << "Content-Length: " << std::strlen(body) << '\n'
-		         << "\r\n\r\n" << body << std::flush;
-	} else *_stream << "\r\n\r\n" << std::flush;
+	/* Write an empty line for the http request */
+	*_stream << "\r\n\r\n" << std::flush;
 
 	ReadHeaders();
 }

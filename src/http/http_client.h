@@ -5,7 +5,7 @@
 
 class HttpClient final {
 public:
-	explicit HttpClient(const char* url, const char* headers = nullptr, const char* body = nullptr);
+	explicit HttpClient(const char* url, const char* headers = nullptr);
 
 	~HttpClient();
 
