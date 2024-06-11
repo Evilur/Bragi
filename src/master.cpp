@@ -8,8 +8,6 @@
 #include "util/logger.h"
 #include "util/settings.h"
 #include "client/deezer_client.h"
-#include "http/http_client.h"
-#include "util/json.h"
 
 int main() {
 	/* Init static classes */
