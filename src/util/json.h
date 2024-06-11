@@ -10,24 +10,24 @@ class Json final {
 public:
 	explicit Json(const char* data);
 
-	Json Get(const char* query) const;
+	Json Get(const char* key) const;
 
-	std::string GetString(const char* query) const;
+	Json Get(int index) const;
 
-	unsigned int GetUInt(const char* query) const;
+	explicit operator std::string() const;
 
-	int GetInt(const char* query) const;
+	explicit operator unsigned int() const;
+
+	explicit operator int() const;
 
 private:
 	const char* const _data;
 
-	const char* GetData(const char* query) const;
+	static bool Find(const char*&data, const char* key);
 
-	static bool FindObject(const char*&data, const char* key, const char* key_end);
+	static bool Find(const char*&data, int index);
 
-	static bool FindObject(const char*&data, unsigned int index);
-
-	static bool CompareKey(const char* data, const char* key, const char* key_end);
+	static bool CompareKey(const char* data, const char* key);
 
 	static int ToInt(const char* data);
 

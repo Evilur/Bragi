@@ -5,53 +5,31 @@
 
 Json::Json(const char* data) : _data(data) { }
 
-Json Json::Get(const char* const query) const {
-	return Json(GetData(query));
+Json Json::Get(const char* const key) const {
+	const char* data_ptr = _data;
+	if (!Find(data_ptr, key)) throw JsonException(_data, key);
+	return Json(data_ptr);
 }
 
-std::string Json::GetString(const char* const query) const {
-	const char* data = GetData(query) + 1;
-	const int data_size = std::strchr(data, '\"') - data;
+Json Json::Get(const int index) const {
+	const char* data_ptr = _data;
+	if (!Find(data_ptr, index)) throw JsonException(_data, index);
+	return Json(data_ptr);
+}
 
-	std::string result(data, data_size);
+Json::operator std::string() const {
+	const int data_size = std::strchr(_data + 1, '\"') - _data - 1;
+	std::string result(_data + 1, data_size);
 	std::erase(result, '\\');
 	return result;
 }
 
-unsigned int Json::GetUInt(const char* const query) const {
-	return ToUnsignedInt(GetData(query));
-}
+Json::operator unsigned int() const { return ToUnsignedInt(_data); }
 
-int Json::GetInt(const char* const query) const {
-	return ToInt(GetData(query));
-}
+Json::operator int() const { return ToInt(_data); }
 
-const char* Json::GetData(const char* const query) const {
-	const char* data_ptr = _data;
-	const char* key = query;
 
-	while (*key != '\0') {
-		const char* query_end = nullptr;  //Pointer to the end of a current key str
-
-		/* If this iteration is an array acessing */
-		if (*key++ == '[') {
-			query_end = std::strchr(key, ']') + 1;
-			const unsigned int index = ToUnsignedInt(key);
-			if (!FindObject(data_ptr, index)) throw JsonException(_data, query);
-		} else {
-			query_end = std::strchr(key, '.');  //Get index of a dot char
-			if (!query_end) query_end = std::strchr(key, '\0'); //If there isn't any dot chars get the null char ptr
-			if (*(query_end - 1) == ']') query_end = std::strchr(key, '[');  //If there is a second square braket the index of the first one
-			if (!FindObject(data_ptr, key, query_end)) throw JsonException(_data, query);  //If we cannot find the object throw the exception
-		}
-
-		key = query_end;  //Go the next key
-	}
-
-	return data_ptr;
-}
-
-bool Json::FindObject(const char*&data, const char* key, const char* key_end) {
+bool Json::Find(const char*&data, const char* key) {
 	unsigned short bracket_level = 0;  //Number of bracket levels
 	bool in_string = false;  //true if caret in the string type; false if not
 
@@ -60,7 +38,7 @@ bool Json::FindObject(const char*&data, const char* key, const char* key_end) {
 			/* Increase or descrease the bracket level var and compare the json to the key */
 			if (*data == '{') bracket_level++;
 			else if (*data == '}') bracket_level--;
-			else if (bracket_level == 1 && CompareKey(data, key, key_end)) return data += key_end - key + 3;
+			else if (bracket_level == 1 && CompareKey(data, key)) return data = std::strchr(data, ':') + 1;
 		}
 
 		/* If we enter the string type or escape it, spawp the boolean */
@@ -73,7 +51,7 @@ bool Json::FindObject(const char*&data, const char* key, const char* key_end) {
 	return false;
 }
 
-bool Json::FindObject(const char*&data, unsigned int index) {
+bool Json::Find(const char*&data, int index) {
 	unsigned short square_bracket_level = 0;  //Number of square bracket levels
 	unsigned short curly_bracket_level = 0;  //Number of curly bracket levels
 	bool in_string = false;  //true if caret in the string type; false if not
@@ -98,17 +76,15 @@ bool Json::FindObject(const char*&data, unsigned int index) {
 		data++;
 	} while (square_bracket_level > 0);
 
-	std::cout << 3123123123;
-
 	return false;
 }
 
-bool Json::CompareKey(const char* data, const char* key, const char* key_end) {
+bool Json::CompareKey(const char* data, const char* key) {
 	/* First char is a quote */
 	if (*data++ != '\"') return false;
 
 	/* Compare json and a key */
-	while (key < key_end) if (*data++ != *key++) return false;
+	while (*key != '\0') if (*data++ != *key++) return false;
 
 	/* Quote in the end of a key */
 	if (*data++ != '\"') return false;
