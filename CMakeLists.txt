@@ -8,6 +8,9 @@ ADD_EXECUTABLE(Bragi
     # A master file
     src/master.cpp
 
+    # Interfaces for working with different APIs
+    src/client/deezer_client.cpp
+
     # Slash/mesage commands
     src/command/play_attachment.cpp
     src/command/ping.cpp
@@ -24,8 +27,6 @@ ADD_EXECUTABLE(Bragi
 
     # Http clients
     src/http/http_client.cpp
-    src/http/https_client.cpp
-    src/http/web_client.cpp
 
     # Guild player and its components
     src/player/guild_player.cpp

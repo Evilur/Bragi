@@ -7,24 +7,25 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
+#include "client/deezer_client.h"
 #include "http/http_client.h"
 #include "util/json.h"
 
 int main() {
-	HttpClient cl("https://api.deezer.com/search?q=Korpiklaani Vodka");
-	int json_size = 1024 * 8;
-	char* json_data = new char[json_size];
-	cl.ReadAll(json_data, json_size);
-	Json json(json_data);
-	std::cout << json.GetString(".data[5].album.cover_xl");
+	HttpClient cl("api.deezer.com/search?q=Korpiklaani%20Vodka");
 
+	char* buffer = new char[1024 * 8];
+	cl.ReadAll(buffer, 1024 * 8);
 
+	Json json(buffer);
+	std::cout << json.GetString(".data[0].title");
 
-	/* "User-Agent", "Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0" */
 	return 0;
+
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
+	DeezerClient::Init();
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);

@@ -4,6 +4,10 @@
 #include <asio.hpp>
 
 HttpClient::HttpClient(const char* const url, const char* const headers, const char* const body) {
+	/* !!! DELETE THIS IN PRODUCTION !!! */
+	if (std::strncmp(url, "https://", 8) == 0) throw std::runtime_error("This if a fucking https, not a http!");
+	/* !!! DELETE THIS IN PRODUCTION !!! */
+
 	/* Get the hostname and the get request from the url */
 	const char* host_ptr = std::strncmp(url, "http://", 7) == 0 ? std::strchr(url, ':') + 3 : url;
 	const char* get_ptr = std::strchr(host_ptr, '/');

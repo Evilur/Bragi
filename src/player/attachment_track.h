@@ -2,7 +2,6 @@
 #define BRAGI_ATTACHMENT_TRACK_H
 
 #include "track.h"
-#include "http/https_client.h"
 
 #include <dpp/dpp.h>
 
@@ -19,7 +18,6 @@ public:
 	bool CanRead() override;
 
 private:
-	HttpsClient* _http_client;
 	AudioType _type;
 };
 
