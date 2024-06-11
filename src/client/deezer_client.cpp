@@ -39,7 +39,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 		const std::string user_name = (std::string)user.Get("BLOG_NAME");
 		const std::string user_email = (std::string)user.Get("EMAIL");
 		const std::string user_premium = (std::string)results.Get("OFFER_NAME");
-		Logger::Info(std::format("Deezer logged as \"{}\" <{}> ({})", user_name, user_email, user_premium));
+		Logger::Info(std::format("Creating a Deezer session by \"{}\" <{}> ({})", user_name, user_email, user_premium));
 	}
 
 	/* Free the memory */
