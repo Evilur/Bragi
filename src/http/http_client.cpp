@@ -26,8 +26,7 @@ HttpClient::HttpClient(const std::string &url, const std::string &headers, const
 
 	if (!body.empty()) {
 		*_stream << "Content-Length: " << body.length() << '\n'
-		         << "\r\n\r\n"
-		         << body;
+		         << "\r\n" << body;
 	}
 
 	/* Write an empty line for the http request */
