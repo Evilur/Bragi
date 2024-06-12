@@ -30,7 +30,7 @@ HttpClient::HttpClient(const std::string &url, const std::string &headers, const
 	}
 
 	/* Write an empty line for the http request */
-	*_stream << "\r\n\r\n" << std::flush;
+	*_stream << "\r\n" << std::flush;
 
 	ReadHeaders();
 }
