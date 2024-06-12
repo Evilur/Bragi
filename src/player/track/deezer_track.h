@@ -5,10 +5,10 @@
 
 class DeezerTrack final : public Track {
 public:
-	DeezerTrack(const unsigned int &id, const unsigned int &album_id, const unsigned int &artist_id,
+	DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
 	            const std::string &title, const std::string &album_title, const std::string &artist_name,
 	            const std::string &album_picture, const std::string &artist_picture,
-	            const std::string &token, const unsigned short &duration,
+	            const std::string &token, const std::string &duration, const std::string &url,
 	            const unsigned short &total, const unsigned short &next);
 
 	int GetOpus(unsigned char* out) override;
@@ -31,6 +31,7 @@ private:
 	const std::string _artist_picture;
 
 	/* Others */
+	const std::string _url;
 	const std::string _token;
 	const unsigned short _duration;
 	const unsigned short _total;

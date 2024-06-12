@@ -18,7 +18,8 @@ private:
 	static inline std::string _session_id;
 	static inline std::string _license_token;
 
-	static unsigned int _session_expires;
+	static inline unsigned long _session_timestamp;
+	static constexpr unsigned int DELTA_TIME = 600;
 
 	static constexpr char BASIC_HEADERS[] = "Accept: application/json, text/plain, */*\n"
 	                                        "Content-Type: text/plain;charset=UTF-8\n"
