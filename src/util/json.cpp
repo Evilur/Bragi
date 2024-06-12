@@ -35,15 +35,18 @@ Json::operator int() const { return NumParser::ToInt32(_data); }
 
 
 bool Json::Find(const char*&data, const char* key) {
-	unsigned short bracket_level = 0;  //Number of bracket levels
+	unsigned short square_bracket_level = 0;  //Number of square bracket levels
+	unsigned short curly_bracket_level = 0;  //Number of curly bracket levels
 	bool in_string = false;  //true if caret in the string type; false if not
 
 	do {
 		if (!in_string) {
 			/* Increase or descrease the bracket level var and compare the json to the key */
-			if (*data == '{') bracket_level++;
-			else if (*data == '}') bracket_level--;
-			else if (bracket_level == 1 && CompareKey(data, key)) return data = std::strchr(data, ':') + 1;
+			if (*data == '{') curly_bracket_level++;
+			else if (*data == '}') curly_bracket_level--;
+			else if (*data == '[') square_bracket_level++;
+			else if (*data == ']') square_bracket_level--;
+			else if (curly_bracket_level == 1 && CompareKey(data, key)) return data = std::strchr(data, ':') + 1;
 		}
 
 		/* If we enter the string type or escape it, spawp the boolean */
@@ -51,7 +54,7 @@ bool Json::Find(const char*&data, const char* key) {
 
 		/* Increase the pointer */
 		data++;
-	} while (bracket_level > 0);
+	} while (curly_bracket_level > 0);
 
 	return false;
 }
