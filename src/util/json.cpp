@@ -43,6 +43,10 @@ Json::operator unsigned int() const { return NumParser::ToUInt32(_data); }
 
 Json::operator int() const { return NumParser::ToInt32(_data); }
 
+Json::operator unsigned long() const { return NumParser::ToUInt64(_data); }
+
+Json::operator long() const { return NumParser::ToInt64(_data); }
+
 
 bool Json::Find(const char*&data, const char* key) {
 	unsigned short square_bracket_level = 0;  //Number of square bracket levels

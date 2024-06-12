@@ -28,6 +28,10 @@ public:
 
 	explicit operator int() const;
 
+	explicit operator unsigned long() const;
+
+	explicit operator long() const;
+
 private:
 	const char* const _data;
 
