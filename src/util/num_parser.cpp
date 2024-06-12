@@ -23,6 +23,17 @@ int NumParser::ToInt32(const char* data) {
 	else return -ToUInt32(data + 1);
 }
 
+unsigned int NumParser::ToUInt64(const char* data) {
+	unsigned long result = 0;
+	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');
+	return result;
+}
+
+int NumParser::ToInt64(const char* data) {
+	if (data[0] != '-') return ToUInt32(data);
+	else return -ToUInt32(data + 1);
+}
+
 unsigned int NumParser::HexToDec(const char* data) {
 	unsigned int result = 0;
 	while (true) {

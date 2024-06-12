@@ -11,6 +11,10 @@ public:
 
 	static int ToInt32(const char* data);
 
+	static unsigned int ToUInt64(const char* data);
+
+	static int ToInt64(const char* data);
+
 	static unsigned int HexToDec(const char* data);
 };
 
