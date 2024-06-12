@@ -10,6 +10,8 @@ public:
 	static unsigned int ToUInt32(const char* data);
 
 	static int ToInt32(const char* data);
+
+	static unsigned int HexToDec(const char* data);
 };
 
 #endif
