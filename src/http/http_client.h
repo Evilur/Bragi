@@ -5,7 +5,7 @@
 
 class HttpClient final {
 public:
-	explicit HttpClient(const std::string &url, const std::string &headers = "");
+	explicit HttpClient(const std::string &url, const std::string &headers = "", const std::string &body = "", const char* requset_type = "GET");
 
 	~HttpClient();
 
@@ -13,10 +13,15 @@ public:
 
 	void Read(char* buffer, int size);
 
-	int ReadAll(char*&buffer, int size, int delta_size = 1024 * 8);
+	/** Read all http document
+	 * @warning return data is an allocated memory so you need to free it later
+	 * @return a char aray with all http document data
+	 */
+	const char* ReadAll();
 
 private:
 	asio::ip::tcp::iostream* _stream;
+	unsigned int _content_length = 0;
 
 	void ReadHeaders();
 };

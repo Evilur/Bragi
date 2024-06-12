@@ -13,13 +13,7 @@ void DeezerClient::Init() {
 }
 
 void DeezerClient::Search(const std::string &request, const unsigned int) {
-	//HttpClient cl(("", _headers.c_str());
 
-	/* Init the json objects */
-	/*char* json_data = new char[1024 * 8];
-	cl.ReadAll(json_data, 1024 * 8);*/
-
-	//std::cout << json_data;
 }
 
 
@@ -30,8 +24,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	              "&api_version=1.0&api_token", _headers);
 
 	/* Init the json objects */
-	char* json_data = new char[1024 * 8];
-	cl.ReadAll(json_data, 1024 * 8);
+	const char* json_data = cl.ReadAll();
 	const Json results = Json(std::strchr(json_data, '{')).Get("results");
 	const Json user = results.Get("USER");
 
