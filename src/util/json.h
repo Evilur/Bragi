@@ -16,6 +16,10 @@ public:
 
 	explicit operator std::string() const;
 
+	explicit operator unsigned short() const;
+
+	explicit operator short() const;
+
 	explicit operator unsigned int() const;
 
 	explicit operator int() const;
@@ -28,10 +32,6 @@ private:
 	static bool Find(const char*&data, int index);
 
 	static bool CompareKey(const char* data, const char* key);
-
-	static int ToInt(const char* data);
-
-	static int ToUnsignedInt(const char* data);
 };
 
 #endif

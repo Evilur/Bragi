@@ -1,5 +1,6 @@
 #include "json.h"
 #include "exception/json_exception.h"
+#include "num_parser.h"
 
 #include <iostream>
 
@@ -24,9 +25,13 @@ Json::operator std::string() const {
 	return result;
 }
 
-Json::operator unsigned int() const { return ToUnsignedInt(_data); }
+Json::operator unsigned short() const { return NumParser::ToUInt16(_data); }
 
-Json::operator int() const { return ToInt(_data); }
+Json::operator short() const { return NumParser::ToInt16(_data); }
+
+Json::operator unsigned int() const { return NumParser::ToUInt32(_data); }
+
+Json::operator int() const { return NumParser::ToInt32(_data); }
 
 
 bool Json::Find(const char*&data, const char* key) {
@@ -91,15 +96,4 @@ bool Json::CompareKey(const char* data, const char* key) {
 
 	/* Last char is a colon */
 	return *data == ':';
-}
-
-int Json::ToInt(const char* data) {
-	if (data[0] != '-') return ToUnsignedInt(data);
-	else return -ToUnsignedInt(data + 1);
-}
-
-int Json::ToUnsignedInt(const char* data) {
-	int result = 0;
-	while (*data >= '0' and *data <= '9') result = result * 10 + (*data++ - '0');
-	return result;
 }

@@ -40,6 +40,7 @@ ADD_EXECUTABLE(Bragi
     src/util/settings.cpp
     src/util/color.cpp
     src/util/json.cpp
+    src/util/num_parser.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus sodium opusenc crypto ssl dpp)
