@@ -1,5 +1,6 @@
 #include "http_client.h"
 #include "util/logger.h"
+#include "util/num_parser.h"
 
 #include <asio.hpp>
 
@@ -16,7 +17,7 @@ HttpClient::HttpClient(const std::string &url, const std::string &headers) {
 
 	/* Init the stream and send the request */
 	_stream = new asio::ip::tcp::iostream(host, "80");
-	*_stream << "GET " << get << " HTTP/1.1\n"
+	*_stream << "GET " << get << " HTTP/1.0\n"
 	         << "Host: " << host << '\n'
 	         << "Connection: close\n";
 
