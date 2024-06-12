@@ -14,6 +14,10 @@ public:
 
 	Json Get(int index) const;
 
+	bool Has(const char* key) const;
+
+	bool Has(int index) const;
+
 	explicit operator std::string() const;
 
 	explicit operator unsigned short() const;

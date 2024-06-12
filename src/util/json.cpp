@@ -18,6 +18,16 @@ Json Json::Get(const int index) const {
 	return Json(data_ptr);
 }
 
+bool Json::Has(const char* key) const {
+	const char* data_ptr = _data;
+	return Find(data_ptr, key);
+}
+
+bool Json::Has(const int index) const {
+	const char* data_ptr = _data;
+	return Find(data_ptr, index);
+}
+
 Json::operator std::string() const {
 	const int data_size = std::strchr(_data + 1, '\"') - _data - 1;
 	std::string result(_data + 1, data_size);
