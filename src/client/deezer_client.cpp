@@ -33,11 +33,12 @@ DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int
 	const Json json_track = json_results.Get("data").Get(0);
 
 	/* Create the track instance */
+	const std::string track_url = GetDecodedTrackUrl((std::string)json_track.Get("TRACK_TOKEN"));
 	DeezerTrack* result =
 			new DeezerTrack((std::string)json_track.Get("SNG_ID"), (std::string)json_track.Get("ALB_ID"), (std::string)json_track.Get("ART_ID"),
 			                (std::string)json_track.Get("SNG_TITLE"), (std::string)json_track.Get("ALB_TITLE"), (std::string)json_track.Get("ART_NAME"),
 			                (std::string)json_track.Get("ALB_PICTURE"), (std::string)json_track.Get("ART_PICTURE"),
-			                (std::string)json_track.Get("TRACK_TOKEN"), (std::string)json_track.Get("DURATION"), "NOT IMPLEMENTED YET",
+			                (std::string)json_track.Get("DURATION"), "NOT IMPLEMENTED YET",
 			                (unsigned short)json_results.Get("total"), (unsigned short)json_results.Get("next"));
 
 	/* Free the memory and return a result */
@@ -81,4 +82,8 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	/* Free the memory */
 	delete[] json_string;
 	json_string = nullptr;
+}
+
+std::string DeezerClient::GetDecodedTrackUrl(const std::string &token, const char quality) {
+	return std::string();
 }

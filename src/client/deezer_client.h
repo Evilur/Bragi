@@ -42,6 +42,8 @@ private:
 	 * @param verbose true if we need to log the user data; false else
 	 */
 	static void UpdateSession(bool verbose = false);
+
+	static std::string GetDecodedTrackUrl(const std::string &token, const char quality = 2);
 };
 
 #endif
