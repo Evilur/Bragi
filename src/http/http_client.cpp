@@ -3,31 +3,25 @@
 
 #include <asio.hpp>
 
-HttpClient::HttpClient(const char* const url, const char* const headers) {
+HttpClient::HttpClient(const std::string &url, const std::string &headers) {
 	/* !!! DELETE THIS IN PRODUCTION !!! */
-	if (std::strncmp(url, "https://", 8) == 0) throw std::runtime_error("This if a fucking https, not a http!");
+	if (url.starts_with("https://")) throw std::runtime_error("This if a fucking https, not a http!");
 	/* !!! DELETE THIS IN PRODUCTION !!! */
 
 	/* Get the hostname and the get request from the url */
-	const char* host_ptr = std::strncmp(url, "http://", 7) == 0 ? std::strchr(url, ':') + 3 : url;
-	const char* get_ptr = std::strchr(host_ptr, '/');
-	const unsigned short host_size = get_ptr - host_ptr;
-	const unsigned short get_size = std::strlen(get_ptr);
-
-	/* Write the data to the fields */
-	std::strncpy(_host = new char[host_size + 1], host_ptr, host_size);
-	std::strncpy(_get = new char[get_size + 1], get_ptr, get_size);
-	_host[host_size] = '\0';
-	_get[get_size] = '\0';
+	const std::string request = url.starts_with("http://") ? url.substr(7) : url;
+	const int get_index = request.find('/');
+	const std::string host = request.substr(0, get_index);
+	const std::string get = request.substr(get_index);
 
 	/* Init the stream and send the request */
-	_stream = new asio::ip::tcp::iostream(_host, "80");
-	*_stream << "GET " << _get << " HTTP/1.1\n"
-	         << "Host: " << _host << '\n'
+	_stream = new asio::ip::tcp::iostream(host, "80");
+	*_stream << "GET " << get << " HTTP/1.1\n"
+	         << "Host: " << host << '\n'
 	         << "Connection: close\n";
 
 	/* Add custom headers (if exists) */
-	if (headers) *_stream << headers << '\n';
+	if (!headers.empty()) *_stream << headers << '\n';
 
 	/* Write an empty line for the http request */
 	*_stream << "\r\n\r\n" << std::flush;

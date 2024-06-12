@@ -12,11 +12,22 @@ void DeezerClient::Init() {
 	UpdateSession(true);
 }
 
+void DeezerClient::Search(const std::string &request, const unsigned int) {
+	//HttpClient cl(("", _headers.c_str());
+
+	/* Init the json objects */
+	/*char* json_data = new char[1024 * 8];
+	cl.ReadAll(json_data, 1024 * 8);*/
+
+	//std::cout << json_data;
+}
+
+
 void DeezerClient::UpdateSession(const bool verbose) {
 	/* Send the request to init the session */
 	HttpClient cl("www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY"
 	              "&output=3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData"
-	              "&api_version=1.0&api_token", _headers.c_str());
+	              "&api_version=1.0&api_token", _headers);
 
 	/* Init the json objects */
 	char* json_data = new char[1024 * 8];

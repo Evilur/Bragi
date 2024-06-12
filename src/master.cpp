@@ -15,6 +15,9 @@ int main() {
 	Settings::Init();
 	DeezerClient::Init();
 
+	DeezerClient::Search("Korpiklaani Vodka");
+	return 0;
+
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
 

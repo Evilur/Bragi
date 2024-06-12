@@ -7,6 +7,8 @@ class DeezerClient final {
 public:
 	static void Init();
 
+	static void Search(const std::string &request, unsigned int = 0);
+
 private:
 	static inline std::string _arl_token;
 	static inline std::string _headers;

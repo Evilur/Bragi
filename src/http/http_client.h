@@ -5,7 +5,7 @@
 
 class HttpClient final {
 public:
-	explicit HttpClient(const char* url, const char* headers = nullptr);
+	explicit HttpClient(const std::string &url, const std::string &headers = "");
 
 	~HttpClient();
 
@@ -16,8 +16,6 @@ public:
 	int ReadAll(char*&buffer, int size, int delta_size = 1024 * 8);
 
 private:
-	char* _host;
-	char* _get;
 	asio::ip::tcp::iostream* _stream;
 
 	void ReadHeaders();
