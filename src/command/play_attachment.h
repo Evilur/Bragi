@@ -1,7 +1,7 @@
 #ifndef BRAGI_PLAY_ATTACHMENT_H
 #define BRAGI_PLAY_ATTACHMENT_H
 
-#include "player/track.h"
+#include "player/track/track.h"
 
 #include <dpp/dpp.h>
 

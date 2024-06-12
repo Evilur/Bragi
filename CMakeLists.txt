@@ -29,9 +29,10 @@ ADD_EXECUTABLE(Bragi
     src/http/http_client.cpp
 
     # Guild player and its components
+    src/player/track/attachment_track.cpp
+    src/player/track/deezer_track.cpp
+    src/player/track/track.cpp
     src/player/guild_player.cpp
-    src/player/attachment_track.cpp
-    src/player/track.cpp
     src/player/playlist.cpp
 
     # Some different utils

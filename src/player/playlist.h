@@ -1,7 +1,7 @@
 #ifndef BRAGI_PLAYLIST_H
 #define BRAGI_PLAYLIST_H
 
-#include "track.h"
+#include "player/track/track.h"
 
 class Playlist final {
 public:

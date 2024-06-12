@@ -1,7 +1,7 @@
 #ifndef BRAGI_GUILD_PLAYER_H
 #define BRAGI_GUILD_PLAYER_H
 
-#include "track.h"
+#include "player/track/track.h"
 #include "playlist.h"
 
 #include <dpp/dpp.h>

@@ -11,13 +11,17 @@ public:
 	virtual ~Track();
 
 	std::string GetTitle();
+
 	std::string GetAlbum();
+
 	std::string GetArtist();
 
 	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id);
-	
+
 	virtual int GetOpus(unsigned char* out) = 0;
+
 	virtual bool CanRead() = 0;
+
 protected:
 	AudioToOpus* _converter;
 	std::string _title;
