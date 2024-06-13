@@ -55,10 +55,6 @@ HttpsClient::HttpsClient(const std::string &url, const std::string &headers, con
 	const int data_size = response.tellp() - response.tellg();
 	_data = new char[data_size + 1];
 	response.get(_data, data_size + 1);
-
-	// print and exit
-	std::cout << _data << "\n";
-	exit(200);
 }
 
 const char* HttpsClient::ReadAll() { return _data; }
