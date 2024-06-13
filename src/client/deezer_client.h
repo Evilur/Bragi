@@ -12,6 +12,9 @@ public:
 	static DeezerTrack* Search(const std::string &request, unsigned int start = 0);
 
 private:
+	enum Quality : unsigned char { MP3_128, MP3_320, FLAC };
+	static constexpr char QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
+
 	static inline std::string _arl_token;
 	static inline std::string _headers;
 
@@ -32,18 +35,25 @@ private:
 	                                             "&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"
 	                                             "&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData"
 	                                             "&api_version=1.0&api_token";
-	static constexpr char URL_TEMPLATE_SEARCH_TRACK[] = "http://api.deezer.com/1.0/gateway.php?"
+	static constexpr char URL_TEMPLATE_SEARCH_TRACK[] = "api.deezer.com/1.0/gateway.php?"
 	                                                    "api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"
 	                                                    "&method=search.music&sid=";
+	static constexpr char BODY_TEMPLATE_SEARCH_TRACK[] = R"({{"query":"{}","nb":1,"output":"TRACK","filter":"TRACK","start":{}}})";
+	static constexpr char URL_TEMPLATE_GET_DECODED_TRACK_URL[] = "media.deezer.com/v1/get_url?version=8.32.0"
+	                                                             "&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"
+	                                                             "&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&sid=";
+	static constexpr char BODY_TEMPLATE_GET_DECODED_TRACK_URL[] = R"({{"license_token":"{}","media":[{{"type":"FULL","formats":"
+																  "[{{"format":"{}","cipher":"BF_CBC_STRIPE"}}]}}],"track_tokens":["{}"]}})";
 
 	static inline std::string _url_search_track;
+	static inline std::string _url_get_decoded_track_url;
 
 	/** Update the deezer session
 	 * @param verbose true if we need to log the user data; false else
 	 */
 	static void UpdateSession(bool verbose = false);
 
-	static std::string GetDecodedTrackUrl(const std::string &token, const char quality = 2);
+	static std::string GetDecodedTrackUrl(const std::string &token, Quality quality = FLAC);
 };
 
 #endif

@@ -19,10 +19,7 @@ DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int
 	if (time(nullptr) - _session_timestamp > DELTA_TIME) UpdateSession();
 
 	/* Send the request and init the json objects */
-	const char* json_string = HttpClient(_url_search_track,
-	                                     _headers,
-	                                     std::format(R"({{"query":"{}","nb":1,"output":"TRACK","filter":"TRACK","start":{}}})", request, start),
-	                                     "POST").ReadAll();
+	const char* json_string = HttpClient(_url_search_track, _headers, std::format(BODY_TEMPLATE_SEARCH_TRACK, request, start), "POST").ReadAll();
 	const Json json_global(json_string);
 	const Json json_results = json_global.Get("results");
 
@@ -34,6 +31,7 @@ DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int
 
 	/* Create the track instance */
 	const std::string track_url = GetDecodedTrackUrl((std::string)json_track.Get("TRACK_TOKEN"));
+	Logger::Debug(track_url);
 	DeezerTrack* result =
 			new DeezerTrack((std::string)json_track.Get("SNG_ID"), (std::string)json_track.Get("ALB_ID"), (std::string)json_track.Get("ART_ID"),
 			                (std::string)json_track.Get("SNG_TITLE"), (std::string)json_track.Get("ALB_TITLE"), (std::string)json_track.Get("ART_NAME"),
@@ -67,6 +65,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 
 	/* Update the dependent urls */
 	_url_search_track = URL_TEMPLATE_SEARCH_TRACK + _session_id;
+	_url_get_decoded_track_url = URL_TEMPLATE_GET_DECODED_TRACK_URL + _session_id;
 
 	/* Get user data for logging */
 	if (verbose) {
@@ -84,6 +83,16 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	json_string = nullptr;
 }
 
-std::string DeezerClient::GetDecodedTrackUrl(const std::string &token, const char quality) {
-	return std::string();
+std::string DeezerClient::GetDecodedTrackUrl(const std::string &token, const Quality quality) {
+	/* Send the request */
+	const char* json_string = HttpClient(_url_get_decoded_track_url, _headers, std::format(BODY_TEMPLATE_GET_DECODED_TRACK_URL, _license_token, "FLAC", token),
+	                                     "POST").ReadAll();
+
+	std::cout << json_string;
+	Logger::Warn("Get the url");
+	exit(333);
+
+	delete[] json_string;
+	json_string = nullptr;
+	return "";
 }
