@@ -18,6 +18,8 @@ public:
 
 	bool Has(int index) const;
 
+	bool IsEmpty() const;
+
 	explicit operator std::string() const;
 
 	explicit operator unsigned short() const;
