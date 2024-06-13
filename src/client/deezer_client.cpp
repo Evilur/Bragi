@@ -17,7 +17,9 @@ void DeezerClient::Init() {
 
 DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int start) {
 	/* If the session has been expired update it */
-	if (time(nullptr) - _session_timestamp > DELTA_TIME) UpdateSession();
+	const unsigned long c_time = time(nullptr);
+	if (c_time - _session_timestamp > DELTA_TIME) UpdateSession();
+	else _session_timestamp = c_time;
 
 	/* Send the request and init the json objects */
 	const char* json_string = HttpClient(_url_search_track, _headers, std::format(BODY_TEMPLATE_SEARCH_TRACK, request, start), "POST").ReadAll();
@@ -31,7 +33,6 @@ DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int
 
 	/* Create the track instance */
 	const std::string track_url = GetEncodedTrackUrl((std::string)json_track.Get("TRACK_TOKEN"));
-	Logger::Debug(track_url);
 	DeezerTrack* result =
 			new DeezerTrack((std::string)json_track.Get("SNG_ID"), (std::string)json_track.Get("ALB_ID"), (std::string)json_track.Get("ART_ID"),
 			                (std::string)json_track.Get("SNG_TITLE"), (std::string)json_track.Get("ALB_TITLE"), (std::string)json_track.Get("ART_NAME"),
