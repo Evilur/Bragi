@@ -8,15 +8,13 @@
 #include "util/logger.h"
 #include "util/settings.h"
 #include "client/deezer_client.h"
+#include "command/play.h"
 
 int main() {
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
 	DeezerClient::Init();
-
-	DeezerClient::Search("Korpiklaani Vodka");
-	return 0;
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
@@ -55,7 +53,8 @@ void on_message_create(const dpp::message_create_t &event) {
 	std::string arg = event.msg.content.substr(space_sep + 1);
 
 	/* Check for commands */
-	if (command == "ping") Ping::Exec(event);
+	if (command == "play") Play::Exec(event);
+	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "leave") Leave::Exec(event);
 	else if (command == "pat" || command == "play-attachment") PlayAttachment::Exec(event);
@@ -73,6 +72,9 @@ void on_ready(const dpp::ready_t &event) {
 	/* Init the discord client */
 	ds_client = event.from;
 
+	/* Delete all slash commands */
+	bot->global_bulk_command_delete();
+
 	/* Add slash commands */
 	bot->global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot->me.id));
 
@@ -84,7 +86,7 @@ void on_ready(const dpp::ready_t &event) {
 	bot->global_command_create(
 			dpp::slashcommand("play", DIC_SLASH_PLAY, bot->me.id).add_option(dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
 
-	bot->global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot->me.id).add_option(
+	/*bot->global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot->me.id).add_option(
 			dpp::command_option(dpp::co_attachment, "file", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
 			dpp::command_option(dpp::co_attachment, "file1", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
 			dpp::command_option(dpp::co_attachment, "file2", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
@@ -94,7 +96,7 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::command_option(dpp::co_attachment, "file6", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
 			dpp::command_option(dpp::co_attachment, "file7", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
 			dpp::command_option(dpp::co_attachment, "file8", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));
+			dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));*/
 
 	Logger::Info("Bot is ready");
 }

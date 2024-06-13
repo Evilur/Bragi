@@ -16,6 +16,7 @@ ADD_EXECUTABLE(Bragi
     src/command/ping.cpp
     src/command/join.cpp
     src/command/leave.cpp
+    src/command/play.cpp
 
     # Audio to OPUS convertters
     src/converter/audio_to_opus.cpp
