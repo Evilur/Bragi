@@ -27,6 +27,7 @@ ADD_EXECUTABLE(Bragi
 
     # Http clients
     src/http/http_client.cpp
+    src/http/https_client.cpp
 
     # Guild player and its components
     src/player/track/attachment_track.cpp
