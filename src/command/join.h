@@ -11,10 +11,12 @@ public:
 	 * @param event The slash command event reference
 	 */
 	static void Exec(const dpp::slashcommand_t &event);
+
 	/** Exec the message "join" command
 	 * @param event The new message event reference
 	 */
 	static void Exec(const dpp::message_create_t &event);
+
 private:
 	/** Exec the any type of the command using the necessary data
 	 * @param guild_id The snowflake reference with the guild ID

@@ -14,7 +14,7 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 
 	dpp::message Leave(const dpp::snowflake &channel_id);
 

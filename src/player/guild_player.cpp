@@ -22,11 +22,11 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	}
 
 	/* If player is not ready */
-	result_msg.content.insert(0, Join(user_id, channel_id).content + '\n');  //Join to the channel and insert it to the track message
+	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert it to the track message
 	return result_msg;  //Return a track message
 }
 
-dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
@@ -49,7 +49,7 @@ dpp::message GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowfla
 
 	/* If all is OK */
 	ds_client->connect_voice(guild_id, user_vc->id);
-	return dpp::message(channel_id, std::format(DIC_JOINED, user_vc->name));
+	return std::format(DIC_JOINED, user_vc->name);
 }
 
 dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {

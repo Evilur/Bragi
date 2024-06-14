@@ -69,9 +69,6 @@ void on_ready(const dpp::ready_t &event) {
 	/* Init the discord client */
 	ds_client = event.from;
 
-	/* Delete all slash commands */
-	bot->global_bulk_command_delete();
-
 	/* Add slash commands */
 	bot->global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot->me.id));
 
