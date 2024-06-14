@@ -27,6 +27,10 @@
 #define DIC_TRACK_DURATION ":watch: Продолжительность: `{}`**"
 #define DIC_TRACK_ALBUM "**Альбом**"
 #define DIC_TRACK_ARTIST "**Исполнитель**"
+#define DIC_TRACK_LESS_THAN_MINUTE "{}с"
+#define DIC_TRACK_LESS_THAN_HOUR "{}м{}с"
+#define DIC_TRACK_MORE_THAN_HOUR "{}ч{}м{}с"
+
 
 //errors
 #define DIC_ERROR "**Ошибка**"

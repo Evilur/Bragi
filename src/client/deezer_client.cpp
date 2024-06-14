@@ -15,14 +15,14 @@ void DeezerClient::Init() {
 	UpdateSession(true);
 }
 
-DeezerTrack* DeezerClient::Search(const std::string &request, const unsigned int start) {
+DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int start) {
 	/* If the session has been expired update it */
 	const unsigned long c_time = time(nullptr);
 	if (c_time - _session_timestamp > DELTA_TIME) UpdateSession();
 	else _session_timestamp = c_time;
 
 	/* Send the request and init the json objects */
-	const char* json_string = HttpClient(_url_search_track, _headers, std::format(BODY_TEMPLATE_SEARCH_TRACK, request, start), "POST").ReadAll();
+	const char* json_string = HttpClient(_url_search_track, _headers, std::format(BODY_TEMPLATE_SEARCH_TRACK, query, start), "POST").ReadAll();
 	const Json json_results = Json(json_string).Get("results");
 
 	/* Check for search results */

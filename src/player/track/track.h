@@ -10,13 +10,7 @@ class Track {
 public:
 	virtual ~Track();
 
-	std::string GetTitle();
-
-	std::string GetAlbum();
-
-	std::string GetArtist();
-
-	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id);
+	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) = 0;
 
 	virtual int GetOpus(unsigned char* out) = 0;
 
@@ -24,10 +18,10 @@ public:
 
 protected:
 	AudioToOpus* _converter;
-	std::string _title;
-	std::string _album;
-	std::string _artist;
-	std::string _duration;
+
+	virtual std::string GetMessageBody(const bool &is_playing_now) = 0;
+
+	static std::string GetFormattedDuration(const unsigned short &duration);
 };
 
 #endif

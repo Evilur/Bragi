@@ -2,31 +2,28 @@
 #include "util/dictionary.h"
 #include "util/color.h"
 
-Track::~Track() { 
+Track::~Track() {
 	delete _converter;
 	_converter = nullptr;
 }
 
-std::string Track::GetTitle() { return _title; }
+std::string Track::GetFormattedDuration(const unsigned short &duration) {
+	/* Get hours, minutes and seconds */
+	const unsigned short seconds = duration % 60;
+	const unsigned short minutes = (duration / 60) % 60;
+	const unsigned short hours = duration / (60 * 60);
 
-std::string Track::GetAlbum() { return _album; }
+	const auto format = [](const unsigned short time) {
+		char time_str[] = "00";
+		if (time < 10) time_str[1] = time + '0';
+		else {
+			time_str[0] = (time / 10) + '0';
+			time_str[1] = (time % 10) + '0';
+		}
+		return std::string(time_str);
+	};
 
-std::string Track::GetArtist() { return _artist; }
-
-dpp::message Track::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) {
-	/* TEMPORARY REGION */
-	_title = "Test title";
-	_album = "Test album";
-	_artist = "Test artist";
-	_duration = "14m88c";
-	/* END TEMP REGION */
-	
-	std::stringstream msg_body;
-	if (is_playing_now) msg_body << std::format(DIC_TRACK_PLAYING_NOW, _title);
-	else msg_body << std::format(DIC_TRACK_ADD_TO_PLAYLIST, _title);
-	msg_body << '\n' << std::format(DIC_TRACK_DURATION, _duration);
-	return dpp::message(channel_id, msg_body.str()).add_embed(dpp::embed()
-																	.set_color(Color::RED)
-																	.add_field(DIC_TRACK_ALBUM, _album)
-																	.add_field(DIC_TRACK_ARTIST, _artist));
+	if (hours > 0) return std::format(DIC_TRACK_MORE_THAN_HOUR, hours, format(minutes), format(seconds));
+	else if (minutes > 0) return std::format(DIC_TRACK_LESS_THAN_HOUR, minutes, format(seconds));
+	else return std::format(DIC_TRACK_LESS_THAN_MINUTE, seconds);
 }

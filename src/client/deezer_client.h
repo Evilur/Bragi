@@ -9,7 +9,7 @@ class DeezerClient final {
 public:
 	static void Init();
 
-	static DeezerTrack* Search(const std::string &request, unsigned int start = 0);
+	static DeezerTrack* Search(const std::string &query, unsigned int start = 0);
 
 private:
 	enum Quality : char { MP3_128, MP3_320, FLAC };

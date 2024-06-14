@@ -12,7 +12,6 @@ ADD_EXECUTABLE(Bragi
     src/client/deezer_client.cpp
 
     # Slash/mesage commands
-    src/command/play_attachment.cpp
     src/command/ping.cpp
     src/command/join.cpp
     src/command/leave.cpp
@@ -31,7 +30,6 @@ ADD_EXECUTABLE(Bragi
     src/http/https_client.cpp
 
     # Guild player and its components
-    src/player/track/attachment_track.cpp
     src/player/track/deezer_track.cpp
     src/player/track/track.cpp
     src/player/guild_player.cpp

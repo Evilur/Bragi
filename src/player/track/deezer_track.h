@@ -2,6 +2,7 @@
 #define BRAGI_DEEZER_TRACK_H
 
 #include "track.h"
+#include "util/dictionary.h"
 
 class DeezerTrack final : public Track {
 public:
@@ -14,6 +15,8 @@ public:
 	int GetOpus(unsigned char* out) override;
 
 	bool CanRead() override;
+
+	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) override;
 
 private:
 	/* Ids */
@@ -35,6 +38,8 @@ private:
 	const unsigned short _duration;
 	const unsigned short _total;
 	const unsigned short _next;
+
+	std::string GetMessageBody(const bool &is_playing_now) override;
 };
 
 #endif

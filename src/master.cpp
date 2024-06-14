@@ -3,7 +3,6 @@
 #include "command/ping.h"
 #include "command/join.h"
 #include "command/leave.h"
-#include "command/play_attachment.h"
 #include "player/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
@@ -40,7 +39,6 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	if (command_name == "ping") Ping::Exec(event);
 	else if (command_name == "join") Join::Exec(event);
 	else if (command_name == "leave") Leave::Exec(event);
-	else if (command_name == "play-attachment") PlayAttachment::Exec(event);
 }
 
 void on_message_create(const dpp::message_create_t &event) {
@@ -50,14 +48,13 @@ void on_message_create(const dpp::message_create_t &event) {
 	/* Get a command name and arguments */
 	const unsigned long space_sep = event.msg.content.find(' ');
 	std::string command = event.msg.content.substr(1, space_sep - 1);
-	std::string arg = event.msg.content.substr(space_sep + 1);
+	std::string argument = event.msg.content.substr(space_sep + 1);
 
 	/* Check for commands */
-	if (command == "play") Play::Exec(event);
+	if (command == "play") Play::Exec(event, argument);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "leave") Leave::Exec(event);
-	else if (command == "pat" || command == "play-attachment") PlayAttachment::Exec(event);
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
