@@ -76,7 +76,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 
 		/* Log the user data */
 		Logger::Info(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email));
-		Logger::Info(std::format("Current Deezer offer - {}", user_offer));
+		Logger::Info(std::format("Current Deezer subscription - {}", user_offer));
 	}
 
 	/* Free the memory */
