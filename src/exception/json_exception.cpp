@@ -1,5 +1,14 @@
 #include "json_exception.h"
+#include "util/logger.h"
 
-JsonException::JsonException(const char* data, const char* query) : _data(data), _query(query), _index(-1) { }
+#include <format>
 
-JsonException::JsonException(const char* data, const int index) : _data(data), _query(nullptr), _index(index) { }
+JsonException::JsonException(const char* const json_data, const char* query) : _json_data(json_data), _wrong_query(
+		std::format("Can't find the object by key \"{}\" in the json data:", query)) { std::cout << query << '\n'; }
+
+JsonException::JsonException(const char* const json_data, const int index) : _json_data(json_data), _wrong_query(
+		std::format("Can't find the object by index {} in the json data:", index)) { std::cout << index << '\n'; }
+
+std::ostream &operator<<(std::ostream &stream, const JsonException &instance) {
+	return (stream << "Json object exception! " << instance._wrong_query << '\n' << instance._json_data);
+}
