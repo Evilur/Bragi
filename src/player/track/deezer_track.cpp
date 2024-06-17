@@ -5,6 +5,7 @@
 #include "util/num_parser.h"
 #include "util/color.h"
 #include "util/logger.h"
+#include "util/json.h"
 
 int DeezerTrack::GetOpus(unsigned char* out) {
 	return 0;
