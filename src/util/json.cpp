@@ -1,6 +1,8 @@
+#include <iostream>
 #include "json.h"
 #include "exception/json_exception.h"
 #include "parser.h"
+#include "logger.h"
 
 Json::Json(const char* data) : _data(data) { }
 
@@ -42,7 +44,20 @@ bool Json::IsEmpty() const { return (*_data == '{' && *(_data + 1) == '}') || (*
 
 Json::operator std::string() const {
 	const char* data_ptr = _data + 1;
-	return std::string(data_ptr, std::strchr(data_ptr, '\"'));
+	const char* data_end = std::strchr(data_ptr, '\"');
+
+	std::stringstream result;
+
+	do {
+		/* If the current char is not a backslash or the next char is not the 'u' */
+		if (*data_ptr != '\\' || *(data_ptr + 1) != 'u') result.put(*data_ptr);
+		else {
+			result << Parser::Utf8(data_ptr);
+			data_ptr += 5;
+		}
+	} while (++data_ptr < data_end);
+
+	return result.str();
 }
 
 Json::operator unsigned short() const { return Parser::ToUInt16(_data); }

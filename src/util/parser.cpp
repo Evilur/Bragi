@@ -1,6 +1,7 @@
 #include <iostream>
 #include "parser.h"
 #include "dictionary.h"
+#include "logger.h"
 
 unsigned short Parser::ToUInt16(const char* data) {
 	unsigned short result = 0;
