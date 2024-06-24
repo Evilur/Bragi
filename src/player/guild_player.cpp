@@ -4,6 +4,7 @@
 #include "exception/bragi_exception.h"
 #include "converter/audio_to_opus.h"
 #include "util/logger.h"
+#include "util/color.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 	this->_voiceconn = ds_client->get_voice(guild_id);
@@ -24,6 +25,23 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	/* If player is not ready */
 	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert it to the track message
 	return result_msg;  //Return a track message
+}
+
+dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) {
+	std::stringstream ss("**");
+	int duration = 0;
+
+	for (unsigned short i = 0; i < _playlist.GetSize(); i++) {
+		duration += _playlist[i]->GetDuration();
+		ss << i + 1 << ". " << _playlist[i]->GetTitle() << '\n';
+	}
+
+	ss << "**";
+
+	return dpp::message(channel_id, dpp::embed()
+			.set_color(Color::GREEN)
+			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, duration))
+			.set_description(ss.str()));
 }
 
 std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {

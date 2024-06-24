@@ -14,6 +14,8 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
+	dpp::message GetPlaylistMessage(const dpp::snowflake &channel_id);
+
 	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 
 	dpp::message Leave(const dpp::snowflake &channel_id);
@@ -26,7 +28,7 @@ public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 
 private:
-	dpp::voiceconn* _voiceconn;
+	const dpp::voiceconn* _voiceconn;
 	Playlist _playlist;
 
 	void SendOpus(Track* track);

@@ -16,7 +16,7 @@ public:
 
 	bool CanRead() override;
 
-	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) override;
+	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
 private:
 	/* Ids */
@@ -25,7 +25,6 @@ private:
 	const unsigned int _artist_id;
 
 	/* Titles */
-	const std::string _title;
 	const std::string _album_title;
 	const std::string _artist_name;
 
@@ -35,11 +34,8 @@ private:
 
 	/* Others */
 	const std::string _url;
-	const unsigned short _duration;
 	const unsigned short _total;
 	const unsigned short _next;
-
-	std::string GetMessageBody(const bool &is_playing_now) override;
 };
 
 #endif

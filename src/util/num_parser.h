@@ -16,6 +16,8 @@ public:
 	static int ToInt64(const char* data);
 
 	static unsigned int HexToDec(const char* data);
+
+	static std::string Time(const unsigned short &all_seconds);
 };
 
 #endif
