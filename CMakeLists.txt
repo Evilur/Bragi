@@ -16,6 +16,7 @@ ADD_EXECUTABLE(Bragi
     src/command/join.cpp
     src/command/leave.cpp
     src/command/play.cpp
+    src/command/list.cpp
 
     # Audio to OPUS convertters
     src/converter/audio_to_opus.cpp
@@ -41,7 +42,7 @@ ADD_EXECUTABLE(Bragi
     src/util/settings.cpp
     src/util/color.cpp
     src/util/json.cpp
-    src/util/num_parser.cpp
+    src/util/parser.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus sodium opusenc crypto ssl dpp)

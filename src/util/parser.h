@@ -1,7 +1,7 @@
-#ifndef BRAGI_NUM_PARSER_H
-#define BRAGI_NUM_PARSER_H
+#ifndef BRAGI_PARSER_H
+#define BRAGI_PARSER_H
 
-class NumParser final {
+class Parser final {
 public:
 	static unsigned short ToUInt16(const char* data);
 
