@@ -1,5 +1,7 @@
 #include "play.h"
 #include "exception/bragi_exception.h"
+#include "client/deezer_client.h"
+#include "player/guild_player.h"
 
 void Play::Exec(const dpp::slashcommand_t &event) {
 	/* Send message to channel */
@@ -14,5 +16,5 @@ void Play::Exec(const dpp::message_create_t &event, const std::string &argument)
 }
 
 dpp::message Play::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const std::string &query, const dpp::snowflake &channel_id) {
-	return nullptr;
+	return GuildPlayer::Get(guild_id)->HandleTrack(user_id, channel_id, DeezerClient::Search(query));
 }

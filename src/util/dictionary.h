@@ -18,6 +18,13 @@
 //play command
 #define DIC_SLASH_PLAY "Воспроизвести трек"
 #define DIC_SLASH_PLAY_QUERY "Запрос для поиска трека"
+
+//list command
+#define DIC_SLASH_LIST_MSG_EMPTY_TITLE "**Список воспроизведения пуст**"
+#define DIC_SLASH_LIST_MSG_TITLE "**Список воспроизведения ({}):**"
+#define DIC_SLASH_LIST_FULL_TRACK_DATA "{} - {} ({})"
+
+//play-attachment command
 #define DIC_SLASH_PLAY_ATTACHMENT "Воспроизвести трек из вложений"
 #define DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT "Трек для воспроизведения"
 

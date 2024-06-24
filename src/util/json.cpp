@@ -1,6 +1,6 @@
 #include "json.h"
 #include "exception/json_exception.h"
-#include "num_parser.h"
+#include "parser.h"
 
 Json::Json(const char* data) : _data(data) { }
 
@@ -41,23 +41,21 @@ bool Json::Has(const int index) const {
 bool Json::IsEmpty() const { return (*_data == '{' && *(_data + 1) == '}') || (*_data == '[' && *(_data + 1) == ']'); }
 
 Json::operator std::string() const {
-	const int data_size = std::strchr(_data + 1, '\"') - _data - 1;
-	std::string result(_data + 1, data_size);
-	std::erase(result, '\\');
-	return result;
+	const char* data_ptr = _data + 1;
+	return std::string(data_ptr, std::strchr(data_ptr, '\"'));
 }
 
-Json::operator unsigned short() const { return NumParser::ToUInt16(_data); }
+Json::operator unsigned short() const { return Parser::ToUInt16(_data); }
 
-Json::operator short() const { return NumParser::ToInt16(_data); }
+Json::operator short() const { return Parser::ToInt16(_data); }
 
-Json::operator unsigned int() const { return NumParser::ToUInt32(_data); }
+Json::operator unsigned int() const { return Parser::ToUInt32(_data); }
 
-Json::operator int() const { return NumParser::ToInt32(_data); }
+Json::operator int() const { return Parser::ToInt32(_data); }
 
-Json::operator unsigned long() const { return NumParser::ToUInt64(_data); }
+Json::operator unsigned long() const { return Parser::ToUInt64(_data); }
 
-Json::operator long() const { return NumParser::ToInt64(_data); }
+Json::operator long() const { return Parser::ToInt64(_data); }
 
 
 bool Json::Find(const char*&data, const char* key) {

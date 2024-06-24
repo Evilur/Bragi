@@ -1,3 +1,4 @@
+#include <regex>
 #include "master.h"
 #include "util/dictionary.h"
 #include "command/ping.h"
@@ -8,6 +9,7 @@
 #include "util/settings.h"
 #include "client/deezer_client.h"
 #include "command/play.h"
+#include "command/list.h"
 
 int main() {
 	/* Init static classes */
@@ -51,7 +53,8 @@ void on_message_create(const dpp::message_create_t &event) {
 	std::string argument = event.msg.content.substr(space_sep + 1);
 
 	/* Check for commands */
-	if (command == "play") Play::Exec(event, argument);
+	if (command == "play" || command == "p") Play::Exec(event, argument);
+	else if (command == "list" || command == "l") List::Exec(event);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "leave") Leave::Exec(event);

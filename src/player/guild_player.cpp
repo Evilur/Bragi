@@ -5,6 +5,7 @@
 #include "converter/audio_to_opus.h"
 #include "util/logger.h"
 #include "util/color.h"
+#include "util/parser.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) {
 	this->_voiceconn = ds_client->get_voice(guild_id);
@@ -28,19 +29,26 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 }
 
 dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) {
-	std::stringstream ss("**");
+	if (_playlist.IsEmpty())
+		return dpp::message(channel_id, dpp::embed()
+				.set_color(Color::GREEN)
+				.set_title(DIC_SLASH_LIST_MSG_EMPTY_TITLE));
+
+	std::stringstream ss;
 	int duration = 0;
+
+	ss << "**";
 
 	for (unsigned short i = 0; i < _playlist.GetSize(); i++) {
 		duration += _playlist[i]->GetDuration();
-		ss << i + 1 << ". " << _playlist[i]->GetTitle() << '\n';
+		ss << i + 1 << ". " << _playlist[i]->GetTrackData() << '\n';
 	}
 
 	ss << "**";
 
 	return dpp::message(channel_id, dpp::embed()
 			.set_color(Color::GREEN)
-			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, duration))
+			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, Parser::Time(duration)))
 			.set_description(ss.str()));
 }
 

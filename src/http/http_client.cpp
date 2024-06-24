@@ -1,6 +1,6 @@
 #include "http_client.h"
 #include "util/logger.h"
-#include "util/num_parser.h"
+#include "util/parser.h"
 
 #include <asio.hpp>
 
@@ -59,7 +59,7 @@ const char* HttpClient::ReadAll() {
 			/* Get the chunk size */
 			char line_buffer[1024];
 			_stream->getline(line_buffer, 1024);
-			unsigned int chunk_size = NumParser::HexToDec(line_buffer);
+			unsigned int chunk_size = Parser::HexToDec(line_buffer);
 			if (chunk_size == 0) break;
 
 			/* Read the chunk to the temp buffer */
@@ -82,6 +82,6 @@ void HttpClient::ReadHeaders() {
 	char buffer[1024];
 	while (buffer[0] != '\r') {
 		_stream->getline(buffer, 1024);
-		if (std::strncmp(buffer, "Content-Length: ", 16) == 0) _content_length = NumParser::ToUInt32(buffer + 16);
+		if (std::strncmp(buffer, "Content-Length: ", 16) == 0) _content_length = Parser::ToUInt32(buffer + 16);
 	}
 }
