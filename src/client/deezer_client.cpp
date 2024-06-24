@@ -32,7 +32,7 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	const Json json_track = json_results.Get("data").Get(0);
 
 	/* Create the track instance */
-	const std::string track_url = GetEncodedTrackUrl((std::string)json_track.Get("TRACK_TOKEN"));
+	//const std::string track_url = GetEncodedTrackUrl((std::string)json_track.Get("TRACK_TOKEN"));
 	DeezerTrack* result =
 			new DeezerTrack((std::string)json_track.Get("SNG_ID"), (std::string)json_track.Get("ALB_ID"), (std::string)json_track.Get("ART_ID"),
 			                (std::string)json_track.Get("SNG_TITLE"), (std::string)json_track.Get("ALB_TITLE"), (std::string)json_track.Get("ART_NAME"),
