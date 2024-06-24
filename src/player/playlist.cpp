@@ -10,20 +10,16 @@ void Playlist::Add(Track* track) {
 	/* If there isn't enought space in the array */
 	_max_track_count += TRACKS_DELTA;
 	Track** tmp_tracks = new Track* [_max_track_count];
-	std::copy(_tracks, _tracks + _track_count - 1, tmp_tracks);
+	for (unsigned short i = 0; i < _track_count; i++) tmp_tracks[i] = _tracks[i];
 	delete[] _tracks;
 	_tracks = tmp_tracks;
-	Add(track);
+	_tracks[_track_count++] = track;
 }
 
-void Playlist::Skip() {
-	_track_count = 0;
-}
+void Playlist::Skip() { }
 
 bool Playlist::IsEmpty() { return _track_count == 0; }
 
 unsigned short Playlist::GetSize() { return _track_count; }
 
-Track* Playlist::operator[](unsigned short index) {
-	return _tracks[index];
-}
+Track* Playlist::operator[](unsigned short index) { return _tracks[index]; }
