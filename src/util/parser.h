@@ -17,6 +17,8 @@ public:
 
 	static unsigned int HexToDec(const char* data);
 
+	static std::string Utf8(const char* data);
+
 	static std::string Time(const unsigned short &all_seconds);
 };
 
