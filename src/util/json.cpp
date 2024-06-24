@@ -1,9 +1,6 @@
 #include "json.h"
 #include "exception/json_exception.h"
 #include "num_parser.h"
-#include "logger.h"
-
-#include <iostream>
 
 Json::Json(const char* data) : _data(data) { }
 
@@ -14,6 +11,18 @@ Json Json::Get(const char* const key) const {
 }
 
 Json Json::Get(const int index) const {
+	const char* data_ptr = _data;
+	if (!Find(data_ptr, index)) throw JsonException(_data, index);
+	return Json(data_ptr);
+}
+
+Json Json::operator[](const char* key) const {
+	const char* data_ptr = _data;
+	if (!Find(data_ptr, key)) throw JsonException(_data, key);
+	return Json(data_ptr);
+}
+
+Json Json::operator[](int index) const {
 	const char* data_ptr = _data;
 	if (!Find(data_ptr, index)) throw JsonException(_data, index);
 	return Json(data_ptr);

@@ -14,6 +14,10 @@ public:
 
 	Json Get(int index) const;
 
+	Json operator[](const char* key) const;
+
+	Json operator[](int index) const;
+
 	bool Has(const char* key) const;
 
 	bool Has(int index) const;
