@@ -38,7 +38,9 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	std::string command_name = event.command.get_command_name();
 
 	/* Check for commands */
-	if (command_name == "ping") Ping::Exec(event);
+	if (command_name == "play") Play::Exec(event);
+	else if (command_name == "list") List::Exec(event);
+	else if (command_name == "ping") Ping::Exec(event);
 	else if (command_name == "join") Join::Exec(event);
 	else if (command_name == "leave") Leave::Exec(event);
 }
@@ -50,11 +52,11 @@ void on_message_create(const dpp::message_create_t &event) {
 	/* Get a command name and arguments */
 	const unsigned long space_sep = event.msg.content.find(' ');
 	std::string command = event.msg.content.substr(1, space_sep - 1);
-	std::string argument = event.msg.content.substr(space_sep + 1);
+	std::string argument = space_sep == std::string::npos ? "" : event.msg.content.substr(space_sep + 1);
 
 	/* Check for commands */
-	if (command == "play" || command == "p") Play::Exec(event, argument);
-	else if (command == "list" || command == "l") List::Exec(event);
+	if (command == "p" || command == "play") Play::Exec(event, argument);
+	else if (command == "l" || command == "list") List::Exec(event);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "leave") Leave::Exec(event);
@@ -82,6 +84,8 @@ void on_ready(const dpp::ready_t &event) {
 
 	bot->global_command_create(
 			dpp::slashcommand("play", DIC_SLASH_PLAY, bot->me.id).add_option(dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
+
+	bot->global_command_create(dpp::slashcommand("list", DIC_SLASH_LIST, bot->me.id));
 
 	/*bot->global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot->me.id).add_option(
 			dpp::command_option(dpp::co_attachment, "file", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(

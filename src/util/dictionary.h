@@ -20,9 +20,10 @@
 #define DIC_SLASH_PLAY_QUERY "Запрос для поиска трека"
 
 //list command
+#define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
 #define DIC_SLASH_LIST_MSG_EMPTY_TITLE "**Список воспроизведения пуст**"
 #define DIC_SLASH_LIST_MSG_TITLE "**Список воспроизведения ({}):**"
-#define DIC_SLASH_LIST_FULL_TRACK_DATA "{} - {} ({})"
+#define DIC_SLASH_LIST_FULL_TRACK_DATA "{}\u00A0\u202f\u2014\u00A0\u202f{}\u00A0\u202f(\u202f{}\u202f)"
 
 //play-attachment command
 #define DIC_SLASH_PLAY_ATTACHMENT "Воспроизвести трек из вложений"
@@ -47,6 +48,8 @@
 #define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
 #define DIC_ERROR_NO_ATTACHMENTS "**Не было найдено ни одного вложения**"
 #define DIC_ERROR_IS_NOT_A_FILE "**Файл из вложений не является аудио треком**"
+#define DIC_ERROR_TRACK_NOT_FIND "**По данному запросу не было найдено ни одного результата**"
+#define DIC_SLASH_NO_PARAMETER "**В команду не было передано обязательных параметров**"
 
 //http errors
 #define DIC_HTTP_ERROR_CON_CANNOT_BE_ESTABLISHED "Соединение не может быть установлено"

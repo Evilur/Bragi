@@ -10,8 +10,8 @@ void List::Exec(const dpp::slashcommand_t &event) {
 
 void List::Exec(const dpp::message_create_t &event) {
 	/* Send the message to the channel */
-	try { event.reply(Exec(event.msg.guild_id, event.msg.channel_id)); }
-	catch (BragiException &exception) { event.reply(exception.Message()); }
+	try { event.send(Exec(event.msg.guild_id, event.msg.channel_id)); }
+	catch (BragiException &exception) { event.send(exception.Message()); }
 }
 
 dpp::message List::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id) {
