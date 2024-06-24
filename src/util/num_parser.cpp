@@ -46,22 +46,11 @@ unsigned int NumParser::HexToDec(const char* data) {
 
 std::string NumParser::Time(const unsigned short &all_seconds) {
 	/* Get hours, minutes and seconds */
-	const unsigned short seconds = all_seconds % 60;
-	const unsigned short minutes = (all_seconds / 60) % 60;
-	const unsigned short hours = all_seconds / (60 * 60);
+	const unsigned short all_minutes = all_seconds / 60;
+	const unsigned short all_hours = all_minutes / 60;
 
-	const auto format = [](const unsigned short time) {
-		char time_str[] = "00";
-		if (time < 10) time_str[1] = time + '0';
-		else {
-			time_str[0] = (time / 10) + '0';
-			time_str[1] = (time % 10) + '0';
-		}
-		return std::string(time_str);
-	};
-
-	if (hours > 0) return std::format(DIC_TRACK_MORE_THAN_HOUR, hours, format(minutes), format(all_seconds));
-	else if (minutes > 0) return std::format(DIC_TRACK_LESS_THAN_HOUR, minutes, format(all_seconds));
+	if (all_hours > 0) return std::format(DIC_TRACK_MORE_THAN_HOUR, all_hours, all_minutes % 60, all_seconds % 60);
+	else if (all_minutes > 0) return std::format(DIC_TRACK_LESS_THAN_HOUR, all_minutes, all_seconds % 60);
 	else return std::format(DIC_TRACK_LESS_THAN_MINUTE, all_seconds);
 	return std::string();
 }
