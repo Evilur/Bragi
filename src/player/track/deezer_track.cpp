@@ -24,12 +24,11 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_url(url), _total(total), _next(next) { }
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
-	std::stringstream msg_body;
-	if (is_playing_now) msg_body << std::format(DIC_TRACK_PLAYING_NOW, _title);
-	else msg_body << std::format(DIC_TRACK_ADD_TO_PLAYLIST, _title);
-	msg_body << '\n' << std::format(DIC_TRACK_DURATION, NumParser::Time(_duration));
+	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, NumParser::Time(_duration));
+	if (is_playing_now) msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _title));
+	else msg_body.insert(0, std::format(DIC_TRACK_ADD_TO_PLAYLIST, _title));
 
-	dpp::message result = dpp::message(channel_id, msg_body.str());
+	dpp::message result = dpp::message(channel_id, msg_body);
 	result.add_embed(dpp::embed()
 			                 .set_color(Color::RED)
 			                 .add_field(DIC_TRACK_ALBUM, _album_title)
@@ -38,3 +37,5 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 			                 .set_image(_album_picture));
 	return result;
 }
+
+std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _album_title, _artist_name); }

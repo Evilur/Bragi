@@ -16,6 +16,8 @@ public:
 
 	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const = 0;
 
+	virtual std::string GetTrackData() const = 0;
+
 	virtual int GetOpus(unsigned char* out) = 0;
 
 	virtual bool CanRead() = 0;

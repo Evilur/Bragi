@@ -18,6 +18,8 @@ public:
 
 	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
+	std::string GetTrackData() const override;
+
 private:
 	/* Ids */
 	const unsigned int _id;
