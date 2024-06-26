@@ -7,12 +7,15 @@
 
 class DeezerClient final {
 public:
+	enum Quality : char { MP3_128, MP3_320, FLAC };
+
 	static void Init();
 
 	static DeezerTrack* Search(const std::string &query, unsigned int start = 0);
 
+	static std::string GetEncodedTrackUrl(const std::string &token, Quality quality = FLAC);
+
 private:
-	enum Quality : char { MP3_128, MP3_320, FLAC };
 	static constexpr char QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
 
 	static inline std::string _arl_token;
@@ -52,8 +55,6 @@ private:
 	 * @param verbose true if we need to log the user data; false else
 	 */
 	static void UpdateSession(bool verbose = false);
-
-	static std::string GetEncodedTrackUrl(const std::string &token, Quality quality = FLAC);
 };
 
 #endif

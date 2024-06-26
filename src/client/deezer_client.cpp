@@ -32,12 +32,11 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	const Json json_track = json_results["data"][0];
 
 	/* Create the track instance */
-	//const std::string track_url = GetEncodedTrackUrl((std::string)json_track.["TRACK_TOKEN"]);
 	DeezerTrack* result =
 			new DeezerTrack((std::string)json_track["SNG_ID"], (std::string)json_track["ALB_ID"], (std::string)json_track["ART_ID"],
 			                (std::string)json_track["SNG_TITLE"], (std::string)json_track["ALB_TITLE"], (std::string)json_track["ART_NAME"],
 			                (std::string)json_track["ALB_PICTURE"], (std::string)json_track["ART_PICTURE"],
-			                (std::string)json_track["DURATION"], "NOT IMPLEMENTED YET",
+			                (std::string)json_track["DURATION"], (std::string)json_track["TRACK_TOKEN"],
 			                (unsigned short)json_results["total"], (unsigned short)json_results["next"]);
 
 	/* Free the memory and return a result */
@@ -46,6 +45,26 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	return result;
 }
 
+std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, Quality quality) {
+	do {
+		/* Send the request */
+		const char* json_string =
+				HttpsClient(_url_get_decoded_track_url, _headers, std::format(BODY_TEMPLATE_GET_DECODED_TRACK_URL, _license_token, "FLAC", token),
+				            "POST").ReadAll();
+
+		Json json_media = Json(json_string)["data"][0]["media"];
+
+		/* If there is no track in such quality */
+		if (json_media.IsEmpty()) continue;
+
+		/* If the track in such quality exists */
+		delete[] json_string;
+		json_string = nullptr;
+		return (std::string)json_media[0]["sources"][0]["url"];
+	} while ((quality = (Quality)(quality - 1)) >= 0);
+
+	throw std::logic_error("Cannot find the encoded track url");
+}
 
 void DeezerClient::UpdateSession(const bool verbose) {
 	/* Send the request and init the json objects */
@@ -82,25 +101,4 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	/* Free the memory */
 	delete[] json_string;
 	json_string = nullptr;
-}
-
-std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, Quality quality) {
-	do {
-		/* Send the request */
-		const char* json_string =
-				HttpsClient(_url_get_decoded_track_url, _headers, std::format(BODY_TEMPLATE_GET_DECODED_TRACK_URL, _license_token, "FLAC", token),
-				            "POST").ReadAll();
-
-		Json json_media = Json(json_string)["data"][0]["media"];
-
-		/* If there is no track in such quality */
-		if (json_media.IsEmpty()) continue;
-
-		/* If the track in such quality exists */
-		delete[] json_string;
-		json_string = nullptr;
-		return (std::string)json_media[0]["sources"][0]["url"];
-	} while ((quality = (Quality)(quality - 1)) >= 0);
-
-	throw std::logic_error("Cannot find the encoded track url");
 }

@@ -9,8 +9,10 @@ public:
 	DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
 	            const std::string &title, const std::string &album_title, const std::string &artist_name,
 	            const std::string &album_picture, const std::string &artist_picture,
-	            const std::string &duration, const std::string &url,
+	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
+
+	void Init() override;
 
 	int GetOpus(unsigned char* out) override;
 
@@ -35,7 +37,8 @@ private:
 	const std::string _artist_picture;
 
 	/* Others */
-	const std::string _url;
+	std::string _url;
+	const std::string _token;
 	const unsigned short _total;
 	const unsigned short _next;
 };

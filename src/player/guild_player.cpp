@@ -109,6 +109,10 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 }
 
 void GuildPlayer::SendOpus(Track* track) {
+	/* Init the track */
+	track->Init();
+
+	/* Send the opus data */
 	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
 	while (track->CanRead()) {
 		int len = track->GetOpus(chunk);

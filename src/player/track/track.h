@@ -10,6 +10,8 @@ class Track {
 public:
 	virtual ~Track();
 
+	virtual void Init() = 0;
+
 	const std::string &GetTitle() const;
 
 	const unsigned short &GetDuration() const;
@@ -24,8 +26,8 @@ public:
 
 protected:
 	AudioToOpus* _converter;
+	bool _initiated;
 
-	/* Important members */
 	const std::string _title;
 	const unsigned short _duration;
 
