@@ -6,6 +6,7 @@
 #include "converter/flac_to_opus.h"
 
 #include <openssl/md5.h>
+#include <openssl/blowfish.h>
 
 DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
                          const std::string &title, const std::string &album_title, const std::string &artist_name,
@@ -50,14 +51,33 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _album_title, _artist_name); }
 
 void DeezerTrack::OnInit() {
+	/* Init all fields */
 	_url = DeezerClient::GetEncodedTrackUrl(_token);
 	_http = new HttpClient(_url);
 	SetConverter(new FlacToOpus());
 
 	/* Set the blowfish cipher key */
-	unsigned char key[MD5_DIGEST_LENGTH];
-	GetKey(key);
-	Logger::Debug(_url);
+	unsigned char key_buffer[MD5_DIGEST_LENGTH];
+	GetKey(key_buffer);
+	BF_KEY bf_key;
+	BF_set_key(&bf_key, MD5_DIGEST_LENGTH, key_buffer);
+
+	/* Set the init vectors */
+	unsigned char ivec[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+
+	std::ofstream fs("/tmp/vodka.flac");
+
+	while (_http->CanRead()) {
+		unsigned char chunk_tmp[2048];
+		unsigned char chunk[2048];
+		_http->Read(reinterpret_cast<char*>(chunk_tmp), 2048);
+
+		BF_cbc_encrypt(chunk_tmp, chunk, 2048, &bf_key, ivec, BF_DECRYPT);
+		fs.write(reinterpret_cast<const char*>(chunk), 2048);
+		break;
+	}
+
+	Logger::Debug("OK");
 }
 
 #pragma clang diagnostic push
@@ -68,6 +88,7 @@ void DeezerTrack::OnInit() {
 void DeezerTrack::GetKey(unsigned char* buffer) {
 	/* The salt for getting the key for track decrypting */
 	constexpr unsigned char salt[] = "g4el58wc0zvf9na1";
+	Logger::Debug(_id);
 
 	/* Get the md5 hash sum of the track id */
 	const std::string id_str = std::to_string(_id);
@@ -81,10 +102,14 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
 		md5_sum[cur_i + 1] = alph[md5_digest[i] & 0xF];
 	}
 
+	Logger::Debug(std::string((const char*)md5_sum, MD5_DIGEST_LENGTH * 2));
+
 	/* Build the key */
 	const unsigned char* md5_sum_fst_half = md5_sum;  //Get the first half of the hash
 	const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;  //Get the second half of the hash
 	for (char i = 0; i < MD5_DIGEST_LENGTH; i++) buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
+
+	Logger::Debug(std::string((const char*)buffer, MD5_DIGEST_LENGTH));
 }
 
 #pragma clang diagnostic pop
