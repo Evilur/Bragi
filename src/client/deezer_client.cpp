@@ -56,11 +56,12 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, Quality q
 
 		/* If there is no track in such quality */
 		if (json_media.IsEmpty()) continue;
+		std::string result = (std::string)json_media[0]["sources"][0]["url"];
 
 		/* If the track in such quality exists */
 		delete[] json_string;
 		json_string = nullptr;
-		return (std::string)json_media[0]["sources"][0]["url"];
+		return result;
 	} while ((quality = (Quality)(quality - 1)) >= 0);
 
 	throw std::logic_error("Cannot find the encoded track url");

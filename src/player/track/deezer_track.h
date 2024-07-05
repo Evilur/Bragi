@@ -12,8 +12,6 @@ public:
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
 
-	void Init() override;
-
 	int GetOpus(unsigned char* out) override;
 
 	bool CanRead() override;
@@ -29,6 +27,7 @@ private:
 	const unsigned int _artist_id;
 
 	/* Titles */
+	const std::string _title;
 	const std::string _album_title;
 	const std::string _artist_name;
 
@@ -41,6 +40,8 @@ private:
 	const std::string _token;
 	const unsigned short _total;
 	const unsigned short _next;
+
+	void OnInit() override;
 };
 
 #endif
