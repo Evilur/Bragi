@@ -7,16 +7,16 @@
 
 class DeezerClient final {
 public:
-	enum Quality : char { MP3_128, MP3_320, FLAC };
+	enum TrackQuality : char { MP3_128, MP3_320, FLAC };
 
 	static void Init();
 
 	static DeezerTrack* Search(const std::string &query, unsigned int start = 0);
 
-	static std::string GetEncodedTrackUrl(const std::string &token, Quality quality = FLAC);
+	static std::string GetEncodedTrackUrl(const std::string &token, TrackQuality quality = FLAC);
 
 private:
-	static constexpr char QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
+	static constexpr char TRACK_QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
 
 	static inline std::string _arl_token;
 	static inline std::string _headers;

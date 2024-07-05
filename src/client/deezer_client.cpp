@@ -8,6 +8,16 @@
 
 #include <iostream>
 
+DeezerClient::TrackQuality operator++(DeezerClient::TrackQuality &quality, int) {
+	quality = (DeezerClient::TrackQuality)(quality + 1);
+	return quality;
+}
+
+DeezerClient::TrackQuality operator--(DeezerClient::TrackQuality &quality, int) {
+	quality = (DeezerClient::TrackQuality)(quality - 1);
+	return quality;
+}
+
 void DeezerClient::Init() {
 	/* Init the arl otken and headers for the deezer requests */
 	_arl_token = Settings::GetArlToken();
@@ -45,7 +55,7 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	return result;
 }
 
-std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, Quality quality) {
+std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQuality quality) {
 	do {
 		/* Send the request */
 		const char* json_string =
@@ -62,7 +72,7 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, Quality q
 		delete[] json_string;
 		json_string = nullptr;
 		return result;
-	} while ((quality = (Quality)(quality - 1)) >= 0);
+	} while (quality-- >= 0);  //If there is no such track quality decrese it
 
 	throw std::logic_error("Cannot find the encoded track url");
 }
