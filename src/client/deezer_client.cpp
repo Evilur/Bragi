@@ -66,7 +66,7 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQual
 
 		/* If there is no track in such quality */
 		if (json_media.IsEmpty()) continue;
-		std::string result = (std::string)json_media[0]["sources"][0]["url"];
+		std::string result = ((std::string)json_media[0]["sources"][0]["url"]).substr(8);
 
 		/* If the track in such quality exists */
 		delete[] json_string;

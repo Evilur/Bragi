@@ -27,6 +27,10 @@ protected:
 
 	Track(const unsigned short &duration);
 
+	void SetConverter(AudioToOpus* converter);
+
+	int Convert(char* in, unsigned char* out);
+
 	virtual void OnInit() = 0;
 
 private:

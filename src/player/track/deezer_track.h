@@ -3,6 +3,7 @@
 
 #include "track.h"
 #include "util/dictionary.h"
+#include "http/http_client.h"
 
 class DeezerTrack final : public Track {
 public:
@@ -11,6 +12,8 @@ public:
 	            const std::string &album_picture, const std::string &artist_picture,
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
+
+	~DeezerTrack() override;
 
 	int GetOpus(unsigned char* out) override;
 
@@ -41,7 +44,12 @@ private:
 	const unsigned short _total;
 	const unsigned short _next;
 
+	/* Tech data */
+	HttpClient* _http;
+
 	void OnInit() override;
+
+	void GetKey(unsigned char* buffer);
 };
 
 #endif

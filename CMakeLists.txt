@@ -21,6 +21,7 @@ ADD_EXECUTABLE(Bragi
     # Audio to OPUS convertters
     src/converter/audio_to_opus.cpp
     src/converter/wav_to_opus.cpp
+    src/converter/flac_to_opus.cpp
 
     # Exceptions
     src/exception/bragi_exception.cpp

@@ -3,6 +3,9 @@
 #include "util/color.h"
 #include "util/logger.h"
 #include "client/deezer_client.h"
+#include "converter/flac_to_opus.h"
+
+#include <openssl/md5.h>
 
 DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
                          const std::string &title, const std::string &album_title, const std::string &artist_name,
@@ -16,13 +19,18 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_artist_picture("https://e-cdns-images.dzcdn.net/images/artist/" + artist_picture + "/1000x1000-000000-80-0-0.jpg"),
 		_token(token), _total(total), _next(next) { }
 
-int DeezerTrack::GetOpus(unsigned char* out) {
-	throw std::logic_error("Not implemented yet");
+DeezerTrack::~DeezerTrack() {
+	delete _http;
+	_http = nullptr;
 }
 
-bool DeezerTrack::CanRead() {
-	throw std::logic_error("Not implemented yet");
+int DeezerTrack::GetOpus(unsigned char* out) {
+	char buffer[AudioToOpus::PCM_CHUNK_SIZE];
+	_http->Read(buffer, AudioToOpus::PCM_CHUNK_SIZE);
+	return Convert(buffer, out);
 }
+
+bool DeezerTrack::CanRead() { return _http->CanRead(); }
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
 	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_duration));
@@ -43,4 +51,41 @@ std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIS
 
 void DeezerTrack::OnInit() {
 	_url = DeezerClient::GetEncodedTrackUrl(_token);
+	_http = new HttpClient(_url);
+	SetConverter(new FlacToOpus());
+
+	/* Set the blowfish cipher key */
+	unsigned char key[MD5_DIGEST_LENGTH];
+	GetKey(key);
+	Logger::Debug(_url);
 }
+
+#pragma clang diagnostic push
+#pragma GCC diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+void DeezerTrack::GetKey(unsigned char* buffer) {
+	/* The salt for getting the key for track decrypting */
+	constexpr unsigned char salt[] = "g4el58wc0zvf9na1";
+
+	/* Get the md5 hash sum of the track id */
+	const std::string id_str = std::to_string(_id);
+	unsigned char md5_digest[MD5_DIGEST_LENGTH];
+	MD5((unsigned char*)id_str.c_str(), id_str.size(), md5_digest);
+	unsigned char md5_sum[MD5_DIGEST_LENGTH * 2];
+	constexpr unsigned char alph[] = "0123456789abcdef";
+	for (char i = 0; i < MD5_DIGEST_LENGTH; i++) {
+		const char cur_i = i * 2;
+		md5_sum[cur_i] = alph[md5_digest[i] >> 4];
+		md5_sum[cur_i + 1] = alph[md5_digest[i] & 0xF];
+	}
+
+	/* Build the key */
+	const unsigned char* md5_sum_fst_half = md5_sum;  //Get the first half of the hash
+	const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;  //Get the second half of the hash
+	for (char i = 0; i < MD5_DIGEST_LENGTH; i++) buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
+}
+
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
