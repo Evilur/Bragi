@@ -1,4 +1,3 @@
-#include <regex>
 #include "master.h"
 #include "util/dictionary.h"
 #include "command/ping.h"
