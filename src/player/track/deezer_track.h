@@ -39,7 +39,7 @@ private:
 	const std::string _artist_picture;
 
 	/* Others */
-	std::string _url;
+	std::string _encrypted_data_url;
 	const std::string _token;
 	const unsigned short _total;
 	const unsigned short _next;

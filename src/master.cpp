@@ -16,7 +16,7 @@ int main() {
 	Settings::Init();
 	DeezerClient::Init();
 
-	Track* track = DeezerClient::Search("Korpiklaani Vodka");
+	Track* track = DeezerClient::Search("Sex Pistols Lonely Boy");
 	track->Init();
 
 	return 0;

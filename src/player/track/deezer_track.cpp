@@ -7,6 +7,8 @@
 
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 
 DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
                          const std::string &title, const std::string &album_title, const std::string &artist_name,
@@ -52,8 +54,8 @@ std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIS
 
 void DeezerTrack::OnInit() {
 	/* Init all fields */
-	_url = DeezerClient::GetEncodedTrackUrl(_token);
-	_http = new HttpClient(_url);
+	_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
+	_http = new HttpClient(_encrypted_data_url);
 	SetConverter(new FlacToOpus());
 
 	/* Set the blowfish cipher key */
@@ -62,33 +64,28 @@ void DeezerTrack::OnInit() {
 	BF_KEY bf_key;
 	BF_set_key(&bf_key, MD5_DIGEST_LENGTH, key_buffer);
 
-	/* Set the init vectors */
-	unsigned char ivec[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-
-	std::ofstream fs("/tmp/vodka.flac");
+	std::ofstream fs("/tmp/deemix.flac");
 
 	while (_http->CanRead()) {
-		unsigned char chunk_tmp[2048];
-		unsigned char chunk[2048];
-		_http->Read(reinterpret_cast<char*>(chunk_tmp), 2048);
+		/* Read 3 raw chunks */
+		unsigned char chunks[2048 * 3];
+		_http->Read((char*)chunks, 2048 * 3);
 
-		BF_cbc_encrypt(chunk_tmp, chunk, 2048, &bf_key, ivec, BF_DECRYPT);
-		fs.write(reinterpret_cast<const char*>(chunk), 2048);
-		break;
+		/* Set the init vectors */
+		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
+
+		/* Decrypt the first chunk */
+		BF_cbc_encrypt(chunks, chunks, 2048, &bf_key, ivec, BF_DECRYPT);
+
+		fs.write((char*)chunks, 2048 * 3);
 	}
 
 	Logger::Debug("OK");
 }
 
-#pragma clang diagnostic push
-#pragma GCC diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 void DeezerTrack::GetKey(unsigned char* buffer) {
 	/* The salt for getting the key for track decrypting */
 	constexpr unsigned char salt[] = "g4el58wc0zvf9na1";
-	Logger::Debug(_id);
 
 	/* Get the md5 hash sum of the track id */
 	const std::string id_str = std::to_string(_id);
@@ -102,15 +99,8 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
 		md5_sum[cur_i + 1] = alph[md5_digest[i] & 0xF];
 	}
 
-	Logger::Debug(std::string((const char*)md5_sum, MD5_DIGEST_LENGTH * 2));
-
 	/* Build the key */
 	const unsigned char* md5_sum_fst_half = md5_sum;  //Get the first half of the hash
 	const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;  //Get the second half of the hash
 	for (char i = 0; i < MD5_DIGEST_LENGTH; i++) buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
-
-	Logger::Debug(std::string((const char*)buffer, MD5_DIGEST_LENGTH));
 }
-
-#pragma clang diagnostic pop
-#pragma GCC diagnostic pop
