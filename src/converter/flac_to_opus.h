@@ -5,17 +5,17 @@
 
 #include <FLAC++/decoder.h>
 
-class FlacToOpus final : public AudioToOpus, FLAC::Decoder::Stream {
+class FlacToOpus final : public AudioToOpus, private FLAC::Decoder::Stream {
 public:
 	FlacToOpus();
 
 	int Convert(char* in, unsigned char* out) override;
 
-	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte *buffer, size_t *bytes) override;
+	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte* buffer, size_t* bytes) override;
 
-	::FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame *frame, const FLAC__int32 *const *buffer) override;
+	FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame* frame, const FLAC__int32* const* buffer) override;
 
-	void error_callback(::FLAC__StreamDecoderErrorStatus status) override;
+	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 };
 
 #endif

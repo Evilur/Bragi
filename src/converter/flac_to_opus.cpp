@@ -1,9 +1,13 @@
+#include <iostream>
 #include "flac_to_opus.h"
 
-FlacToOpus::FlacToOpus() : AudioToOpus() { }
+FlacToOpus::FlacToOpus() : AudioToOpus() {
+	FLAC::Decoder::Stream* decoder = this;
+	decoder->init();
+}
 
 int FlacToOpus::Convert(char* in, unsigned char* out) {
-	return opus_encode(_encoder, (opus_int16*)in, FRAME_SIZE, out, OPUS_CHUNK_SIZE);
+	return OpusEncode(in, out);
 }
 
 FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size_t* bytes) {

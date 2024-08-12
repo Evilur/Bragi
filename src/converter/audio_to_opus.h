@@ -18,6 +18,9 @@ public:
 	virtual int Convert(char* in, unsigned char* out) = 0;
 
 protected:
+	int OpusEncode(char* in, unsigned char* out);
+
+private:
 	OpusEncoder* _encoder;
 };
 
