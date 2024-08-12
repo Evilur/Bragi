@@ -3,6 +3,7 @@ libsodium (v1.0.19 or later: https://doc.libsodium.org/installation)
 libdpp (v10.0.30 or later: https://github.com/brainboxdotcc/DPP)
 libopusenc (v0.2.1 or later: https://opus-codec.org/downloads)
 libssl (v3 or later: https://github.com/openssl/openssl)
+libFLAC++ (v10.0.1 or later: https://xiph.org/flac/download.html)
 
 asio (v1.30.2 or later: NON-BOOST https://think-async.com/Asio/Download.html)
 cmake (v3.27 or later: https://cmake.org/download)

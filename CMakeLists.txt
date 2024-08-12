@@ -46,4 +46,4 @@ ADD_EXECUTABLE(Bragi
     src/util/parser.cpp
 )
 
-TARGET_LINK_LIBRARIES(Bragi opus sodium opusenc crypto ssl dpp)
+TARGET_LINK_LIBRARIES(Bragi opus sodium opusenc crypto ssl FLAC++ dpp)

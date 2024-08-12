@@ -66,6 +66,8 @@ void DeezerTrack::OnInit() {
 
 	std::ofstream fs("/tmp/deemix.flac");
 
+	/* !!! THIS IS FOR TESTING !!! */
+
 	while (_http->CanRead()) {
 		/* Read 3 raw chunks */
 		unsigned char chunks[2048 * 3];
@@ -79,6 +81,8 @@ void DeezerTrack::OnInit() {
 
 		fs.write((char*)chunks, 2048 * 3);
 	}
+
+	/* !!! THIS IS FOR TESTING !!! */
 
 	Logger::Debug("OK");
 }
