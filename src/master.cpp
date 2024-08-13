@@ -12,11 +12,8 @@
 #include "converter/flac_to_opus.h"
 
 int main() {
-	HttpClient http("localhost/data.flac");
-	FlacToOpus converter;
-
-	
-
+	FlacToOpus* converter = new FlacToOpus();
+	delete converter;
 	return 0;
 
 	/* Init static classes */
