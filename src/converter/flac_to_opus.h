@@ -21,9 +21,6 @@ public:
 
 	HttpClient* _http;
 	std::ofstream _fuck;
-
-	static constexpr size_t _buffer_size = 8192;
-	FLAC__byte* _buffer = new FLAC__byte[_buffer_size];
 };
 
 #endif

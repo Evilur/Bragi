@@ -6,6 +6,7 @@ FlacToOpus::FlacToOpus() : AudioToOpus(), FLAC::Decoder::Stream() {
 	_fuck.open("/tmp/fuck.flac");
 
 	this->init();
+	this->set_md5_checking(false);  //Disable md5 checking (is it necessary here at all?)
 	this->process_until_end_of_stream();
 }
 
@@ -14,21 +15,26 @@ int FlacToOpus::Convert(char* in, unsigned char* out) {
 }
 
 FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size_t* bytes) {
-	_http->Read((char*)_buffer, (long)_buffer_size);
-
-	if (_http->CanRead()) {
-		std::cout << "OK\n";
-		return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
-	} else {
-		//exit(200);
-		std::cout << "THE END\n";
+	if (!_http->CanRead()) {
+		std::cout << "EOF\n";
+		exit(200);
 		return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 	}
+
+	std::cout << "READ\n";
+
+	/* Read to the temporary buffer */
+	FLAC__byte tmp_buffer[*bytes];
+	_http->Read((char*)tmp_buffer, *bytes);
+
+	/* Clone the temporary buffer data to the master buffer */
+	std::copy(tmp_buffer, tmp_buffer + *bytes, buffer);
+
+	return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 }
 
 FLAC__StreamDecoderWriteStatus FlacToOpus::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
 	std::cout << "WRITE\n";
-
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
