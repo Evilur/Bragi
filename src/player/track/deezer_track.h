@@ -1,6 +1,7 @@
 #ifndef BRAGI_DEEZER_TRACK_H
 #define BRAGI_DEEZER_TRACK_H
 
+#include <openssl/blowfish.h>
 #include "track.h"
 #include "util/dictionary.h"
 #include "http/http_client.h"
@@ -13,11 +14,7 @@ public:
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
 
-	~DeezerTrack() override;
-
-	int GetOpus(unsigned char* out) override;
-
-	bool CanRead() override;
+	void SendOpus(const dpp::voiceconn* voiceconn) override;
 
 	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
@@ -45,9 +42,7 @@ private:
 	const unsigned short _next;
 
 	/* Tech data */
-	HttpClient* _http;
-
-	void OnInit() override;
+	BF_KEY _bf_key;
 
 	void GetKey(unsigned char* buffer);
 };

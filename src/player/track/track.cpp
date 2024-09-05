@@ -1,23 +1,15 @@
 #include "track.h"
-#include "util/dictionary.h"
-#include "util/color.h"
-
-void Track::Init() {
-	if (!_initted) {
-		OnInit();
-		_initted = true;
-	}
-}
+#include "sender/opus_sender.h"
 
 Track::~Track() {
-	delete _converter;
-	_converter = nullptr;
+	delete _sender;
+	_sender = nullptr;
 }
 
 const unsigned short &Track::GetDuration() const { return _duration; }
 
 Track::Track(const unsigned short &duration) : _duration(duration) { }
 
-void Track::SetConverter(AudioToOpus* converter) { _converter = converter; }
+void Track::SetSender(OpusSender* converter) { _sender = converter; }
 
-int Track::Convert(char* in, unsigned char* out) { return _converter->Convert(in, out); }
+void Track::Send(const char* in, const int size) { _sender->Send(in, size); }

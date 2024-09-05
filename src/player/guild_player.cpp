@@ -2,7 +2,6 @@
 #include "guild_player.h"
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
-#include "converter/audio_to_opus.h"
 #include "util/logger.h"
 #include "util/color.h"
 #include "util/parser.h"
@@ -90,13 +89,13 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 
 void GuildPlayer::HandleMarker(const std::string &meta) {
 	/* meta can be "PFT" (play first track) or "EOF" (end of file) */
-	if (meta == "PFT") SendOpus(_playlist[0]);  //If we need to play first track
+	if (meta == "PFT") _playlist[0]->SendOpus(_voiceconn);  //If we need to play first track
 	else _playlist.Skip();  //If there is the end of the file
 }
 
 void GuildPlayer::HandleReadyState() {
 	_voiceconn = ds_client->get_voice(guild_id);  //Update the voice
-	if (!_playlist.IsEmpty()) SendOpus(_playlist[0]);  //If the playlist is not empty play the first track
+	if (!_playlist.IsEmpty()) _playlist[0]->SendOpus(_voiceconn);  //If the playlist is not empty play the first track
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
@@ -106,19 +105,6 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 
 	/* If there is not a such guild we need to add it to the array */
 	return Add(guild_id);
-}
-
-void GuildPlayer::SendOpus(Track* track) {
-	/* Init the track */
-	track->Init();
-
-	/* Send the opus data */
-	unsigned char chunk[AudioToOpus::OPUS_CHUNK_SIZE];
-	while (track->CanRead()) {
-		int len = track->GetOpus(chunk);
-		_voiceconn->voiceclient->send_audio_opus(chunk, len);
-	}
-	_voiceconn->voiceclient->insert_marker("EOF");
 }
 
 bool GuildPlayer::IsPlayerReady() {

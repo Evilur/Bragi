@@ -3,12 +3,10 @@
 #include "util/color.h"
 #include "util/logger.h"
 #include "client/deezer_client.h"
-#include "converter/flac_to_opus.h"
+#include "sender/flac_sender.h"
 
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
-#include <openssl/evp.h>
-#include <openssl/err.h>
 
 DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
                          const std::string &title, const std::string &album_title, const std::string &artist_name,
@@ -22,18 +20,40 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_artist_picture("https://e-cdns-images.dzcdn.net/images/artist/" + artist_picture + "/1000x1000-000000-80-0-0.jpg"),
 		_token(token), _total(total), _next(next) { }
 
-DeezerTrack::~DeezerTrack() {
-	delete _http;
-	_http = nullptr;
-}
+void DeezerTrack::SendOpus(const dpp::voiceconn* voiceconn) {
+	/* Set the url of the encrypted track data */
+	_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
 
-int DeezerTrack::GetOpus(unsigned char* out) {
-	char buffer[AudioToOpus::PCM_CHUNK_SIZE];
-	_http->Read(buffer, AudioToOpus::PCM_CHUNK_SIZE);
-	return Convert(buffer, out);
-}
+	/* Set the opus sender */
+	SetSender(new FlacSender(voiceconn));
 
-bool DeezerTrack::CanRead() { return _http->CanRead(); }
+	/* Set the blowfish cipher key */
+	unsigned char key_buffer[MD5_DIGEST_LENGTH];
+	GetKey(key_buffer);
+	BF_set_key(&_bf_key, MD5_DIGEST_LENGTH, key_buffer);
+
+	/* Create a new http client */
+	HttpClient http(_encrypted_data_url);
+
+	/* Set the chunk size */
+	constexpr int chunk_size = 2048;
+
+	/* Read a data from the http client */
+	while (http.CanRead()) {
+		/* Read 3 raw chunks */
+		unsigned char chunks[chunk_size * 3];
+		http.Read((char*)chunks, chunk_size * 3);
+
+		/* Set the init vectors */
+		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
+
+		/* Decrypt the first chunk */
+		BF_cbc_encrypt(chunks, chunks, chunk_size, &_bf_key, ivec, BF_DECRYPT);
+
+		/* Send the decrypted flac data */
+		Send((char*)chunks, chunk_size * 3);
+	}
+}
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
 	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_duration));
@@ -51,41 +71,6 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 }
 
 std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _album_title, _artist_name); }
-
-void DeezerTrack::OnInit() {
-	/* Init all fields */
-	_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
-	_http = new HttpClient(_encrypted_data_url);
-	SetConverter(new FlacToOpus());
-
-	/* Set the blowfish cipher key */
-	unsigned char key_buffer[MD5_DIGEST_LENGTH];
-	GetKey(key_buffer);
-	BF_KEY bf_key;
-	BF_set_key(&bf_key, MD5_DIGEST_LENGTH, key_buffer);
-
-	std::ofstream fs("/tmp/deemix.flac");
-
-	/* !!! THIS IS FOR TESTING !!! */
-
-	while (_http->CanRead()) {
-		/* Read 3 raw chunks */
-		unsigned char chunks[2048 * 3];
-		_http->Read((char*)chunks, 2048 * 3);
-
-		/* Set the init vectors */
-		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
-
-		/* Decrypt the first chunk */
-		BF_cbc_encrypt(chunks, chunks, 2048, &bf_key, ivec, BF_DECRYPT);
-
-		fs.write((char*)chunks, 2048 * 3);
-	}
-
-	/* !!! THIS IS FOR TESTING !!! */
-
-	Logger::Debug("OK");
-}
 
 void DeezerTrack::GetKey(unsigned char* buffer) {
 	/* The salt for getting the key for track decrypting */

@@ -1,5 +1,5 @@
-#ifndef BRAGI_FLAC_TO_OPUS_H
-#define BRAGI_FLAC_TO_OPUS_H
+#ifndef BRAGI_FLAC_SENDER_H
+#define BRAGI_FLAC_SENDER_H
 
 #include "opus_sender.h"
 #include "http/http_client.h"
@@ -7,11 +7,11 @@
 #include <FLAC++/decoder.h>
 #include <fstream>
 
-class FlacToOpus final : public OpusSender, private FLAC::Decoder::Stream {
+class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacToOpus();
+	FlacSender(const dpp::voiceconn* voiceconn);
 
-	int Convert(char* in, unsigned char* out) override;
+	void Send(const char* in, const int size) override;
 
 	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte* buffer, size_t* bytes) override;
 

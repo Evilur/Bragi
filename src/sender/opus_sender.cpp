@@ -1,8 +1,7 @@
-#include "audio_to_opus.h"
+#include "opus_sender.h"
 
-OpusSender::OpusSender(dpp::voiceconn* voiceconn) {
+OpusSender::OpusSender(const dpp::voiceconn* voiceconn) : _voiceconn(voiceconn) {
 	_encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
-	_voiceconn = voiceconn;
 }
 
 OpusSender::~OpusSender() {

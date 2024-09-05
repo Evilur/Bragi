@@ -1,17 +1,17 @@
 #include <iostream>
-#include "flac_to_opus.h"
+#include "flac_sender.h"
+#include "util/logger.h"
 
-FlacToOpus::FlacToOpus() : OpusSender(), FLAC::Decoder::Stream() {
+FlacSender::FlacSender(const dpp::voiceconn* voiceconn) : OpusSender(voiceconn), FLAC::Decoder::Stream() {
 	this->init();
 	this->set_md5_checking(false);  //Disable md5 checking (is it necessary here at all?)
 }
 
-int FlacToOpus::Convert(char* in, unsigned char* out) {
-	
-	return Send(in, out);
+void FlacSender::Send(const char* in, const int size) {
+	std::cout << "DICK DICK \n";
 }
 
-FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size_t* bytes) {
+FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size_t* bytes) {
 	/* Read to the temporary buffer */
 	FLAC__byte tmp_buffer[*bytes];
 
@@ -21,7 +21,7 @@ FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size
 	return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 }
 
-FLAC__StreamDecoderWriteStatus FlacToOpus::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
+FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
 	for (int i = 0; i < frame->header.blocksize; i++) {
 		_stream.put(buffer[0][i]);
 		_stream.put(buffer[0][i] >> 8);
@@ -34,6 +34,7 @@ FLAC__StreamDecoderWriteStatus FlacToOpus::write_callback(const FLAC__Frame* fra
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-void FlacToOpus::error_callback(FLAC__StreamDecoderErrorStatus status) {
-	std::cout << strerror(status) << std::endl;
+void FlacSender::error_callback(FLAC__StreamDecoderErrorStatus status) {
+	Logger::Fatal("Error while convert a FLAC data to a raw PCM");
+	Logger::Fatal(strerror(status));
 }

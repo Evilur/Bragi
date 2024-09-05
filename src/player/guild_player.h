@@ -31,8 +31,6 @@ private:
 	const dpp::voiceconn* _voiceconn;
 	Playlist _playlist;
 
-	void SendOpus(Track* track);
-
 	bool IsPlayerReady();
 
 private:
