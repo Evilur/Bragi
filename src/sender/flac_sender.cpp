@@ -1,31 +1,19 @@
 #include <iostream>
 #include "flac_to_opus.h"
 
-FlacToOpus::FlacToOpus() : AudioToOpus(), FLAC::Decoder::Stream() {
-	_http = new HttpClient("localhost/data.flac");
-	_fuck.open("/tmp/fuck.flac");
-
+FlacToOpus::FlacToOpus() : OpusSender(), FLAC::Decoder::Stream() {
 	this->init();
 	this->set_md5_checking(false);  //Disable md5 checking (is it necessary here at all?)
-	this->process_until_end_of_stream();
 }
 
 int FlacToOpus::Convert(char* in, unsigned char* out) {
-	return OpusEncode(in, out);
+	
+	return Send(in, out);
 }
 
 FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size_t* bytes) {
-	if (!_http->CanRead()) {
-		std::cout << "EOF\n";
-		exit(200);
-		return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
-	}
-
-	std::cout << "READ\n";
-
 	/* Read to the temporary buffer */
 	FLAC__byte tmp_buffer[*bytes];
-	_http->Read((char*)tmp_buffer, *bytes);
 
 	/* Clone the temporary buffer data to the master buffer */
 	std::copy(tmp_buffer, tmp_buffer + *bytes, buffer);
@@ -34,7 +22,15 @@ FLAC__StreamDecoderReadStatus FlacToOpus::read_callback(FLAC__byte* buffer, size
 }
 
 FLAC__StreamDecoderWriteStatus FlacToOpus::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
-	std::cout << "WRITE\n";
+	for (int i = 0; i < frame->header.blocksize; i++) {
+		_stream.put(buffer[0][i]);
+		_stream.put(buffer[0][i] >> 8);
+		_stream.put(buffer[1][i]);
+		_stream.put(buffer[1][i] >> 8);
+	}
+
+	_stream_size += frame->header.blocksize * 4;
+
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 

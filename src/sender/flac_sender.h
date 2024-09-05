@@ -1,13 +1,13 @@
 #ifndef BRAGI_FLAC_TO_OPUS_H
 #define BRAGI_FLAC_TO_OPUS_H
 
-#include "audio_to_opus.h"
+#include "opus_sender.h"
 #include "http/http_client.h"
 
 #include <FLAC++/decoder.h>
 #include <fstream>
 
-class FlacToOpus final : public AudioToOpus, private FLAC::Decoder::Stream {
+class FlacToOpus final : public OpusSender, private FLAC::Decoder::Stream {
 public:
 	FlacToOpus();
 
@@ -19,8 +19,9 @@ public:
 
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
-	HttpClient* _http;
-	std::ofstream _fuck;
+private:
+	unsigned int _stream_size = 0;
+	std::stringstream _stream;
 };
 
 #endif

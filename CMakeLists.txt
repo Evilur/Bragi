@@ -18,10 +18,9 @@ ADD_EXECUTABLE(Bragi
     src/command/play.cpp
     src/command/list.cpp
 
-    # Audio to OPUS convertters
-    src/converter/audio_to_opus.cpp
-    src/converter/wav_to_opus.cpp
-    src/converter/flac_to_opus.cpp
+    # Discord audio senders
+    src/sender/opus_sender.cpp
+    src/sender/flac_sender.cpp
 
     # Exceptions
     src/exception/bragi_exception.cpp

@@ -9,17 +9,16 @@
 #include "client/deezer_client.h"
 #include "command/play.h"
 #include "command/list.h"
-#include "converter/flac_to_opus.h"
 
 int main() {
-	FlacToOpus* converter = new FlacToOpus();
-	delete converter;
-	return 0;
-
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
 	DeezerClient::Init();
+
+	DeezerTrack* track = DeezerClient::Search("Lonely Boy - Sex Pistols");
+	track->SendOpus(nullptr);
+	return 0;
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
