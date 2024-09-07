@@ -9,9 +9,9 @@
 
 class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* voiceconn);
+	FlacSender(const dpp::voiceconn* voiceconn, Track* track);
 
-	void Send(const char* in, const int size) override;
+	void Run() override;
 
 	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte* buffer, size_t* bytes) override;
 
@@ -20,8 +20,10 @@ public:
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	unsigned int _stream_size = 0;
-	std::stringstream _stream;
+	const char* _flac_buffer;
+	size_t _flac_buffer_size;
+
+	std::ofstream* fuck = new std::ofstream("/tmp/test.pcm");
 };
 
 #endif

@@ -1,8 +1,10 @@
 #ifndef BRAGI_OPUS_SENDER_H
 #define BRAGI_OPUS_SENDER_H
 
-#include <dpp/discordclient.h>
 #include "opus/opus.h"
+#include "player/track/track.h"
+
+#include <dpp/discordclient.h>
 
 class OpusSender {
 public:
@@ -12,15 +14,19 @@ public:
 	static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(opus_int16);
 	static constexpr int OPUS_CHUNK_SIZE = 1024;
 
-	OpusSender(const dpp::voiceconn* voiceconn);
+	OpusSender(const dpp::voiceconn* voiceconn, Track* track);
 
 	virtual ~OpusSender();
 
-	virtual void Send(const char* in, const int size) = 0;
+	virtual void Run() = 0;
+
+protected:
+	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size);
 
 private:
 	OpusEncoder* _encoder;
 	const dpp::voiceconn* _voiceconn;
+	Track* _track;
 };
 
 #endif

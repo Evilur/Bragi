@@ -21,38 +21,55 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_token(token), _total(total), _next(next) { }
 
 void DeezerTrack::SendOpus(const dpp::voiceconn* voiceconn) {
-	/* Set the url of the encrypted track data */
-	_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
+	/* Init field that I can use twice */
+	if (!_initiated) {
+		/* Set the url of the encrypted track data */
+		_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
 
-	/* Set the opus sender */
-	SetSender(new FlacSender(voiceconn));
+		/* Set the blowfish cipher key */
+		unsigned char key_buffer[MD5_DIGEST_LENGTH];
+		GetKey(key_buffer);
+		BF_set_key(&_bf_key, MD5_DIGEST_LENGTH, key_buffer);
 
-	/* Set the blowfish cipher key */
-	unsigned char key_buffer[MD5_DIGEST_LENGTH];
-	GetKey(key_buffer);
-	BF_set_key(&_bf_key, MD5_DIGEST_LENGTH, key_buffer);
+		/* Declare this track initialized */
+		_initiated = true;
+	}
 
 	/* Create a new http client */
-	HttpClient http(_encrypted_data_url);
+	delete _http;
+	_http = new HttpClient(_encrypted_data_url);
 
+	/* Run the opus sender */
+	FlacSender* sender = new FlacSender(voiceconn, this);
+	sender->Run();
+	delete sender;
+}
+
+bool DeezerTrack::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) {
 	/* Set the chunk size */
 	constexpr int chunk_size = 2048;
+	constexpr int necessary_buffer_size = chunk_size * 3;
 
-	/* Read a data from the http client */
-	while (http.CanRead()) {
-		/* Read 3 raw chunks */
-		unsigned char chunks[chunk_size * 3];
-		http.Read((char*)chunks, chunk_size * 3);
+	if (necessary_buffer_size > *buffer_size) {
+		Logger::Fatal("The buffer is too small to keep 3 decoded flac data chunks");
+		exit(101);
+	} else *buffer_size = necessary_buffer_size;
 
-		/* Set the init vectors */
-		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
-
-		/* Decrypt the first chunk */
-		BF_cbc_encrypt(chunks, chunks, chunk_size, &_bf_key, ivec, BF_DECRYPT);
-
-		/* Send the decrypted flac data */
-		Send((char*)chunks, chunk_size * 3);
+	if (!_http->CanRead()) {
+		*buffer_size = 0;
+		return false;
 	}
+
+	/* Read 3 raw chunks */
+	_http->Read((char*)buffer, necessary_buffer_size);
+
+	/* Set the init vectors */
+	unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
+
+	/* Decrypt the first chunk */
+	BF_cbc_encrypt(buffer, buffer, chunk_size, &_bf_key, ivec, BF_DECRYPT);
+
+	return true;
 }
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
