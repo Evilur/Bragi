@@ -10,3 +10,7 @@ OpusSender::~OpusSender() {
 }
 
 bool OpusSender::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) { return _track->ReadBuffer(buffer, buffer_size); }
+
+void OpusSender::SendOpusData(unsigned char* data, int len) {
+	_voiceconn->voiceclient->send_audio_opus(data, len);
+}

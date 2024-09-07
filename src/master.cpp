@@ -9,16 +9,13 @@
 #include "client/deezer_client.h"
 #include "command/play.h"
 #include "command/list.h"
+#include "sender/opus_sender.h"
 
 int main() {
 	/* Init static classes */
 	Logger::Init();
 	Settings::Init();
 	DeezerClient::Init();
-
-	DeezerTrack* track = DeezerClient::Search("Lonely Boy - Sex Pistols");
-	track->SendOpus(nullptr);
-	return 0;
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);

@@ -23,8 +23,18 @@ public:
 protected:
 	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size);
 
-private:
+	void SendOpusData(unsigned char* data, int len);
+
+
+
 	OpusEncoder* _encoder;
+
+
+
+private:
+
+
+
 	const dpp::voiceconn* _voiceconn;
 	Track* _track;
 };

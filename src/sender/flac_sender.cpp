@@ -21,11 +21,24 @@ FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* fra
 	Logger::Debug("WRITE");
 
 	for (int i = 0; i < frame->header.blocksize; i++) {
-		fuck->put(buffer[0][i]);
-		fuck->put(buffer[0][i] >> 8);
-		fuck->put(buffer[1][i]);
-		fuck->put(buffer[1][i] >> 8);
+		stream.put(buffer[0][i]);
+		stream.put(buffer[0][i] >> 8);
+		stream.put(buffer[1][i]);
+		stream.put(buffer[1][i] >> 8);
 	}
+
+	stream_size += frame->header.blocksize * 4;
+
+	if (stream_size < OpusSender::PCM_CHUNK_SIZE) return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+
+	char pcm_buffer[OpusSender::PCM_CHUNK_SIZE];
+	unsigned char opus_buffer[OpusSender::OPUS_CHUNK_SIZE];
+
+	stream.read(pcm_buffer, OpusSender::PCM_CHUNK_SIZE);
+	int len = opus_encode(_encoder, (const opus_int16*)pcm_buffer, OpusSender::FRAME_SIZE, opus_buffer, OpusSender::OPUS_CHUNK_SIZE);
+
+	SendOpusData(opus_buffer, len);
+	Logger::Warn("Fuck");
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }

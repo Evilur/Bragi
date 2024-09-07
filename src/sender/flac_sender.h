@@ -20,10 +20,8 @@ public:
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	const char* _flac_buffer;
-	size_t _flac_buffer_size;
-
-	std::ofstream* fuck = new std::ofstream("/tmp/test.pcm");
+	std::stringstream stream;
+	long stream_size;
 };
 
 #endif
