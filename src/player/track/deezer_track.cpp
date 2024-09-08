@@ -20,7 +20,7 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_artist_picture("https://e-cdns-images.dzcdn.net/images/artist/" + artist_picture + "/1000x1000-000000-80-0-0.jpg"),
 		_token(token), _total(total), _next(next) { }
 
-void DeezerTrack::SendOpus(const dpp::voiceconn* voiceconn) {
+void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	/* Init field that I can use twice */
 	if (!_initiated) {
 		/* Set the url of the encrypted track data */

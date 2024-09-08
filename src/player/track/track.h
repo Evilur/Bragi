@@ -12,7 +12,7 @@ public:
 
 	virtual std::string GetTrackData() const = 0;
 
-	virtual void SendOpus(const dpp::voiceconn* voiceconn) = 0;
+	virtual void Play(const dpp::voiceconn* voiceconn) = 0;
 
 	virtual bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) = 0;
 

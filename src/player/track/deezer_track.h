@@ -14,7 +14,7 @@ public:
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
 
-	void SendOpus(const dpp::voiceconn* voiceconn) override;
+	void Play(const dpp::voiceconn* voiceconn) override;
 
 	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) override;
 

@@ -89,13 +89,13 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 
 void GuildPlayer::HandleMarker(const std::string &meta) {
 	/* meta can be "PFT" (play first track) or "EOF" (end of file) */
-	if (meta == "PFT") _playlist[0]->SendOpus(_voiceconn);  //If we need to play first track
+	if (meta == "PFT") _playlist[0]->Play(_voiceconn);  //If we need to play first track
 	else _playlist.Skip();  //If there is the end of the file
 }
 
 void GuildPlayer::HandleReadyState() {
 	_voiceconn = ds_client->get_voice(guild_id);  //Update the voice
-	if (!_playlist.IsEmpty()) _playlist[0]->SendOpus(_voiceconn);  //If the playlist is not empty play the first track
+	if (!_playlist.IsEmpty()) _playlist[0]->Play(_voiceconn);  //If the playlist is not empty play the first track
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
