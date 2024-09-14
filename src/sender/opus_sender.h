@@ -31,11 +31,13 @@ protected:
 
 
 
+	const dpp::voiceconn* _voiceconn;
+
+
 private:
 
 
 
-	const dpp::voiceconn* _voiceconn;
 	Track* _track;
 };
 

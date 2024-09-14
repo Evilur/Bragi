@@ -6,10 +6,13 @@
 
 #include <FLAC++/decoder.h>
 #include <fstream>
+#include <speex/speex_resampler.h>
 
 class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
 	FlacSender(const dpp::voiceconn* voiceconn, Track* track);
+
+	~FlacSender();
 
 	void Run() override;
 
@@ -21,7 +24,10 @@ public:
 
 private:
 	std::stringstream stream;
-	long stream_size;
+	signed long stream_size = 0;
+	SpeexResamplerState* dick;
+
+	std::ofstream fuck = std::ofstream("/tmp/fuck.pcm");
 };
 
 #endif
