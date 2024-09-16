@@ -3,7 +3,6 @@
 #include "util/logger.h"
 #include "master.h"
 
-#include <thread>
 #include <speex/speex_resampler.h>
 
 FlacSender::FlacSender(const dpp::voiceconn* voiceconn, Track* track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
@@ -11,16 +10,19 @@ FlacSender::FlacSender(const dpp::voiceconn* voiceconn, Track* track) : OpusSend
 	this->set_md5_checking(false);  //Disable md5 checking (is it necessary here at all?)
 }
 
-FlacSender::~FlacSender() {
-	speex_resampler_destroy(dick);
-}
-
 void FlacSender::Run() {
-	int err = 0;
-	dick = speex_resampler_init(2, 44100, 48000, 10, &err);
+	/* Init the resampler */
+	_resampler = speex_resampler_init(2, 44100, 48000, 10, nullptr);
 
+	/* Decode all FLAC data and send OPUS to the discord */
 	process_until_end_of_stream();
 	finish();
+
+	/* Destroy the resampler */
+	speex_resampler_destroy(_resampler);
+	_resampler = nullptr;
+
+	/* Insert the EOF marker */
 	_voiceconn->voiceclient->insert_marker();
 }
 
@@ -45,24 +47,24 @@ FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* fra
 		in_right[i] = buffer[1][i];
 	}
 
-	speex_resampler_process_int(dick, 0, in_left, &in_left_size, out_left, &out_left_size);
-	speex_resampler_process_int(dick, 1, in_right, &in_right_size, out_right, &out_right_size);
+	speex_resampler_process_int(_resampler, 0, in_left, &in_left_size, out_left, &out_left_size);
+	speex_resampler_process_int(_resampler, 1, in_right, &in_right_size, out_right, &out_right_size);
 
 	for (int i = 0; i < std::max(out_left_size, out_right_size); i++) {
-		stream.write((const char*)&(out_left[i]), sizeof(short));
-		stream.write((const char*)&(out_right[i]), sizeof(short));
-		stream_size += sizeof(short) * 2;
+		_stream.write((const char*)&(out_left[i]), sizeof(short));
+		_stream.write((const char*)&(out_right[i]), sizeof(short));
+		_stream_size += sizeof(short) * 2;
 	}
 
-	while (stream_size > PCM_CHUNK_SIZE) {
+	while (_stream_size > PCM_CHUNK_SIZE) {
 		char pcm_buffer[PCM_CHUNK_SIZE];
 		unsigned char opus_buffer[OPUS_CHUNK_SIZE];
 
-		stream.read(pcm_buffer, PCM_CHUNK_SIZE);
+		_stream.read(pcm_buffer, PCM_CHUNK_SIZE);
 		int len = opus_encode(_encoder, (opus_int16*)pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
 
 		_voiceconn->voiceclient->send_audio_opus(opus_buffer, len, 60);
-		stream_size -= PCM_CHUNK_SIZE;
+		_stream_size -= PCM_CHUNK_SIZE;
 	}
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;

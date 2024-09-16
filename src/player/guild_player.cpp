@@ -114,9 +114,7 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	return Add(guild_id);
 }
 
-bool GuildPlayer::IsPlayerReady() {
-	return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready();
-}
+bool GuildPlayer::IsPlayerReady() { return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready(); }
 
 GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Increase the number of guilds */

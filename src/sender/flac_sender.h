@@ -12,21 +12,18 @@ class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
 	FlacSender(const dpp::voiceconn* voiceconn, Track* track);
 
-	~FlacSender();
-
 	void Run() override;
 
 	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte* buffer, size_t* bytes) override;
 
-	FLAC__StreamDecoderWriteStatus write_callback(const ::FLAC__Frame* frame, const FLAC__int32* const* buffer) override;
+	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) override;
 
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	std::stringstream stream;
-	signed long stream_size = 0;
-	SpeexResamplerState* dick;
-	int c = 0;
+	SpeexResamplerState* _resampler;
+	std::stringstream _stream;
+	signed long _stream_size = 0;
 };
 
 #endif
