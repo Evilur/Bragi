@@ -4,6 +4,7 @@
 #include "util/logger.h"
 #include "client/deezer_client.h"
 #include "sender/flac_sender.h"
+#include "master.h"
 
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>

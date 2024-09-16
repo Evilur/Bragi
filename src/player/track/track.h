@@ -6,11 +6,15 @@
 
 class Track {
 public:
+	Track(const unsigned short &duration);
+
 	const unsigned short &GetDuration() const;
 
 	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const = 0;
 
 	virtual std::string GetTrackData() const = 0;
+
+	void AsyncPlay(const dpp::voiceconn* voiceconn);
 
 	virtual void Play(const dpp::voiceconn* voiceconn) = 0;
 
@@ -19,7 +23,9 @@ public:
 protected:
 	const unsigned short _duration;
 
-	Track(const unsigned short &duration);
+private:
+	std::thread* _initting;
+	bool _is_initiated;
 };
 
 #endif

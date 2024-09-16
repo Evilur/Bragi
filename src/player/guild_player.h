@@ -30,7 +30,7 @@ public:
 private:
 	const dpp::voiceconn* _voiceconn;
 	Playlist _playlist;
-	bool _need_to_play_first_track;
+	bool _need_to_play_first_track = false;
 
 	bool IsPlayerReady();
 

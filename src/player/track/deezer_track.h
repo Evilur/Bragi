@@ -14,9 +14,9 @@ public:
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
 
-	void Play(const dpp::voiceconn* voiceconn) override;
-
 	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) override;
+
+	void Play(const dpp::voiceconn* voiceconn) override;
 
 	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
