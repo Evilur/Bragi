@@ -67,7 +67,7 @@ void on_voice_ready(const dpp::voice_ready_t &event) {
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->HandleMarker(event.track_meta);
+	GuildPlayer::Get(event.voice_client->server_id)->HandleMarker();
 }
 
 void on_ready(const dpp::ready_t &event) {

@@ -20,7 +20,7 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		/* If we need to play the track right now */
-		if (_need_to_play_first_track) std::thread(&Track::Play, _playlist[0], _voiceconn);
+		if (_need_to_play_first_track) std::thread(&Track::Play, _playlist[0], _voiceconn).detach();
 		return result_msg;  //Return a track message
 	}
 
