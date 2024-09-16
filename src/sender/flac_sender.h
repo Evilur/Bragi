@@ -26,8 +26,7 @@ private:
 	std::stringstream stream;
 	signed long stream_size = 0;
 	SpeexResamplerState* dick;
-
-	std::ofstream fuck = std::ofstream("/tmp/fuck.pcm");
+	int c = 0;
 };
 
 #endif

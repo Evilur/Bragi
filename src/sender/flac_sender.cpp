@@ -1,8 +1,9 @@
 #include <iostream>
-#include <thread>
 #include "flac_sender.h"
 #include "util/logger.h"
+#include "master.h"
 
+#include <thread>
 #include <speex/speex_resampler.h>
 
 FlacSender::FlacSender(const dpp::voiceconn* voiceconn, Track* track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
@@ -15,28 +16,12 @@ FlacSender::~FlacSender() {
 }
 
 void FlacSender::Run() {
-	Logger::Debug("Start");
 	int err = 0;
-	dick = speex_resampler_init(2, 44100, 65268, 10, &err);
+	dick = speex_resampler_init(2, 44100, 48000, 10, &err);
 
 	process_until_end_of_stream();
 	finish();
-	Logger::Debug("End");
-
-	/*while (!stream.eof()) {
-		spx_uint32_t in_len = 10240;
-		spx_uint32_t out_len = 10240 * 5;
-		spx_int16_t in_buffer[in_len];
-		spx_int16_t out_buffer[out_len];
-		Logger::Warn("Dick");
-
-		stream.read((char*)in_buffer, in_len * 2);
-		err = speex_resampler_process_int(dick, 0, in_buffer, &in_len, out_buffer, &out_len);
-
-		fuck.write((char*)out_buffer, out_len * 2);
-	}*/
-
-	Logger::Warn("End");
+	_voiceconn->voiceclient->insert_marker();
 }
 
 FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size_t* bytes) {
@@ -45,8 +30,6 @@ FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size
 }
 
 FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
-	Logger::Debug("Write");
-
 	unsigned int in_left_size = frame->header.blocksize;
 	unsigned int in_right_size = frame->header.blocksize;
 	short in_left[frame->header.blocksize];
@@ -78,7 +61,7 @@ FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* fra
 		stream.read(pcm_buffer, PCM_CHUNK_SIZE);
 		int len = opus_encode(_encoder, (opus_int16*)pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
 
-		SendOpusData(opus_buffer, len);
+		_voiceconn->voiceclient->send_audio_opus(opus_buffer, len, 60);
 		stream_size -= PCM_CHUNK_SIZE;
 	}
 
