@@ -22,7 +22,7 @@ public:
 
 	void HandleReadyState();
 
-	void HandleMarker(const std::string &meta);
+	void HandleMarker();
 
 public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
@@ -30,6 +30,7 @@ public:
 private:
 	const dpp::voiceconn* _voiceconn;
 	Playlist _playlist;
+	bool _need_to_play_first_track;
 
 	bool IsPlayerReady();
 
