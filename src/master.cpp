@@ -9,7 +9,6 @@
 #include "client/deezer_client.h"
 #include "command/play.h"
 #include "command/list.h"
-#include "sender/opus_sender.h"
 
 int main() {
 	/* Init static classes */
