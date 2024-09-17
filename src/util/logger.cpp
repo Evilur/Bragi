@@ -8,8 +8,7 @@
 
 void Logger::Init() {
 	fs::create_directory(Path::LOG_DIR);
-	const std::string name = Date() + ".log";
-	fs::path log_file = Path::LOG_DIR / name;
+	fs::path log_file = Path::LOG_DIR / std::string(GetDate()).append(".log");
 	_stream = new std::ofstream(log_file);
 	std::cout << "Log file: " << log_file.c_str() << std::endl;
 	CleanLogs();
@@ -18,24 +17,30 @@ void Logger::Init() {
 void Logger::CleanLogs() {
 	char counter = 0;
 	std::set<fs::path> list;
-	for (const fs::path entry : fs::directory_iterator(Path::LOG_DIR)) list.insert(entry);
-	for (const fs::path &log_file : list) if (list.size() - counter++ > 15) std::remove(log_file.c_str());
+	for (const fs::path &entry: fs::directory_iterator(Path::LOG_DIR)) list.insert(entry);
+	for (const fs::path &log_file: list) if (list.size() - counter++ > 15) std::remove(log_file.c_str());
 }
 
-
-/* Example: 2023.10.21 17:05:55 */
-std::string Logger::Date() {
+const char* Logger::GetDate() {
+	/* Output example: 2023.10.21 17:05:55 */
 	time_t now = time(nullptr);
-	tm* tm = localtime(&now);
-	return std::to_string(1900 + tm->tm_year) + '.' +
-	       Logger::UnitFormat(tm->tm_mon + 1) + '.' +
-	       Logger::UnitFormat(tm->tm_mday) + ' ' +
-	       Logger::UnitFormat(tm->tm_hour) + ':' +
-	       Logger::UnitFormat(tm->tm_min) + ':' +
-	       Logger::UnitFormat(tm->tm_sec);
-}
+	tm* time = localtime(&now);
 
-std::string Logger::UnitFormat(int unit) {
-	if (unit < 10) return '0' + std::to_string(unit);
-	else return std::to_string(unit);
+	auto write_format_unit = [](char* current_date_ptr, const int unit) {
+		if (unit < 10) {
+			*current_date_ptr++ = '0';
+			*current_date_ptr = unit + '0';
+			return;
+		}
+		std::to_chars(current_date_ptr, current_date_ptr + 2, unit, 10);
+	};
+
+	std::to_chars(_current_date, _current_date + 4, 1900 + time->tm_year, 10);
+	write_format_unit(_current_date + 5, time->tm_mon + 1);
+	write_format_unit(_current_date + 8, time->tm_mday);
+	write_format_unit(_current_date + 11, time->tm_hour);
+	write_format_unit(_current_date + 14, time->tm_min);
+	write_format_unit(_current_date + 17, time->tm_sec);
+
+	return _current_date;
 }

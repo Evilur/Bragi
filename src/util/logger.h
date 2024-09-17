@@ -4,71 +4,52 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-
-enum LogLevel : char {	INFO, WARN, DEBUG, FATAL };
+#include <cstdio>
 
 /* Class for logging important messages */
 class Logger final {
 public:
 	/* Init the logger (for filesystem) */
 	static void Init();
-	
-	/* Log messages */
-	template<typename T>
-	static void Info(T message) { Logger::Log(message, INFO); }
 
 	template<typename T>
-	static void Warn(T message) { Logger::Log(message, WARN); }
+	static void Info(T message) { Log(message, INFO); }
 
 	template<typename T>
-	static void Debug(T message) { Logger::Log(message, DEBUG); }
+	static void Warn(T message) { Log(message, WARN); }
 
 	template<typename T>
-	static void Fatal(T message) { Logger::Log(message, FATAL); }
+	static void Fatal(T message) { Log(message, FATAL); }
+
+	template<typename T>
+	static void Debug(T message) { Log(message, DEBUG); }
+
 private:
-	inline static std::ofstream* _stream = nullptr;  //Log file stream
-	
+	/* Enumerator with log levels */
+	enum LogLevel : unsigned char { INFO, WARN, FATAL, DEBUG };
+
+	/* Log file stream */
+	inline static std::ofstream* _stream;
+
+	/* Date pointer (20 chars is enough to record the date and time: 2024.09.17 18:51:47 + \0) */
+	inline static char _current_date[20] = "1970.01.01 00:00:00";
+
+	/* Stock logging hideouts */
+	static constexpr char LOG_LEVEL_STR[4][10] = { " Info]:  ", " Warn]:  ", " Fatal]: ", " Debug]: " };
+	static constexpr char COLOR_CODE_STR[4][6] = { "\033[34m", "\033[33m", "\033[31m", "\033[35m" };
+
 	/* Master log method */
 	template<typename T>
 	static void Log(T message, LogLevel log_level) {
-		std::string color_code_str, log_level_str;
-		
-		switch (log_level) {
-			case INFO:
-				color_code_str = "\033[34m";
-				log_level_str = " Info]:  ";
-				break;
-
-			case WARN:
-				color_code_str = "\033[33m";
-				log_level_str = " Warn]:  ";
-				break;
-
-			case DEBUG:
-				color_code_str = "\033[35m";
-				log_level_str = " Debug]: ";
-				break;
-
-			case FATAL:
-				color_code_str = "\033[31m";
-				log_level_str = " Fatal]: ";
-				break;
-		}
-		
-		
-		std::string data = '[' + Logger::Date() + log_level_str;
-		std::cout << color_code_str << data << message << "\033[0m" << std::endl;
-		*_stream << data << message << std::endl;
+		std::cout << COLOR_CODE_STR[log_level] << '[' << GetDate() << LOG_LEVEL_STR[log_level] << message << std::endl;
+		*_stream << COLOR_CODE_STR[log_level] << '[' << GetDate() << LOG_LEVEL_STR[log_level] << message << std::endl;
 	}
-	
-	/* Clean the old log files */
+
+	/* Remove the old log files */
 	static void CleanLogs();
-	
+
 	/* Get the current formatted date */
-	static std::string Date();
-	
-	/* Format units, which can starts with zero */
-	static std::string UnitFormat(int unit);
+	static const char* GetDate();
 };
 
 #endif
