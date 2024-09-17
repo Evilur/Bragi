@@ -41,13 +41,13 @@ void Settings::ReinitTokens() {
 	/* Get tokens */
 	if (_bot_token.empty()) {
 		need_to_rewrite = true;
-		std::cout << "Please enter the bot token: ";
+		std::cout << "\033[0mPlease enter the bot token: ";
 		std::cin >> _bot_token;
 		Logger::Info("Bot token has been gotten from the user input");
 	}
 	if (_arl_token.empty()) {
 		need_to_rewrite = true;
-		std::cout << "Please enter the arl token: ";
+		std::cout << "\033[0mPlease enter the arl token: ";
 		std::cin >> _arl_token;
 		Logger::Info("Arl token has been gotten from the user input");
 	}
