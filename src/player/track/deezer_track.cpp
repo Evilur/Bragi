@@ -41,9 +41,10 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	_http = new HttpClient(_encrypted_data_url);
 
 	/* Run the opus sender */
-	FlacSender* sender = new FlacSender(voiceconn, this);
-	sender->Run();
-	delete sender;
+	FlacSender(voiceconn, this).Run();
+
+	/* Insert the EOF marker */
+	voiceconn->voiceclient->insert_marker();
 }
 
 bool DeezerTrack::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) {

@@ -21,9 +21,6 @@ void FlacSender::Run() {
 	/* Destroy the resampler */
 	speex_resampler_destroy(_resampler);
 	_resampler = nullptr;
-
-	/* Insert the EOF marker */
-	_voiceconn->voiceclient->insert_marker();
 }
 
 FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size_t* bytes) {
