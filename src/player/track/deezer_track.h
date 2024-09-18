@@ -47,7 +47,7 @@ private:
 
 	/* Tech data */
 	BF_KEY _bf_key;
-	HttpClient* _http = nullptr;
+	HttpClient* _http;
 	std::thread* _init_thread;
 
 	void GetKey(unsigned char* buffer);

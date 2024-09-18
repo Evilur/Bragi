@@ -40,7 +40,7 @@ DeezerTrack::~DeezerTrack() {
 
 void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	/* Wait for initialization */
-	_init_thread->join();
+	if (_init_thread->joinable()) _init_thread->join();
 
 	/* Create a new http client */
 	_http = new HttpClient(_encrypted_data_url);
