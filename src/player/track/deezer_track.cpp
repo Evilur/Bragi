@@ -19,11 +19,8 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 		_title(title), _album_title(album_title), _artist_name(artist_name),
 		_album_picture("https://e-cdns-images.dzcdn.net/images/cover/" + album_picture + "/1000x1000-000000-80-0-0.jpg"),
 		_artist_picture("https://e-cdns-images.dzcdn.net/images/artist/" + artist_picture + "/1000x1000-000000-80-0-0.jpg"),
-		_token(token), _total(total), _next(next) { }
-
-void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
-	/* Init field that I can use twice */
-	if (!_initiated) {
+		_token(token), _total(total), _next(next) {
+	_init_thread = new std::thread([this]() {
 		/* Set the url of the encrypted track data */
 		_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_token);
 
@@ -31,13 +28,21 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 		unsigned char key_buffer[MD5_DIGEST_LENGTH];
 		GetKey(key_buffer);
 		BF_set_key(&_bf_key, MD5_DIGEST_LENGTH, key_buffer);
+	});
+}
 
-		/* Declare this track initialized */
-		_initiated = true;
-	}
+DeezerTrack::~DeezerTrack() {
+	delete _http;
+	_http = nullptr;
+	delete _init_thread;
+	_init_thread = nullptr;
+}
+
+void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
+	/* Wait for initialization */
+	_init_thread->join();
 
 	/* Create a new http client */
-	delete _http;
 	_http = new HttpClient(_encrypted_data_url);
 
 	/* Run the opus sender */
@@ -45,6 +50,10 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 
 	/* Insert the EOF marker */
 	voiceconn->voiceclient->insert_marker();
+
+	/* Delete the http client */
+	delete _http;
+	_http = nullptr;
 }
 
 bool DeezerTrack::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) {

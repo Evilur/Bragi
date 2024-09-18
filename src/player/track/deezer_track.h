@@ -14,6 +14,8 @@ public:
 	            const std::string &duration, const std::string &token,
 	            const unsigned short &total, const unsigned short &next);
 
+	~DeezerTrack();
+
 	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) override;
 
 	void Play(const dpp::voiceconn* voiceconn) override;
@@ -46,7 +48,7 @@ private:
 	/* Tech data */
 	BF_KEY _bf_key;
 	HttpClient* _http = nullptr;
-	bool _initiated;
+	std::thread* _init_thread;
 
 	void GetKey(unsigned char* buffer);
 };
