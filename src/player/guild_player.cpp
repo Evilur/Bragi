@@ -24,7 +24,7 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 }
 
 dpp::message GuildPlayer::Skip(const int num_for_skip) {
-
+	return nullptr;
 }
 
 dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
@@ -68,7 +68,9 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 void GuildPlayer::HandleMarker() {
 	/* If we touch the marker, the track has ended */
 	_playlist.Skip();
-	_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+
+	/* If the playlist isn't empty, play the next track */
+	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
 }
 
 void GuildPlayer::HandleReadyState() {

@@ -8,9 +8,8 @@ void Playlist::Add(Track* track) {
 	/* Create an array pointer with the right offset */
 	Track** tracks_ptr = _tracks + _tracks_offset;
 
-	/* If there is enought space in the array */
+	/* If there is enought space in the array, just add the track to the array */
 	if (_tracks_offset + _tracks_size < _max_track_size) {
-		/* Add the track to the array */
 		tracks_ptr[_tracks_size++] = track;
 		return;
 	}
@@ -18,6 +17,7 @@ void Playlist::Add(Track* track) {
 	/* If we have an offset in the array */
 	if (_tracks_offset != 0) {
 		Logger::Debug("Adding with the offset");
+
 		/* Remove the offset */
 		std::copy(tracks_ptr, tracks_ptr + _tracks_size, _tracks);
 		tracks_ptr = _tracks;
@@ -27,13 +27,16 @@ void Playlist::Add(Track* track) {
 		return;
 	}
 
-	/* If there isn't enought space in the array */
+	/* If the array is full of tracks */
 	Logger::Fatal("Not implemented yet");
 	exit(105);
 }
 
 void Playlist::Skip() {
-	_tracks_size--;
+	/* If there isn't tracks in the array, reset the offset */
+	if (--_tracks_size == 0) _tracks_offset = 0;
+
+	/* Free memory of the listened track */
 	delete _tracks[_tracks_offset];
 	_tracks[_tracks_offset++] = nullptr;
 }
