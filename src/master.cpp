@@ -21,11 +21,11 @@ int main() {
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
 
 	/* Create event handlers */
-	bot->on_slashcommand([](const dpp::slashcommand_t &event) { on_slashcommand(event); });
-	bot->on_message_create([](const dpp::message_create_t &event) { on_message_create(event); });
-	bot->on_voice_ready([](const dpp::voice_ready_t &event) { on_voice_ready(event); });
-	bot->on_voice_track_marker([](const dpp::voice_track_marker_t &event) { on_voice_track_marker(event); });
-	bot->on_ready([](const dpp::ready_t &event) { on_ready(event); });
+	bot->on_slashcommand(on_slashcommand);
+	bot->on_message_create(on_message_create);
+	bot->on_voice_ready(on_voice_ready);
+	bot->on_voice_track_marker(on_voice_track_marker);
+	bot->on_ready(on_ready);
 
 	/* Start the bot */
 	Logger::Info("Starting the bot");
