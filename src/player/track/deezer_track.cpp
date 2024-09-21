@@ -98,7 +98,7 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 	return result;
 }
 
-std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _album_title, _artist_name); }
+std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _artist_name); }
 
 void DeezerTrack::GetKey(unsigned char* buffer) {
 	/* The salt for getting the key for track decrypting */

@@ -41,11 +41,11 @@ void Playlist::Skip() {
 	_tracks[_tracks_offset++] = nullptr;
 }
 
-bool Playlist::IsEmpty() { return _tracks_size == 0; }
+bool Playlist::IsEmpty() const { return _tracks_size == 0; }
 
-Track* Playlist::CurrentTrack() { return _tracks[_tracks_offset]; }
+Track* Playlist::CurrentTrack() const { return _tracks[_tracks_offset]; }
 
-dpp::message Playlist::Message(const dpp::snowflake &channel_id) {
+dpp::message Playlist::Message(const dpp::snowflake &channel_id) const {
 	if (_tracks_size == 0)
 		return dpp::message(channel_id, dpp::embed()
 				.set_color(Color::GREEN)
@@ -54,15 +54,11 @@ dpp::message Playlist::Message(const dpp::snowflake &channel_id) {
 	std::stringstream ss;
 	int duration = 0;
 
-	ss << "**";
-
 	Track** tracks_ptr = _tracks + _tracks_offset;
 	for (unsigned short i = 0; i < _tracks_size; i++) {
 		duration += tracks_ptr[i]->GetDuration();
 		ss << i + 1 << ". " << tracks_ptr[i]->GetTrackData() << '\n';
 	}
-
-	ss << "**";
 
 	return dpp::message(channel_id, dpp::embed()
 			.set_color(Color::GREEN)

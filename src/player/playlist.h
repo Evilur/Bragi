@@ -10,11 +10,11 @@ public:
 
 	void Skip();
 
-	bool IsEmpty();
+	bool IsEmpty() const;
 
-	Track* CurrentTrack();
+	Track* CurrentTrack() const;
 
-	dpp::message Message(const dpp::snowflake &channel_id);
+	dpp::message Message(const dpp::snowflake &channel_id) const;
 
 private:
 	static inline constexpr unsigned short TRACKS_DELTA = 32;
