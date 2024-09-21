@@ -3,6 +3,7 @@
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "util/logger.h"
+#include "util/color.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
@@ -23,8 +24,14 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	return result_msg;  //Return a track message
 }
 
-dpp::message GuildPlayer::Skip(const int num_for_skip) {
-	return nullptr;
+dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const int num_for_skip) {
+	if (_playlist.IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, SOFT);
+
+	throw std::runtime_error("Not implemented yet");
+
+	return dpp::message(channel_id, dpp::embed()
+			.set_color(Color::GREEN)
+			.set_description(DIC_SKIP_ONE_TRACK));
 }
 
 dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }

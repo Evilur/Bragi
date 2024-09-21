@@ -14,7 +14,7 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Skip(const int num_for_skip);
+	dpp::message Skip(const dpp::snowflake &channel_id, const int num_for_skip = 1);
 
 	dpp::message GetPlaylistMessage(const dpp::snowflake &channel_id);
 

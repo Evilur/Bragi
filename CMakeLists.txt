@@ -17,6 +17,7 @@ ADD_EXECUTABLE(Bragi
     src/command/leave.cpp
     src/command/play.cpp
     src/command/list.cpp
+    src/command/skip.cpp
 
     # Discord audio senders
     src/sender/opus_sender.cpp

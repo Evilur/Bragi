@@ -19,6 +19,12 @@
 #define DIC_SLASH_PLAY "Воспроизвести трек"
 #define DIC_SLASH_PLAY_QUERY "Запрос для поиска трека"
 
+//skip command
+#define DIC_SLASH_SKIP "Пропустить текущий трек"
+#define DIC_SLASH_SKIP_NUMBER "Количество треков для пропуска"
+#define DIC_SKIP_PLAYLIST_IS_EMPTY "**В плейлисте нет треков**"
+#define DIC_SKIP_ONE_TRACK "**Пропущен один трек**"
+
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
 #define DIC_SLASH_LIST_MSG_EMPTY_TITLE "**Плейлист пуст**"
@@ -38,7 +44,6 @@
 #define DIC_TRACK_LESS_THAN_MINUTE "{}с"
 #define DIC_TRACK_LESS_THAN_HOUR "{}м{}с"
 #define DIC_TRACK_MORE_THAN_HOUR "{}ч{}м{}с"
-
 
 //errors
 #define DIC_ERROR "**Ошибка**"
