@@ -8,6 +8,8 @@ class Track {
 public:
 	Track(const unsigned short &duration);
 
+	virtual ~Track();
+
 	const unsigned short &GetDuration() const;
 
 	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const = 0;
@@ -22,10 +24,6 @@ public:
 
 protected:
 	const unsigned short _duration;
-
-private:
-	std::thread* _initting;
-	bool _is_initiated;
 };
 
 #endif
