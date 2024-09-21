@@ -5,12 +5,15 @@
 #include "util/logger.h"
 
 void Play::Exec(const dpp::slashcommand_t &event) {
+	/* Set the bot to thinking state */
+	event.thinking();
+
 	/* Get query from the command parameter */
 	std::string query = std::get<std::string>(event.get_parameter("query"));
 
 	/* Send the message to the channel */
-	try { event.reply(Exec(event.command.guild_id, event.command.usr.id, query, event.command.channel_id)); }
-	catch (BragiException &exception) { event.reply(exception.Message()); }
+	try { event.edit_original_response(Exec(event.command.guild_id, event.command.usr.id, query, event.command.channel_id)); }
+	catch (BragiException &exception) { event.edit_original_response(exception.Message()); }
 }
 
 void Play::Exec(const dpp::message_create_t &event, const std::string &argument) {
