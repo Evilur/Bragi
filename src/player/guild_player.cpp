@@ -3,10 +3,6 @@
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "util/logger.h"
-#include "util/color.h"
-#include "util/parser.h"
-
-#include <thread>
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
@@ -27,29 +23,11 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	return result_msg;  //Return a track message
 }
 
-dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) {
-	if (_playlist.IsEmpty())
-		return dpp::message(channel_id, dpp::embed()
-				.set_color(Color::GREEN)
-				.set_title(DIC_SLASH_LIST_MSG_EMPTY_TITLE));
+dpp::message GuildPlayer::Skip(const int num_for_skip) {
 
-	std::stringstream ss;
-	int duration = 0;
-
-	ss << "**";
-
-	for (unsigned short i = 0; i < _playlist.GetSize(); i++) {
-		duration += _playlist[i]->GetDuration();
-		ss << i + 1 << ". " << _playlist[i]->GetTrackData() << '\n';
-	}
-
-	ss << "**";
-
-	return dpp::message(channel_id, dpp::embed()
-			.set_color(Color::GREEN)
-			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, Parser::Time(duration)))
-			.set_description(ss.str()));
 }
+
+dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
 
 std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
@@ -90,6 +68,7 @@ dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 void GuildPlayer::HandleMarker() {
 	/* If we touch the marker, the track has ended */
 	_playlist.Skip();
+	_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
 }
 
 void GuildPlayer::HandleReadyState() {
@@ -99,7 +78,7 @@ void GuildPlayer::HandleReadyState() {
 
 	/* If we need to play the first track */
 	if (_need_to_play_first_track) {
-		_playlist[0]->AsyncPlay(_voiceconn);
+		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
 		_need_to_play_first_track = false;
 	}
 }

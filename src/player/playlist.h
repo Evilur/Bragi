@@ -2,6 +2,7 @@
 #define BRAGI_PLAYLIST_H
 
 #include "player/track/track.h"
+#include "master.h"
 
 class Playlist final {
 public:
@@ -11,14 +12,15 @@ public:
 
 	bool IsEmpty();
 
-	unsigned short GetSize();
+	Track* CurrentTrack();
 
-	Track* operator[](unsigned short index);
+	dpp::message Message(const dpp::snowflake &channel_id);
 
 private:
-	static inline constexpr unsigned short TRACKS_DELTA = 64;
-	unsigned short _max_track_count = TRACKS_DELTA;
-	unsigned short _track_count = 0;
+	static inline constexpr unsigned short TRACKS_DELTA = 32;
+	unsigned short _max_track_size = TRACKS_DELTA;
+	unsigned short _tracks_size = 0;
+	unsigned short _tracks_offset = 0;
 	Track** _tracks = new Track* [TRACKS_DELTA];
 };
 

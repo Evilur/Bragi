@@ -1,25 +1,68 @@
 #include "playlist.h"
+#include "util/color.h"
+#include "util/dictionary.h"
+#include "util/parser.h"
+#include "util/logger.h"
 
 void Playlist::Add(Track* track) {
+	/* Create an array pointer with the right offset */
+	Track** tracks_ptr = _tracks + _tracks_offset;
+
 	/* If there is enought space in the array */
-	if (_track_count < _max_track_count) {
-		_tracks[_track_count++] = track;
+	if (_tracks_offset + _tracks_size < _max_track_size) {
+		/* Add the track to the array */
+		tracks_ptr[_tracks_size++] = track;
+		return;
+	}
+
+	/* If we have an offset in the array */
+	if (_tracks_offset != 0) {
+		Logger::Debug("Adding with the offset");
+		/* Remove the offset */
+		std::copy(tracks_ptr, tracks_ptr + _tracks_size, _tracks);
+		tracks_ptr = _tracks;
+
+		/* Add the track to the array */
+		tracks_ptr[_tracks_size++] = track;
 		return;
 	}
 
 	/* If there isn't enought space in the array */
-	_max_track_count += TRACKS_DELTA;
-	Track** tmp_tracks = new Track* [_max_track_count];
-	for (unsigned short i = 0; i < _track_count; i++) tmp_tracks[i] = _tracks[i];
-	delete[] _tracks;
-	_tracks = tmp_tracks;
-	_tracks[_track_count++] = track;
+	Logger::Fatal("Not implemented yet");
+	exit(105);
 }
 
-void Playlist::Skip() { }
+void Playlist::Skip() {
+	_tracks_size--;
+	delete _tracks[_tracks_offset];
+	_tracks[_tracks_offset++] = nullptr;
+}
 
-bool Playlist::IsEmpty() { return _track_count == 0; }
+bool Playlist::IsEmpty() { return _tracks_size == 0; }
 
-unsigned short Playlist::GetSize() { return _track_count; }
+Track* Playlist::CurrentTrack() { return _tracks[_tracks_offset]; }
 
-Track* Playlist::operator[](unsigned short index) { return _tracks[index]; }
+dpp::message Playlist::Message(const dpp::snowflake &channel_id) {
+	if (_tracks_size == 0)
+		return dpp::message(channel_id, dpp::embed()
+				.set_color(Color::GREEN)
+				.set_title(DIC_SLASH_LIST_MSG_EMPTY_TITLE));
+
+	std::stringstream ss;
+	int duration = 0;
+
+	ss << "**";
+
+	Track** tracks_ptr = _tracks + _tracks_offset;
+	for (unsigned short i = 0; i < _tracks_size; i++) {
+		duration += tracks_ptr[i]->GetDuration();
+		ss << i + 1 << ". " << tracks_ptr[i]->GetTrackData() << '\n';
+	}
+
+	ss << "**";
+
+	return dpp::message(channel_id, dpp::embed()
+			.set_color(Color::GREEN)
+			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, Parser::Time(duration)))
+			.set_description(ss.str()));
+}
