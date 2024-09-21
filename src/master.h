@@ -3,6 +3,9 @@
 
 #include <dpp/dpp.h>
 
+/* Add a var to check whether the build is a Debug or a Relase */
+#define DEBUG_BUILD !NDEBUG
+
 inline dpp::discord_client* ds_client;
 inline dpp::cluster* bot;
 
