@@ -31,6 +31,13 @@
 #define DIC_SLASH_LIST_MSG_TITLE "**Текщий плейлист ({}):**"
 #define DIC_SLASH_LIST_FULL_TRACK_DATA "{}\u00A0\u202f\u2014\u00A0\u202f{}"
 
+//loop command
+#define DIC_SLASH_LOOP "Включить/выключить повторение треков"
+#define DIC_SLASH_LOOP_TYPE "Тип повторения"
+#define DIC_SLASH_LOOP_TYPE_DISABLED "**Повторение треков выключено**"
+#define DIC_SLASH_LOOP_TYPE_TRACK "**:repeat: Включено повторение трека**"
+#define DIC_SLASH_LOOP_TYPE_PLAYLIST "**:repeat: Включено повторение плейлиста**"
+
 //play-attachment command
 #define DIC_SLASH_PLAY_ATTACHMENT "Воспроизвести трек из вложений"
 #define DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT "Трек для воспроизведения"

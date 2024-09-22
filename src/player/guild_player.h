@@ -8,6 +8,8 @@
 
 class GuildPlayer final {
 public:
+	enum LoopType : u_int8 { DISABLED, TRACK, PLAYLIST };
+
 	const dpp::snowflake guild_id;
 
 	explicit GuildPlayer(const dpp::snowflake &guild_id);
@@ -16,11 +18,13 @@ public:
 
 	dpp::message Skip(const dpp::snowflake &channel_id, const int num_for_skip = 1);
 
-	dpp::message GetPlaylistMessage(const dpp::snowflake &channel_id);
+	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
 
-	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	dpp::message Loop(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
 
 	dpp::message Leave(const dpp::snowflake &channel_id);
+
+	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 
 	void HandleReadyState();
 
@@ -41,6 +45,7 @@ private:
 	static inline unsigned int _max_players_count = PLAYERS_DELTA;
 	static inline unsigned int _players_count = 0;
 	static inline GuildPlayer** _players = new GuildPlayer* [PLAYERS_DELTA];
+	static inline LoopType _loop_type = DISABLED;
 
 	static GuildPlayer* Add(const dpp::snowflake &guild_id);
 };

@@ -10,6 +10,7 @@
 #include "command/play.h"
 #include "command/list.h"
 #include "command/skip.h"
+#include "command/loop.h"
 
 int main() {
 	/* Init static classes */
@@ -41,6 +42,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	if (command_name == "play") Play::Exec(event);
 	else if (command_name == "skip") Skip::Exec(event);
 	else if (command_name == "list") List::Exec(event);
+	else if (command_name == "loop") Loop::Exec(event);
 	else if (command_name == "ping") Ping::Exec(event);
 	else if (command_name == "join") Join::Exec(event);
 	else if (command_name == "leave") Leave::Exec(event);
@@ -59,6 +61,7 @@ void on_message_create(const dpp::message_create_t &event) {
 	if (command == "p" || command == "play") Play::Exec(event, argument);
 	else if (command == "s" || command == "skip") Skip::Exec(event, argument);
 	else if (command == "l" || command == "list") List::Exec(event);
+	else if (command == "loop") Loop::Exec(event, argument);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "leave") Leave::Exec(event);
@@ -89,6 +92,12 @@ void on_ready(const dpp::ready_t &event) {
 
 	bot->global_command_create(
 			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_string, "number", DIC_SLASH_SKIP_NUMBER, true)));
+
+	bot->global_command_create(dpp::slashcommand("loop", DIC_SLASH_LOOP, bot->me.id).add_option(
+			dpp::command_option(dpp::co_string, "type", DIC_SLASH_LOOP_TYPE, false)
+					.add_choice(dpp::command_option_choice("Disabled", "loop_disabled"))
+					.add_choice(dpp::command_option_choice("Track", "loop_track"))
+					.add_choice(dpp::command_option_choice("Playlist", "loop_playlist"))));
 
 	bot->global_command_create(dpp::slashcommand("list", DIC_SLASH_LIST, bot->me.id));
 

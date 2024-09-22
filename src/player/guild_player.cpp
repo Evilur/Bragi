@@ -34,7 +34,27 @@ dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const int num_f
 			.set_description(DIC_SKIP_ONE_TRACK));
 }
 
-dpp::message GuildPlayer::GetPlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
+dpp::message GuildPlayer::PlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
+
+dpp::message GuildPlayer::Loop(const dpp::snowflake &channel_id, const GuildPlayer::LoopType loop_type) {
+	/* Update the loop type */
+	_loop_type = loop_type;
+
+	/* Send the reply message */
+	if (loop_type == TRACK) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_TRACK);
+	else if (loop_type == PLAYLIST) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_PLAYLIST);
+	else return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_DISABLED);
+}
+
+dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
+	/* If the bot isn't in a voice channel */
+	if (_voiceconn == nullptr)
+		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
+
+	ds_client->disconnect_voice(guild_id);
+	_voiceconn = nullptr;
+	return dpp::message(channel_id, DIC_LEFT);
+}
 
 std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
@@ -62,22 +82,17 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 	return std::format(DIC_JOINED, user_vc->name);
 }
 
-dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {
-	/* If the bot isn't in a voice channel */
-	if (_voiceconn == nullptr)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
-
-	ds_client->disconnect_voice(guild_id);
-	_voiceconn = nullptr;
-	return dpp::message(channel_id, DIC_LEFT);
-}
-
 void GuildPlayer::HandleMarker() {
-	/* If we touch the marker, the track has ended */
-	_playlist.Skip();
+	/* TODO: add playlist repeat support */
+	if (_loop_type == DISABLED) {
+		/* If we touch the marker, the track has ended */
+		_playlist.Skip();
 
-	/* If the playlist isn't empty, play the next track */
-	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+		/* If the playlist isn't empty, play the next track */
+		if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	} else {
+		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	}
 }
 
 void GuildPlayer::HandleReadyState() {

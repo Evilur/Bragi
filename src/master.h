@@ -21,18 +21,18 @@ void on_ready(const dpp::ready_t &event);
 
 typedef signed char int8;
 
-typedef unsigned char uint8;
+typedef unsigned char u_int8;
 
 typedef signed short int16;
 
-typedef unsigned short uint16;
+typedef unsigned short u_int16;
 
 typedef signed int int32;
 
-typedef unsigned int uint32;
+typedef unsigned int u_int32;
 
 typedef signed long int64;
 
-typedef unsigned long uint64;
+typedef unsigned long u_int64;
 
 #endif
