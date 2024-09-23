@@ -9,18 +9,19 @@ GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { 
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
 	_need_to_play_first_track = _playlist.IsEmpty();  //If the playlist is empty this track will be played right now
-	_playlist.Add(track);  //Add a track to the playlist
 	dpp::message result_msg = track->GetMessage(_need_to_play_first_track, channel_id);  //Get track message
 
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		/* If we need to play the track right now */
-		if (_need_to_play_first_track) track->AsyncPlay(_voiceconn);
-		return result_msg;  //Return a track message
+		_playlist.Add(track);  //Add a track to the playlist
+		if (_need_to_play_first_track) track->AsyncPlay(_voiceconn);  //Play the current track
+		return result_msg;  //Return the track message
 	}
 
 	/* If player is not ready */
-	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert ther message to the track message
+	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert the message to the result message
+	_playlist.Add(track);  //Add a track to the playlist (if we successfully joined the channel)
 	return result_msg;  //Return a track message
 }
 
