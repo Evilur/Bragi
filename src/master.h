@@ -3,8 +3,13 @@
 
 #include <dpp/dpp.h>
 
-/* Add a var to check whether the build is a Debug or a Relase */
-#define DEBUG_BUILD !NDEBUG
+/* Create a macro that outputs detailed logs to the terminal, only if the assembly is built with the DEBUG flag.
+ * In the RELEASE build, these logs will not be displayed in the terminal */
+#ifndef NDEBUG
+#define DEBUG_LOG(str) Logger::Debug(str);
+#else
+#define DEBUG_LOG(str)
+#endif
 
 inline dpp::discord_client* ds_client = nullptr;
 inline dpp::cluster* bot = nullptr;
