@@ -27,5 +27,5 @@ void Loop::Exec(const dpp::slashcommand_t &event) {
 void Loop::Exec(const dpp::message_create_t &event, const std::string &argument) {
 	/* TODO: use argument */
 	/* Send the message to the channel */
-	event.reply(GuildPlayer::Get(event.msg.guild_id)->Loop(event.msg.channel_id));
+	event.send(GuildPlayer::Get(event.msg.guild_id)->Loop(event.msg.channel_id));
 }
