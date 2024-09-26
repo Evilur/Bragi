@@ -6,21 +6,23 @@
 #include <speex/speex_resampler.h>
 
 FlacSender::FlacSender(const dpp::voiceconn* voiceconn, Track* track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
+	/* Init the flac decoder */
 	this->init();
-	this->set_md5_checking(false);  //Disable md5 checking (is it necessary here at all?)
-}
 
-void FlacSender::Run() {
 	/* Init the resampler */
 	_resampler = speex_resampler_init(2, 44100, 48000, 10, nullptr);
+}
 
-	/* Decode all FLAC data and send OPUS to the discord */
-	process_until_end_of_stream();
-	finish();
-
+FlacSender::~FlacSender() {
 	/* Destroy the resampler */
 	speex_resampler_destroy(_resampler);
 	_resampler = nullptr;
+}
+
+void FlacSender::Run() {
+	/* Decode all FLAC data and send OPUS to the discord */
+	process_until_end_of_stream();
+	finish();
 }
 
 FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size_t* bytes) {

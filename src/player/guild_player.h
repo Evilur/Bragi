@@ -16,7 +16,7 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Skip(const dpp::snowflake &channel_id, const int num_for_skip = 1);
+	dpp::message Skip(const dpp::snowflake &channel_id, const int16 num_for_skip);
 
 	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
 
@@ -34,7 +34,7 @@ public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 
 private:
-	const dpp::voiceconn* _voiceconn;
+	const dpp::voiceconn* _voiceconn = nullptr;
 	Playlist _playlist;
 	bool _need_to_play_first_track = false;
 

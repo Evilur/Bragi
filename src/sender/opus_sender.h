@@ -27,18 +27,18 @@ protected:
 
 
 
-	OpusEncoder* _encoder;
+	OpusEncoder* _encoder = nullptr;
 
 
 
-	const dpp::voiceconn* _voiceconn;
+	const dpp::voiceconn* _voiceconn = nullptr;
 
 
 private:
 
 
 
-	Track* _track;
+	Track* _track = nullptr;
 };
 
 #endif

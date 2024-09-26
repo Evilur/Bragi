@@ -20,7 +20,7 @@ public:
 	const char* ReadAll();
 
 private:
-	asio::ip::tcp::iostream* _stream;
+	asio::ip::tcp::iostream* _stream = nullptr;
 	unsigned int _content_length = 0;
 
 	void ReadHeaders();

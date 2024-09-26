@@ -13,7 +13,7 @@ public:
 	friend std::ostream &operator<<(std::ostream &stream, const JsonException &instance);
 
 private:
-	const char* _json_data;
+	const char* _json_data = nullptr;
 	const std::string _wrong_query;
 };
 

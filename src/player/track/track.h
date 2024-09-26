@@ -16,14 +16,24 @@ public:
 
 	virtual std::string GetTrackData() const = 0;
 
-	void AsyncPlay(const dpp::voiceconn* voiceconn);
+	void Abort();
 
-	virtual void Play(const dpp::voiceconn* voiceconn) = 0;
+	void JoinPlayThread();
+
+	void AsyncPlay(const dpp::voiceconn* voiceconn);
 
 	virtual bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) = 0;
 
 protected:
 	const unsigned short _duration;
+
+	virtual void Play(const dpp::voiceconn* voiceconn) = 0;
+
+	bool IsAborted();
+
+private:
+	std::thread* _play_thread = nullptr;
+	bool _is_aborted = false;
 };
 
 #endif

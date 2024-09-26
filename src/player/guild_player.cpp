@@ -3,7 +3,6 @@
 #include "util/dictionary.h"
 #include "exception/bragi_exception.h"
 #include "util/logger.h"
-#include "util/color.h"
 
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
@@ -25,14 +24,24 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	return result_msg;  //Return a track message
 }
 
-dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const int num_for_skip) {
+dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const int16 num_for_skip) {
+	/* If the playlist is empty */
 	if (_playlist.IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, SOFT);
 
-	throw std::runtime_error("Not implemented yet");
+	/* If we can't skip that number of tracks */
+	if (num_for_skip <= 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, SOFT);
 
-	return dpp::message(channel_id, dpp::embed()
-			.set_color(Color::GREEN)
-			.set_description(DIC_SKIP_ONE_TRACK));
+	/* Skip delete track/tracks from the playlist */
+	u_int16 num_of_skipped = _playlist.Skip(num_for_skip);
+
+	/* Stop the audio and clear the packet queue */
+	_voiceconn->voiceclient->stop_audio();
+
+	/* If the playlist isn't empty, play the next track */
+	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+
+	/* Return the message */
+	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_of_skipped));
 }
 
 dpp::message GuildPlayer::PlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
@@ -87,7 +96,7 @@ void GuildPlayer::HandleMarker() {
 	/* TODO: add playlist repeat support */
 	if (_loop_type == DISABLED) {
 		/* If we touch the marker, the track has ended */
-		_playlist.Skip();
+		_playlist.HandleEof();
 
 		/* If the playlist isn't empty, play the next track */
 		if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);

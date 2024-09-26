@@ -29,7 +29,7 @@ private:
 	enum LogLevel : unsigned char { INFO, WARN, FATAL, DEBUG };
 
 	/* Log file stream */
-	inline static std::ofstream* _stream;
+	inline static std::ofstream* _stream = nullptr;
 
 	/* Date pointer (20 chars is enough to record the date and time: 2024.09.17 18:51:47 + \0) */
 	inline static char _current_date[20] = "1970.01.01 00:00:00";

@@ -32,26 +32,10 @@ DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, con
 }
 
 DeezerTrack::~DeezerTrack() {
-	delete _http;
-	_http = nullptr;
+	if (_init_thread != nullptr && _init_thread->joinable()) _init_thread->join();
 	delete _init_thread;
 	_init_thread = nullptr;
-}
 
-void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
-	/* Wait for initialization */
-	if (_init_thread->joinable()) _init_thread->join();
-
-	/* Create a new http client */
-	_http = new HttpClient(_encrypted_data_url);
-
-	/* Run the opus sender */
-	FlacSender(voiceconn, this).Run();
-
-	/* Insert the EOF marker */
-	voiceconn->voiceclient->insert_marker();
-
-	/* Delete the http client */
 	delete _http;
 	_http = nullptr;
 }
@@ -61,12 +45,14 @@ bool DeezerTrack::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) 
 	constexpr int chunk_size = 2048;
 	constexpr int necessary_buffer_size = chunk_size * 3;
 
+	/* TODO: delete this */
 	if (necessary_buffer_size > *buffer_size) {
 		Logger::Fatal("The buffer is too small to keep 3 decoded flac data chunks");
 		exit(101);
 	} else *buffer_size = necessary_buffer_size;
 
-	if (!_http->CanRead()) {
+	/* If http steam has ended, or we have aborted the playback */
+	if (!_http->CanRead() || IsAborted()) {
 		*buffer_size = 0;
 		return false;
 	}
@@ -99,6 +85,24 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 }
 
 std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _artist_name); }
+
+void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
+	/* Wait for initialization */
+	if (_init_thread->joinable()) _init_thread->join();
+
+	/* Create a new http client */
+	_http = new HttpClient(_encrypted_data_url);
+
+	/* Run the opus sender */
+	FlacSender(voiceconn, this).Run();
+
+	/* Insert the EOF marker, if not aborted */
+	if (!IsAborted()) voiceconn->voiceclient->insert_marker();
+
+	/* Delete the http client */
+	delete _http;
+	_http = nullptr;
+}
 
 void DeezerTrack::GetKey(unsigned char* buffer) {
 	/* The salt for getting the key for track decrypting */

@@ -91,7 +91,7 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::slashcommand("play", DIC_SLASH_PLAY, bot->me.id).add_option(dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
 
 	bot->global_command_create(
-			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_string, "number", DIC_SLASH_SKIP_NUMBER, true)));
+			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "num", DIC_SLASH_SKIP_NUMBER, false)));
 
 	bot->global_command_create(dpp::slashcommand("loop", DIC_SLASH_LOOP, bot->me.id).add_option(
 			dpp::command_option(dpp::co_string, "type", DIC_SLASH_LOOP_TYPE, false)

@@ -32,13 +32,38 @@ void Playlist::Add(Track* track) {
 	exit(105);
 }
 
-void Playlist::Skip() {
+void Playlist::HandleEof() {
 	/* If there isn't tracks in the array, reset the offset */
 	if (--_tracks_size == 0) _tracks_offset = 0;
 
 	/* Free memory of the listened track */
 	delete _tracks[_tracks_offset];
 	_tracks[_tracks_offset++] = nullptr;
+}
+
+
+u_int16 Playlist::Skip(u_int16 num_for_skip) {
+	/* Create an array pointer with the right offset */
+	Track** tracks_ptr = _tracks + _tracks_offset;
+
+	/* Abort the first track and join the play thread */
+	tracks_ptr[0]->Abort();
+	tracks_ptr[0]->JoinPlayThread();
+
+	/* Delete skipped tracks */
+	if (_tracks_size < num_for_skip) num_for_skip = _tracks_size;
+	for (u_int16 i = 0; i < num_for_skip; i++) {
+		delete tracks_ptr[i];
+		tracks_ptr[i] = nullptr;
+	}
+
+	/* Set the track array size and an offset */
+	_tracks_size -= num_for_skip;
+	if (_tracks_size == 0) _tracks_offset = 0;
+	else _tracks_offset += num_for_skip;
+
+	/* Return the number of skipped tracks */
+	return num_for_skip;
 }
 
 bool Playlist::IsEmpty() const { return _tracks_size == 0; }

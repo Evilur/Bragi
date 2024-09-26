@@ -8,7 +8,9 @@ class Playlist final {
 public:
 	void Add(Track* track);
 
-	void Skip();
+	void HandleEof();
+
+	u_int16 Skip(const u_int16 num_for_skip);
 
 	bool IsEmpty() const;
 

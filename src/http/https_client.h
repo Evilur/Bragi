@@ -15,7 +15,7 @@ public:
 	const char* ReadAll();
 
 private:
-	char* _data;
+	char* _data = nullptr;
 };
 
 #endif

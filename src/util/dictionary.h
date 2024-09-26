@@ -23,7 +23,8 @@
 #define DIC_SLASH_SKIP "Пропустить текущий трек"
 #define DIC_SLASH_SKIP_NUMBER "Количество треков для пропуска"
 #define DIC_SKIP_PLAYLIST_IS_EMPTY "**В плейлисте нет треков**"
-#define DIC_SKIP_ONE_TRACK "**Пропущен один трек**"
+#define DIC_SKIP_MSG "**:track_next: Треков пропущено: `{}`**"
+#define DIC_SKIP_WRONG_NUM_FOR_SKIP "**Невозможно пропустить такое количество треков**"
 
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
