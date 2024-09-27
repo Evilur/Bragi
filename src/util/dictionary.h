@@ -32,6 +32,11 @@
 #define DIC_SLASH_LIST_MSG_TITLE "**Текщий плейлист ({}):**"
 #define DIC_SLASH_LIST_FULL_TRACK_DATA "{}\u00A0\u202f\u2014\u00A0\u202f{}"
 
+#define DIC_SLASH_NEXT "Выбрать следующий результат из поиска"
+#define DIC_SLASH_NEXT_ORDINAL "Порядковый номер трека для замены"
+#define DIC_SLASH_NEXT_NO_RESULTS "**По поисковому запросу больше не было найдено треков**"
+#define DIC_SLASH_NEXT_PLAYLIST_EMPTY "**Плейлист пуст**"
+
 //loop command
 #define DIC_SLASH_LOOP "Включить/выключить повторение треков"
 #define DIC_SLASH_LOOP_TYPE "Тип повторения"

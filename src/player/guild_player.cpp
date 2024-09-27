@@ -24,12 +24,12 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	return result_msg;  //Return a track message
 }
 
-dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const int16 num_for_skip) {
+dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const u_int16 num_for_skip) {
 	/* If the playlist is empty */
 	if (_playlist.IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, SOFT);
 
 	/* If we can't skip that number of tracks */
-	if (num_for_skip <= 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, SOFT);
+	if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, SOFT);
 
 	/* Skip delete track/tracks from the playlist */
 	u_int16 num_of_skipped = _playlist.Skip(num_for_skip);
@@ -54,6 +54,31 @@ dpp::message GuildPlayer::Loop(const dpp::snowflake &channel_id, const GuildPlay
 	if (loop_type == TRACK) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_TRACK);
 	else if (loop_type == PLAYLIST) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_PLAYLIST);
 	else return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_DISABLED);
+}
+
+dpp::message GuildPlayer::Next(const dpp::snowflake &channel_id, u_int16 track_ordinal) {
+	/* If the playlist is empty, thow an exception */
+	if (_playlist.IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, SOFT);
+
+	/* Get the index of the track */
+	if (track_ordinal == 0 || track_ordinal > _playlist.Size()) track_ordinal = _playlist.Size() - 1;
+	else track_ordinal--;
+
+	/* Get the next track pointer */
+	bool is_playing;
+	Track* next_track = _playlist.Next(track_ordinal, is_playing);
+
+	/* If there is no new track */
+	if (next_track == nullptr) throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, channel_id, SOFT);
+
+	/* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
+	if (is_playing) {
+		_voiceconn->voiceclient->stop_audio();
+		next_track->AsyncPlay(_voiceconn);
+	}
+
+	/* Return the message */
+	return next_track->GetMessage(is_playing, channel_id);
 }
 
 dpp::message GuildPlayer::Leave(const dpp::snowflake &channel_id) {

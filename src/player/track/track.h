@@ -18,11 +18,11 @@ public:
 
 	void Abort();
 
-	void JoinPlayThread();
-
 	void AsyncPlay(const dpp::voiceconn* voiceconn);
 
 	virtual bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) = 0;
+
+	virtual Track* Next() = 0;
 
 protected:
 	const unsigned short _duration;

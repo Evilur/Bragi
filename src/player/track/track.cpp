@@ -11,9 +11,10 @@ Track::~Track() {
 	_play_thread = nullptr;
 }
 
-void Track::Abort() { _is_aborted = true; }
-
-void Track::JoinPlayThread() { if (_play_thread->joinable()) _play_thread->join(); }
+void Track::Abort() {
+	_is_aborted = true;
+	if (_play_thread->joinable()) _play_thread->join();
+}
 
 void Track::AsyncPlay(const dpp::voiceconn* voiceconn) { _play_thread = new std::thread(&Track::Play, this, voiceconn); }
 

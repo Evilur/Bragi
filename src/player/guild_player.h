@@ -16,11 +16,13 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Skip(const dpp::snowflake &channel_id, const int16 num_for_skip);
+	dpp::message Skip(const dpp::snowflake &channel_id, const u_int16 num_for_skip);
 
 	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
 
 	dpp::message Loop(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
+
+	dpp::message Next(const dpp::snowflake &channel_id, const u_int16 track_ordinal);
 
 	dpp::message Leave(const dpp::snowflake &channel_id);
 

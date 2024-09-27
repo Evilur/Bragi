@@ -3,6 +3,7 @@
 #include "util/dictionary.h"
 #include "util/parser.h"
 #include "util/logger.h"
+#include "exception/bragi_exception.h"
 
 void Playlist::Add(Track* track) {
 	/* Create an array pointer with the right offset */
@@ -46,9 +47,8 @@ u_int16 Playlist::Skip(u_int16 num_for_skip) {
 	/* Create an array pointer with the right offset */
 	Track** tracks_ptr = _tracks + _tracks_offset;
 
-	/* Abort the first track and join the play thread */
+	/* Abort the current playing track */
 	tracks_ptr[0]->Abort();
-	tracks_ptr[0]->JoinPlayThread();
 
 	/* Delete skipped tracks */
 	if (_tracks_size < num_for_skip) num_for_skip = _tracks_size;
@@ -66,7 +66,31 @@ u_int16 Playlist::Skip(u_int16 num_for_skip) {
 	return num_for_skip;
 }
 
+Track* Playlist::Next(const u_int16 track_index, bool &is_playing) {
+	/* Create an array pointer with the right offset */
+	Track** tracks_ptr = _tracks + _tracks_offset;
+
+	/* Get the pointer to the next track in the search results */
+	Track* next_track = tracks_ptr[track_index]->Next();
+
+	/* If there is no next track */
+	if (next_track == nullptr) return nullptr;
+
+	/* If we need to replace the current playing track, abort it */
+	is_playing = !track_index;
+	if (is_playing) tracks_ptr[0]->Abort();
+
+	/* Free memory and replace the pointer */
+	delete tracks_ptr[track_index];
+	tracks_ptr[track_index] = next_track;
+
+	/* Return the pointer to the next track */
+	return next_track;
+}
+
 bool Playlist::IsEmpty() const { return _tracks_size == 0; }
+
+u_int16 Playlist::Size() const { return _tracks_size; }
 
 Track* Playlist::CurrentTrack() const { return _tracks[_tracks_offset]; }
 

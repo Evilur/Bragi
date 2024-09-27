@@ -46,7 +46,7 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 			new DeezerTrack((std::string)json_track["SNG_ID"], (std::string)json_track["ALB_ID"], (std::string)json_track["ART_ID"],
 			                (std::string)json_track["SNG_TITLE"], (std::string)json_track["ALB_TITLE"], (std::string)json_track["ART_NAME"],
 			                (std::string)json_track["ALB_PICTURE"], (std::string)json_track["ART_PICTURE"],
-			                (std::string)json_track["DURATION"], (std::string)json_track["TRACK_TOKEN"],
+			                (std::string)json_track["DURATION"], (std::string)json_track["TRACK_TOKEN"], query,
 			                (unsigned short)json_results["total"], (unsigned short)json_results["next"]);
 
 	/* Free the memory and return a result */

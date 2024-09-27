@@ -6,7 +6,7 @@
 
 void Skip::Exec(const dpp::slashcommand_t &event) {
 	/* Get number of tracks for skip (if exists) */
-	int16 num_for_skip = 1;
+	u_int16 num_for_skip = 1;
 	dpp::command_value num_for_skip_par = event.get_parameter("num");
 	if (num_for_skip_par.index() != 0) num_for_skip = std::get<int64>(num_for_skip_par);
 
@@ -17,13 +17,13 @@ void Skip::Exec(const dpp::slashcommand_t &event) {
 
 void Skip::Exec(const dpp::message_create_t &event, const std::string &argument) {
 	/* Get number of tracks for skip (if exists) */
-	int16 num_for_skip = argument.empty() ? 1 : Parser::ToInt16(argument.c_str() + argument.find_first_not_of(' '));
+	u_int16 num_for_skip = argument.empty() ? 1 : Parser::ToUInt16(argument.c_str() + argument.find_first_not_of(' '));
 
 	/* Send the message to the channel */
 	try { event.send(Exec(event.msg.guild_id, event.msg.channel_id, num_for_skip)); }
 	catch (BragiException &exception) { event.send(exception.Message()); }
 }
 
-dpp::message Skip::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const int16 num_for_skip) {
+dpp::message Skip::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const u_int16 num_for_skip) {
 	return GuildPlayer::Get(guild_id)->Skip(channel_id, num_for_skip);
 }

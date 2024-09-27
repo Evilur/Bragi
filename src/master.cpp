@@ -11,6 +11,7 @@
 #include "command/list.h"
 #include "command/skip.h"
 #include "command/loop.h"
+#include "command/next.h"
 
 int main() {
 	/* Init static classes */
@@ -42,6 +43,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	if (command_name == "play") Play::Exec(event);
 	else if (command_name == "skip") Skip::Exec(event);
 	else if (command_name == "list") List::Exec(event);
+	else if (command_name == "next") Next::Exec(event);
 	else if (command_name == "loop") Loop::Exec(event);
 	else if (command_name == "ping") Ping::Exec(event);
 	else if (command_name == "join") Join::Exec(event);
@@ -61,6 +63,7 @@ void on_message_create(const dpp::message_create_t &event) {
 	if (command == "p" || command == "play") Play::Exec(event, argument);
 	else if (command == "s" || command == "skip") Skip::Exec(event, argument);
 	else if (command == "l" || command == "list") List::Exec(event);
+	else if (command == "n" || command == "next") Next::Exec(event, argument);
 	else if (command == "loop") Loop::Exec(event, argument);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
@@ -91,7 +94,10 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::slashcommand("play", DIC_SLASH_PLAY, bot->me.id).add_option(dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
 
 	bot->global_command_create(
-			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "num", DIC_SLASH_SKIP_NUMBER, false)));
+			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_SKIP_NUMBER, false)));
+
+	bot->global_command_create(
+			dpp::slashcommand("next", DIC_SLASH_NEXT, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "ordinal", DIC_SLASH_NEXT_ORDINAL, false)));
 
 	bot->global_command_create(dpp::slashcommand("loop", DIC_SLASH_LOOP, bot->me.id).add_option(
 			dpp::command_option(dpp::co_string, "type", DIC_SLASH_LOOP_TYPE, false)
