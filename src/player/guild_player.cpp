@@ -118,15 +118,20 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 }
 
 void GuildPlayer::HandleMarker() {
-	/* TODO: add playlist repeat support */
-	if (_loop_type == DISABLED) {
-		/* If we touch the marker, the track has ended */
+	/* Check the loop type */
+	if (_loop_type == TRACK) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	else if (_loop_type == PLAYLIST) {
+		/* Move the first track to the end of the playlist */
+		_playlist.RepeatPlaylist();
+
+		/* Play the next track */
+		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	} else {
+		/* Handle the playlist eof */
 		_playlist.HandleEof();
 
 		/* If the playlist isn't empty, play the next track */
 		if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
-	} else {
-		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
 	}
 }
 

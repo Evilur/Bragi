@@ -12,6 +12,8 @@ public:
 
 	u_int16 Skip(const u_int16 num_for_skip);
 
+	void RepeatPlaylist();
+
 	Track* Next(const u_int16 track_index, bool &is_playing);
 
 	bool IsEmpty() const;

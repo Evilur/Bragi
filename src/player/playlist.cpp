@@ -22,6 +22,8 @@ void Playlist::Add(Track* track) {
 
 		/* Update the tracks pointer and remove the offset */
 		tracks_ptr = _tracks;
+
+		/* Reset the tracks offset */
 		_tracks_offset = 0;
 
 		/* Add the track to the array */
@@ -54,7 +56,6 @@ void Playlist::HandleEof() {
 	if (--_tracks_size == 0) ResetArray();
 }
 
-
 u_int16 Playlist::Skip(u_int16 num_for_skip) {
 	/* Create an array pointer with the right offset */
 	Track** tracks_ptr = _tracks + _tracks_offset;
@@ -76,6 +77,13 @@ u_int16 Playlist::Skip(u_int16 num_for_skip) {
 
 	/* Return the number of skipped tracks */
 	return num_for_skip;
+}
+
+void Playlist::RepeatPlaylist() {
+	Track* current_track = _tracks[_tracks_offset];
+	_tracks[_tracks_offset++] = nullptr;
+	_tracks_size--;
+	Add(current_track);
 }
 
 Track* Playlist::Next(const u_int16 track_index, bool &is_playing) {
