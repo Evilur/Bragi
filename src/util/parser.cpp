@@ -3,6 +3,17 @@
 #include "dictionary.h"
 #include "logger.h"
 
+u_int8 Parser::ToUInt8(const char* data) {
+	u_int8 result = 0;
+	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');
+	return result;
+}
+
+int8 Parser::ToInt8(const char* data) {
+	if (data[0] != '-') return ToUInt8(data);
+	else return -ToUInt8(data + 1);
+}
+
 unsigned short Parser::ToUInt16(const char* data) {
 	unsigned short result = 0;
 	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');

@@ -1,8 +1,14 @@
 #ifndef BRAGI_PARSER_H
 #define BRAGI_PARSER_H
 
+#include "master.h"
+
 class Parser final {
 public:
+	static u_int8 ToUInt8(const char* data);
+
+	static int8 ToInt8(const char* data);
+
 	static unsigned short ToUInt16(const char* data);
 
 	static short ToInt16(const char* data);
