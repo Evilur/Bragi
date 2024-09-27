@@ -6,40 +6,52 @@
 #include "exception/bragi_exception.h"
 
 void Playlist::Add(Track* track) {
-	/* Create an array pointer with the right offset */
-	Track** tracks_ptr = _tracks + _tracks_offset;
-
 	/* If there is enought space in the array, just add the track to the array */
 	if (_tracks_offset + _tracks_size < _max_track_size) {
-		tracks_ptr[_tracks_size++] = track;
+		_tracks[_tracks_offset + _tracks_size++] = track;
 		return;
 	}
 
-	/* If we have an offset in the array */
+	/* If we have an offset in the array, remove it */
 	if (_tracks_offset != 0) {
-		Logger::Debug("Adding with the offset");
+		/* Create an array pointer with the right offset */
+		Track** tracks_ptr = _tracks + _tracks_offset;
 
-		/* Remove the offset */
+		/* Move all pointers to the start of the array */
 		std::copy(tracks_ptr, tracks_ptr + _tracks_size, _tracks);
+
+		/* Update the tracks pointer and remove the offset */
 		tracks_ptr = _tracks;
+		_tracks_offset = 0;
 
 		/* Add the track to the array */
 		tracks_ptr[_tracks_size++] = track;
+
+		/* Replace old pointers in the array with nullptrs */
+		std::fill(tracks_ptr + _tracks_size, tracks_ptr + _max_track_size, nullptr);
 		return;
 	}
 
-	/* If the array is full of tracks */
-	Logger::Fatal("Not implemented yet");
-	exit(105);
+	/* If the array is full of tracks, create a new array and copy all pointers there */
+	Track** new_tracks_ptr = new Track*[_max_track_size + DEFAULT_TRACKS_SIZE];
+	std::copy(_tracks, _tracks + _max_track_size, new_tracks_ptr);
+	_max_track_size += DEFAULT_TRACKS_SIZE;
+
+	/* Clear the old memory, and replace the old pointer with new ones */
+	delete[] _tracks;
+	_tracks = new_tracks_ptr;
+
+	/* Add a track to the new array */
+	_tracks[_tracks_size++] = track;
 }
 
 void Playlist::HandleEof() {
-	/* If there isn't tracks in the array, reset the offset */
-	if (--_tracks_size == 0) _tracks_offset = 0;
-
 	/* Free memory of the listened track */
 	delete _tracks[_tracks_offset];
 	_tracks[_tracks_offset++] = nullptr;
+
+	/* If there isn't tracks in the array, reset it */
+	if (--_tracks_size == 0) ResetArray();
 }
 
 
@@ -57,9 +69,9 @@ u_int16 Playlist::Skip(u_int16 num_for_skip) {
 		tracks_ptr[i] = nullptr;
 	}
 
-	/* Set the track array size and an offset */
+	/* Set the track array size, offset and reset the array if there is no tracks in it */
 	_tracks_size -= num_for_skip;
-	if (_tracks_size == 0) _tracks_offset = 0;
+	if (_tracks_size == 0) ResetArray();
 	else _tracks_offset += num_for_skip;
 
 	/* Return the number of skipped tracks */
@@ -113,4 +125,18 @@ dpp::message Playlist::Message(const dpp::snowflake &channel_id) const {
 			.set_color(Color::GREEN)
 			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, Parser::Time(duration)))
 			.set_description(ss.str()));
+}
+
+void Playlist::ResetArray() {
+	/* Reset the offset */
+	_tracks_offset = 0;
+
+	/* If the array size is default, exit the method */
+	if (_max_track_size == DEFAULT_TRACKS_SIZE) return;
+
+	/* If the array is bigger than the default, free old memory */
+	delete[] _tracks;
+
+	/* Create a new array */
+	_tracks = new Track*[DEFAULT_TRACKS_SIZE];
 }

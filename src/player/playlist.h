@@ -23,11 +23,13 @@ public:
 	dpp::message Message(const dpp::snowflake &channel_id) const;
 
 private:
-	static inline constexpr unsigned short TRACKS_DELTA = 32;
-	unsigned short _max_track_size = TRACKS_DELTA;
-	unsigned short _tracks_size = 0;
-	unsigned short _tracks_offset = 0;
-	Track** _tracks = new Track* [TRACKS_DELTA];
+	static inline constexpr u_int16 DEFAULT_TRACKS_SIZE = 32;
+	u_int16 _max_track_size = DEFAULT_TRACKS_SIZE;
+	u_int16 _tracks_size = 0;
+	u_int16 _tracks_offset = 0;
+	Track** _tracks = new Track*[DEFAULT_TRACKS_SIZE];
+
+	void ResetArray();
 };
 
 #endif
