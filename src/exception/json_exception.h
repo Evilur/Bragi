@@ -9,12 +9,6 @@ public:
 	explicit JsonException(const char* json_data, const char* query);
 
 	explicit JsonException(const char* json_data, int index);
-
-	friend std::ostream &operator<<(std::ostream &stream, const JsonException &instance);
-
-private:
-	const char* _json_data = nullptr;
-	const std::string _wrong_query;
 };
 
 #endif
