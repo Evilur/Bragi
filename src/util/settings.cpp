@@ -5,9 +5,6 @@
 #include <fstream>
 #include <regex>
 
-std::string Settings::_bot_token;
-std::string Settings::_arl_token;
-
 void Settings::Init() {
 	std::ifstream cfg_stream(Path::CONFIG_FILE);  //Open config file for reading
 	Logger::Info("Initializing tokens");
@@ -24,8 +21,18 @@ void Settings::Init() {
 	}
 
 	cfg_stream.close();  //Close the stream
-	if (_bot_token.empty() || _arl_token.empty()) ReinitTokens();  //Check for empty
+	if (_bot_token.empty() || _arl_token.empty()) ReinitEmptyTokens();  //Check for empty
 	Logger::Info("Tokens have been initialized");
+}
+
+void Settings::ReinitBotToken() {
+	_bot_token = std::string();
+	ReinitEmptyTokens();
+}
+
+void Settings::ReinitArlToken() {
+	_arl_token = std::string();
+	ReinitEmptyTokens();
 }
 
 char Settings::GetPrefix() { return '!'; }
@@ -35,7 +42,7 @@ std::string const &Settings::GetBotToken() { return _bot_token; }
 std::string const &Settings::GetArlToken() { return _arl_token; }
 
 
-void Settings::ReinitTokens() {
+void Settings::ReinitEmptyTokens() {
 	bool need_to_rewrite = false;
 
 	/* Get tokens */

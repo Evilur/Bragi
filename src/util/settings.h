@@ -8,6 +8,10 @@ class Settings final {
 public:
 	static void Init();
 
+	static void ReinitBotToken();
+
+	static void ReinitArlToken();
+
 	static char GetPrefix();
 
 	static std::string const &GetBotToken();
@@ -15,10 +19,10 @@ public:
 	static std::string const &GetArlToken();
 
 private:
-	static std::string _bot_token;
-	static std::string _arl_token;
+	static inline std::string _bot_token;
+	static inline std::string _arl_token;
 
-	static void ReinitTokens();
+	static void ReinitEmptyTokens();
 };
 
 #endif

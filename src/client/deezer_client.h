@@ -18,7 +18,6 @@ public:
 private:
 	static constexpr char TRACK_QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
 
-	static inline std::string _arl_token;
 	static inline std::string _headers;
 
 	static inline std::string _session_id;
@@ -50,6 +49,8 @@ private:
 
 	static inline std::string _url_search_track;
 	static inline std::string _url_get_decoded_track_url;
+
+	static void InitHeaders();
 
 	/** Update the deezer session
 	 * @param verbose true if we need to log the user data; false else

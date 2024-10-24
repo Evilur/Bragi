@@ -19,9 +19,8 @@ DeezerClient::TrackQuality operator--(DeezerClient::TrackQuality &quality, int) 
 }
 
 void DeezerClient::Init() {
-	/* Init the arl otken and headers for the deezer requests */
-	_arl_token = Settings::GetArlToken();
-	_headers = BASIC_HEADERS + _arl_token;
+	/* Init the arl token and headers for the deezer requests */
+	InitHeaders();
 	UpdateSession(true);
 }
 
@@ -77,8 +76,11 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQual
 	throw std::logic_error("Cannot find the encoded track url");
 }
 
+void DeezerClient::InitHeaders() { _headers = BASIC_HEADERS + Settings::GetArlToken(); }
+
 void DeezerClient::UpdateSession(const bool verbose) {
 	/* Send the request and init the json objects */
+	deezer_init:
 	const char* json_string = HttpClient(URL_UPDATE_SESSION, _headers).ReadAll();
 	const Json json_results = Json(std::strchr(json_string, '{')).Get("results");
 	const Json json_user = json_results["USER"];
@@ -86,7 +88,9 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	/* Check the user for existing */
 	if ((unsigned int)json_user["USER_ID"] == 0) {
 		Logger::Fatal("Invalid Deezer ARL token");
-		exit(100);
+		Settings::ReinitArlToken();  //Get the new deezer arl token
+		InitHeaders();  //Reinit headers (they contain arl)
+		goto deezer_init;  //Reinit the deezer client
 	}
 
 	/* Assign values to fields */
