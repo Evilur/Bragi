@@ -9,12 +9,12 @@ void Next::Exec(const dpp::slashcommand_t &event) {
 	event.thinking();
 
 	/* Get number of tracks for skip (if exists) */
-	/*int16 num_for_skip = 1;
-	dpp::command_value num_for_skip_par = event.get_parameter("num");
-	if (num_for_skip_par.index() != 0) num_for_skip = std::get<int64>(num_for_skip_par);*/
+	int16 track_number = 0;
+	dpp::command_value track_num_par = event.get_parameter("number");
+	if (track_num_par.index() != 0) track_number = std::get<int64>(track_num_par);
 
 	/* Send the message to the channel */
-	try { event.edit_original_response(GuildPlayer::Get(event.command.guild_id)->Next(event.command.channel_id, 0)); }
+	try { event.edit_original_response(GuildPlayer::Get(event.command.guild_id)->Next(event.command.channel_id, track_number)); }
 	catch (BragiException &exception) { event.edit_original_response(exception.Message()); }
 }
 
