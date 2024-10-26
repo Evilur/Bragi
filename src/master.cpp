@@ -97,7 +97,7 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_SKIP_NUMBER, false)));
 
 	bot->global_command_create(
-			dpp::slashcommand("next", DIC_SLASH_NEXT, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "ordinal", DIC_SLASH_NEXT_ORDINAL, false)));
+			dpp::slashcommand("next", DIC_SLASH_NEXT, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_NEXT_ORDINAL, false)));
 
 	bot->global_command_create(dpp::slashcommand("loop", DIC_SLASH_LOOP, bot->me.id).add_option(
 			dpp::command_option(dpp::co_string, "type", DIC_SLASH_LOOP_TYPE, false)

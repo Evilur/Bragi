@@ -4,10 +4,31 @@
 #include "util/logger.h"
 #include "util/parser.h"
 
+/*
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ * ЗДЕСЬ НЕ РАБОТАЕТ АРГУМЕНТ
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
 void Skip::Exec(const dpp::slashcommand_t &event) {
 	/* Get number of tracks for skip (if exists) */
 	u_int16 num_for_skip = 1;
-	dpp::command_value num_for_skip_par = event.get_parameter("num");
+	dpp::command_value num_for_skip_par = event.get_parameter("number");
 	if (num_for_skip_par.index() != 0) num_for_skip = std::get<int64>(num_for_skip_par);
 
 	/* Send the message to the channel */
