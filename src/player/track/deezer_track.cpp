@@ -9,6 +9,9 @@
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
                          const std::string &title, const std::string &album_title, const std::string &artist_name,
                          const std::string &album_picture, const std::string &artist_picture,
@@ -40,7 +43,7 @@ DeezerTrack::~DeezerTrack() {
 	_http = nullptr;
 }
 
-bool DeezerTrack::ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) {
+bool DeezerTrack::ReadBuffer(u_int8* buffer, u_int64* buffer_size) {
 	/* Set the chunk size */
 	constexpr int chunk_size = 2048;
 	constexpr int necessary_buffer_size = chunk_size * 3;
@@ -130,3 +133,5 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
 	const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;  //Get the second half of the hash
 	for (char i = 0; i < MD5_DIGEST_LENGTH; i++) buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
 }
+
+#pragma GCC diagnostic pop

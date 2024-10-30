@@ -4,27 +4,6 @@
 #include "util/logger.h"
 #include "util/parser.h"
 
-/*
- *
- *
- *
- *
- *
- *
- *
- *
- * ЗДЕСЬ НЕ РАБОТАЕТ АРГУМЕНТ
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
 void Skip::Exec(const dpp::slashcommand_t &event) {
 	/* Get number of tracks for skip (if exists) */
 	u_int16 num_for_skip = 1;

@@ -5,6 +5,7 @@
 #include "track.h"
 #include "util/dictionary.h"
 #include "http/http_client.h"
+#include "master.h"
 
 class DeezerTrack final : public Track {
 public:
@@ -16,7 +17,7 @@ public:
 
 	~DeezerTrack();
 
-	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) override;
+	bool ReadBuffer(u_int8* buffer, u_int64* buffer_size) override;
 
 	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
