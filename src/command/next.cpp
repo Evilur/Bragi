@@ -9,9 +9,9 @@ void Next::Exec(const dpp::slashcommand_t &event) {
 	event.thinking();
 
 	/* Get number of tracks for skip (if exists) */
-	int16 track_number = 0;
+	short track_number = 0;
 	dpp::command_value track_num_par = event.get_parameter("number");
-	if (track_num_par.index() != 0) track_number = std::get<int64>(track_num_par);
+	if (track_num_par.index() != 0) track_number = std::get<long>(track_num_par);
 
 	/* Send the message to the channel */
 	try { event.edit_original_response(GuildPlayer::Get(event.command.guild_id)->Next(event.command.channel_id, track_number)); }
@@ -20,7 +20,7 @@ void Next::Exec(const dpp::slashcommand_t &event) {
 
 void Next::Exec(const dpp::message_create_t &event, const std::string &argument) {
 	/* Get the track ordinal for researching (if exists) */
-	u_int16 track_ordinal = argument.empty() ? 0 : Parser::ToInt16(argument.c_str() + argument.find_first_not_of(' '));
+	unsigned short track_ordinal = argument.empty() ? 0 : Parser::ToInt16(argument.c_str() + argument.find_first_not_of(' '));
 
 	/* Send the message to the channel */
 	try { event.send(GuildPlayer::Get(event.msg.guild_id)->Next(event.msg.channel_id, track_ordinal)); }

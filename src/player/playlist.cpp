@@ -56,7 +56,7 @@ void Playlist::HandleEof() {
 	if (--_tracks_size == 0) ResetArray();
 }
 
-u_int16 Playlist::Skip(u_int16 num_for_skip) {
+unsigned short Playlist::Skip(unsigned short num_for_skip) {
 	/* Create an array pointer with the right offset */
 	Track** tracks_ptr = _tracks + _tracks_offset;
 
@@ -65,7 +65,7 @@ u_int16 Playlist::Skip(u_int16 num_for_skip) {
 
 	/* Delete skipped tracks */
 	if (_tracks_size < num_for_skip) num_for_skip = _tracks_size;
-	for (u_int16 i = 0; i < num_for_skip; i++) {
+	for (unsigned short i = 0; i < num_for_skip; i++) {
 		delete tracks_ptr[i];
 		tracks_ptr[i] = nullptr;
 	}
@@ -86,7 +86,7 @@ void Playlist::RepeatPlaylist() {
 	Add(current_track);
 }
 
-Track* Playlist::Next(const u_int16 track_index, bool &is_playing) {
+Track* Playlist::Next(const unsigned short track_index, bool &is_playing) {
 	/* Create an array pointer with the right offset */
 	Track** tracks_ptr = _tracks + _tracks_offset;
 
@@ -110,7 +110,7 @@ Track* Playlist::Next(const u_int16 track_index, bool &is_playing) {
 
 bool Playlist::IsEmpty() const { return _tracks_size == 0; }
 
-u_int16 Playlist::Size() const { return _tracks_size; }
+unsigned short Playlist::Size() const { return _tracks_size; }
 
 Track* Playlist::CurrentTrack() const { return _tracks[_tracks_offset]; }
 

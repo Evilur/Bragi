@@ -24,20 +24,8 @@ void on_voice_track_marker(const dpp::voice_track_marker_t &event);
 
 void on_ready(const dpp::ready_t &event);
 
-typedef signed char int8;
+typedef unsigned char byte;
 
-typedef unsigned char u_int8;
-
-typedef signed short int16;
-
-typedef unsigned short u_int16;
-
-typedef signed int int32;
-
-typedef unsigned int u_int32;
-
-typedef signed long int64;
-
-typedef unsigned long u_int64;
+typedef signed char s_byte;
 
 #endif

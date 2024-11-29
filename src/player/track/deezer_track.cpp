@@ -43,16 +43,10 @@ DeezerTrack::~DeezerTrack() {
 	_http = nullptr;
 }
 
-bool DeezerTrack::ReadBuffer(u_int8* buffer, u_int64* buffer_size) {
+bool DeezerTrack::ReadBuffer(byte* buffer, unsigned long* buffer_size) {
 	/* Set the chunk size */
 	constexpr int chunk_size = 2048;
-	constexpr int necessary_buffer_size = chunk_size * 3;
-
-	/* TODO: delete this */
-	if (necessary_buffer_size > *buffer_size) {
-		Logger::Fatal("The buffer is too small to keep 3 decoded flac data chunks");
-		exit(101);
-	} else *buffer_size = necessary_buffer_size;
+	*buffer_size = chunk_size * 3;
 
 	/* If http steam has ended, or we have aborted the playback */
 	if (!_http->CanRead() || IsAborted()) {
@@ -61,7 +55,7 @@ bool DeezerTrack::ReadBuffer(u_int8* buffer, u_int64* buffer_size) {
 	}
 
 	/* Read 3 raw chunks */
-	_http->Read((char*)buffer, necessary_buffer_size);
+	_http->Read((char*)buffer, *buffer_size);
 
 	/* Set the init vectors */
 	unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };

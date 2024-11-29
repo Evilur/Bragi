@@ -32,6 +32,6 @@ void Loop::Exec(const dpp::message_create_t &event, const std::string &argument)
 	}
 
 	/* Get the loop type */
-	u_int8 loop_type_int = Parser::ToUInt8(argument.c_str() + argument.find_first_not_of(' '));
+	byte loop_type_int = Parser::ToUInt8(argument.c_str() + argument.find_first_not_of(' '));
 	event.send(GuildPlayer::Get(event.msg.guild_id)->Loop(event.msg.channel_id, (GuildPlayer::LoopType)loop_type_int));
 }

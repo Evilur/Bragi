@@ -1,15 +1,14 @@
 #include <iostream>
 #include "parser.h"
 #include "dictionary.h"
-#include "logger.h"
 
-u_int8 Parser::ToUInt8(const char* data) {
-	u_int8 result = 0;
+byte Parser::ToUInt8(const char* data) {
+	byte result = 0;
 	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');
 	return result;
 }
 
-int8 Parser::ToInt8(const char* data) {
+s_byte Parser::ToInt8(const char* data) {
 	if (data[0] != '-') return ToUInt8(data);
 	else return -ToUInt8(data + 1);
 }

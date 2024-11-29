@@ -60,7 +60,7 @@ FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* fra
 		unsigned char opus_buffer[OPUS_CHUNK_SIZE];
 
 		_stream.read(pcm_buffer, PCM_CHUNK_SIZE);
-		int len = opus_encode(_encoder, (opus_int16*)pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
+		int len = opus_encode(_encoder, (short*)pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
 
 		_voiceconn->voiceclient->send_audio_opus(opus_buffer, len, 60);
 		_stream_size -= PCM_CHUNK_SIZE;

@@ -10,25 +10,25 @@ public:
 
 	void HandleEof();
 
-	u_int16 Skip(const u_int16 num_for_skip);
+	unsigned short Skip(const unsigned short num_for_skip);
 
 	void RepeatPlaylist();
 
-	Track* Next(const u_int16 track_index, bool &is_playing);
+	Track* Next(const unsigned short track_index, bool &is_playing);
 
 	bool IsEmpty() const;
 
-	u_int16 Size() const;
+	unsigned short Size() const;
 
 	Track* CurrentTrack() const;
 
 	dpp::message Message(const dpp::snowflake &channel_id) const;
 
 private:
-	static inline constexpr u_int16 DEFAULT_TRACKS_SIZE = 32;
-	u_int16 _max_track_size = DEFAULT_TRACKS_SIZE;
-	u_int16 _tracks_size = 0;
-	u_int16 _tracks_offset = 0;
+	static inline constexpr unsigned short DEFAULT_TRACKS_SIZE = 32;
+	unsigned short _max_track_size = DEFAULT_TRACKS_SIZE;
+	unsigned short _tracks_size = 0;
+	unsigned short _tracks_offset = 0;
 	Track** _tracks = new Track*[DEFAULT_TRACKS_SIZE];
 
 	void ResetArray();

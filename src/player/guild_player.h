@@ -8,7 +8,7 @@
 
 class GuildPlayer final {
 public:
-	enum LoopType : u_int8 { DISABLED, TRACK, PLAYLIST };
+	enum LoopType : byte { DISABLED, TRACK, PLAYLIST };
 
 	const dpp::snowflake guild_id;
 
@@ -16,13 +16,13 @@ public:
 
 	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Skip(const dpp::snowflake &channel_id, const u_int16 num_for_skip);
+	dpp::message Skip(const dpp::snowflake &channel_id, const unsigned short num_for_skip);
 
 	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
 
 	dpp::message Loop(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
 
-	dpp::message Next(const dpp::snowflake &channel_id, const u_int16 track_ordinal);
+	dpp::message Next(const dpp::snowflake &channel_id, const unsigned short track_ordinal);
 
 	dpp::message Leave(const dpp::snowflake &channel_id);
 

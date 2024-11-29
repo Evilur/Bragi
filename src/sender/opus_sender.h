@@ -11,7 +11,7 @@ public:
 	static constexpr int FREQ = 48000;
 	static constexpr int FRAME_SIZE = 2880;
 	static constexpr int CHANNELS = 2;
-	static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(opus_int16);
+	static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(short);
 	static constexpr int OPUS_CHUNK_SIZE = 1024;
 
 	OpusSender(const dpp::voiceconn* voiceconn, Track* track);
