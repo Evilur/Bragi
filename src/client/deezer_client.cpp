@@ -79,7 +79,7 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQual
 void DeezerClient::UpdateSession(const bool verbose) {
 	/* Send the request and init the json objects */
 	const char* json_string = HttpClient(URL_UPDATE_SESSION, _headers).ReadAll();
-	const Json json_results = Json(std::strchr(json_string, '{')).Get("results");
+	const Json json_results = Json(json_string).Get("results");
 	const Json json_user = json_results["USER"];
 
 	/* Check the user for existing */
