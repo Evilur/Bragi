@@ -7,14 +7,14 @@
 GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
 dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	_need_to_play_first_track = _playlist.IsEmpty();  //If the playlist is empty this track will be played right now
-	dpp::message result_msg = track->GetMessage(_need_to_play_first_track, channel_id);  //Get track message
+	bool need_to_play_first_track = _playlist.IsEmpty();  //If the playlist is empty this track will be played right now
+	dpp::message result_msg = track->GetMessage(need_to_play_first_track, channel_id);  //Get track message
 
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		/* If we need to play the track right now */
 		_playlist.Add(track);  //Add a track to the playlist
-		if (_need_to_play_first_track) track->AsyncPlay(_voiceconn);  //Play the current track
+		if (need_to_play_first_track) track->AsyncPlay(_voiceconn);  //Play the current track
 		return result_msg;  //Return the track message
 	}
 
@@ -141,10 +141,7 @@ void GuildPlayer::HandleReadyState() {
 	_voiceconn->voiceclient->set_send_audio_type(dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
 	/* If we need to play the first track */
-	if (_need_to_play_first_track) {
-		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
-		_need_to_play_first_track = false;
-	}
+	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
