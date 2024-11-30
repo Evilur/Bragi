@@ -14,7 +14,7 @@ public:
 	static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(short);
 	static constexpr int OPUS_CHUNK_SIZE = 1024;
 
-	OpusSender(const dpp::voiceconn* voiceconn, Track* track);
+	OpusSender(const dpp::voiceconn* const voiceconn, Track* const track);
 
 	virtual ~OpusSender();
 
@@ -23,22 +23,20 @@ public:
 protected:
 	bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size);
 
-	void SendOpusData(unsigned char* data, int len);
-
 
 
 	OpusEncoder* _encoder = nullptr;
 
 
 
-	const dpp::voiceconn* _voiceconn = nullptr;
+	const dpp::voiceconn* const _voiceconn;
 
 
 private:
 
 
 
-	Track* _track = nullptr;
+	Track* const _track;
 };
 
 #endif

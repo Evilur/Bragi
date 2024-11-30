@@ -4,6 +4,8 @@
 #include "player/guild_player.h"
 #include "util/logger.h"
 
+/* TODO: Sanitize the input data */
+
 void Play::Exec(const dpp::slashcommand_t &event) {
 	/* Set the bot to thinking state */
 	event.thinking();

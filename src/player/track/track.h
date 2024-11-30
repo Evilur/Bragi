@@ -3,6 +3,7 @@
 
 #include <dpp/dpp.h>
 #include <string>
+#include "master.h"
 
 class Track {
 public:
@@ -20,7 +21,7 @@ public:
 
 	void AsyncPlay(const dpp::voiceconn* voiceconn);
 
-	virtual bool ReadBuffer(unsigned char* buffer, unsigned long* buffer_size) = 0;
+	virtual bool ReadBuffer(byte* buffer, unsigned long* buffer_size) = 0;
 
 	virtual Track* Next() = 0;
 

@@ -5,7 +5,7 @@
 
 #include <speex/speex_resampler.h>
 
-FlacSender::FlacSender(const dpp::voiceconn* voiceconn, Track* track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
+FlacSender::FlacSender(const dpp::voiceconn* const voiceconn, Track* const track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
 	/* Init the flac decoder */
 	this->init();
 

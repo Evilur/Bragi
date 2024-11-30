@@ -12,7 +12,6 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 
 	/* If player is ready */
 	if (IsPlayerReady()) {
-		/* If we need to play the track right now */
 		_playlist.Add(track);  //Add a track to the playlist
 		if (need_to_play_first_track) track->AsyncPlay(_voiceconn);  //Play the current track
 		return result_msg;  //Return the track message

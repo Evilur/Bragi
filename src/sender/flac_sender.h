@@ -10,7 +10,7 @@
 
 class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* voiceconn, Track* track);
+	FlacSender(const dpp::voiceconn* const voiceconn, Track* const track);
 
 	~FlacSender();
 
