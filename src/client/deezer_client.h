@@ -50,8 +50,6 @@ private:
 	static inline std::string _url_search_track;
 	static inline std::string _url_get_decoded_track_url;
 
-	static void InitHeaders();
-
 	/** Update the deezer session
 	 * @param verbose true if we need to log the user data; false else
 	 */
