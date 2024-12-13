@@ -8,19 +8,13 @@
 
 #include <iostream>
 
-DeezerClient::TrackQuality operator++(DeezerClient::TrackQuality &quality, int) {
-	quality = (DeezerClient::TrackQuality)(quality + 1);
-	return quality;
-}
-
-DeezerClient::TrackQuality operator--(DeezerClient::TrackQuality &quality, int) {
-	quality = (DeezerClient::TrackQuality)(quality - 1);
-	return quality;
+DeezerClient::TrackQuality &operator--(DeezerClient::TrackQuality &quality, int) {
+	return quality = (DeezerClient::TrackQuality)(quality - 1);
 }
 
 void DeezerClient::Init() {
 	/* Init the arl token and headers for the deezer requests */
-	_headers = BASIC_HEADERS + Settings::GetArlToken();
+	_headers = DEEZER_BASIC_HEADERS + Settings::GetArlToken();
 	UpdateSession(true);
 }
 
@@ -30,9 +24,13 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	if (c_time - _session_timestamp > DELTA_TIME) UpdateSession();
 	else _session_timestamp = c_time;
 
-	/* Send the request and init the json objects */
-	const char* json_string = HttpClient(_url_search_track, _headers, std::format(BODY_TEMPLATE_SEARCH_TRACK, query, start), "POST").ReadAll();
-	const Json json_results = Json(json_string).Get("results");
+	/* Send the http request */
+	std::string http_body = std::format(DEEZER_BODY_TEMPLATE_SEARCH_TRACK, query, start);
+	HttpClient http_client = HttpClient(_url_search_track, _headers, http_body, "POST");
+	const char* json_string = http_client.ReadAll();
+
+	/* Init the JSON object */
+	const Json json_results = Json(json_string)["results"];
 
 	/* Check for search results */
 	if (!json_results.Has("data")) return nullptr;
@@ -56,12 +54,13 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 
 std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQuality quality) {
 	do {
-		/* Send the request */
-		const char* json_string =
-				HttpsClient(_url_get_decoded_track_url, _headers, std::format(BODY_TEMPLATE_GET_DECODED_TRACK_URL, _license_token, "FLAC", token),
-				            "POST").ReadAll();
+		/* Send the https request */
+		std::string http_body = std::format(DEEZER_BODY_TEMPLATE_DECODED_URL, _license_token, TRACK_QUALITY_STR[quality], token);
+		HttpsClient http_client = HttpsClient(_url_get_decoded_track_url, _headers, http_body, "POST");
+		const char* json_string = http_client.ReadAll();
 
-		Json json_media = Json(json_string)["data"][0]["media"];
+		/* Init the JSON object */
+		const Json json_media = Json(json_string)["data"][0]["media"];
 
 		/* If there is no track in such quality */
 		if (json_media.IsEmpty()) continue;
@@ -77,9 +76,12 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQual
 }
 
 void DeezerClient::UpdateSession(const bool verbose) {
-	/* Send the request and init the json objects */
-	const char* json_string = HttpClient(URL_UPDATE_SESSION, _headers).ReadAll();
-	const Json json_results = Json(json_string).Get("results");
+	/* Send the http request */
+	HttpClient http_client = HttpClient(DEEZER_URL_UPDATE_SESSION, _headers);
+	const char* json_string = http_client.ReadAll();
+
+	/* Init the JSON objects */
+	const Json json_results = Json(json_string)["results"];
 	const Json json_user = json_results["USER"];
 
 	/* Check the user for existing */
@@ -94,8 +96,8 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	_session_timestamp = (unsigned long)json_results["SERVER_TIMESTAMP"];
 
 	/* Update the dependent urls */
-	_url_search_track = URL_TEMPLATE_SEARCH_TRACK + _session_id;
-	_url_get_decoded_track_url = URL_TEMPLATE_GET_DECODED_TRACK_URL + _session_id;
+	_url_search_track = DEEZER_URL_TEMPLATE_SEARCH_TRACK + _session_id;
+	_url_get_decoded_track_url = DEEZER_URL_TEMPLATE_DECODED_URL + _session_id;
 
 	/* Get user data for logging */
 	if (verbose) {

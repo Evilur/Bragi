@@ -3,7 +3,7 @@
 
 #include <asio.hpp>
 
-class HttpClient final {
+class HttpClient {
 public:
 	explicit HttpClient(const std::string &url, const std::string &headers = "", const std::string &body = "", const char* requset_type = "GET");
 

@@ -10,10 +10,6 @@ class Json final {
 public:
 	explicit Json(const char* data);
 
-	Json Get(const char* key) const;
-
-	Json Get(int index) const;
-
 	Json operator[](const char* key) const;
 
 	Json operator[](int index) const;
