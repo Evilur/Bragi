@@ -7,7 +7,6 @@
 #include <set>
 
 void Logger::Init() {
-	fs::create_directory(Path::LOG_DIR);
 	fs::path log_file = Path::LOG_DIR / std::string(GetDate()).append(".log");
 	_stream = new std::ofstream(log_file);
 	std::cout << "Log file: " << log_file.c_str() << std::endl;

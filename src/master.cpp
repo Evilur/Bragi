@@ -12,9 +12,11 @@
 #include "command/skip.h"
 #include "command/loop.h"
 #include "command/next.h"
+#include "util/path.h"
 
 int main() {
 	/* Init static classes */
+	Path::Init();
 	Logger::Init();
 	Settings::Init();
 	DeezerClient::Init();
