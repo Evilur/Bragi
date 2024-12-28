@@ -22,7 +22,6 @@ ADD_EXECUTABLE(Bragi
 
     # Discord audio senders
     src/sender/opus_sender.cpp
-    src/sender/flac_sender.cpp
 
     # Exceptions
     src/exception/bragi_exception.cpp

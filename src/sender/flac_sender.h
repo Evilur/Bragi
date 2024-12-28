@@ -3,14 +3,16 @@
 
 #include "opus_sender.h"
 #include "http/http_client.h"
+#include "util/logger.h"
 
 #include <FLAC++/decoder.h>
 #include <fstream>
 #include <speex/speex_resampler.h>
 
-class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
+template<typename F>
+class FlacSender final : private OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* const voiceconn, Track* const track);
+	FlacSender(const dpp::voiceconn* const voiceconn, F* read_buffer);
 
 	~FlacSender();
 
@@ -26,6 +28,9 @@ private:
 	SpeexResamplerState* _resampler = nullptr;
 	std::stringstream _stream;
 	signed long _stream_size = 0;
+	const F* _read_buffer;
 };
+
+#include "flac_sender.tpp"
 
 #endif

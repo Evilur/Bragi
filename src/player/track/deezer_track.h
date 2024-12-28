@@ -17,8 +17,6 @@ public:
 
 	~DeezerTrack();
 
-	bool ReadBuffer(byte* buffer, unsigned long* buffer_size) override;
-
 	dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const override;
 
 	std::string GetTrackData() const override;

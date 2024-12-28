@@ -1,11 +1,6 @@
-#include <iostream>
-#include "flac_sender.h"
-#include "util/logger.h"
-#include "master.h"
-
-#include <speex/speex_resampler.h>
-
-FlacSender::FlacSender(const dpp::voiceconn* const voiceconn, Track* const track) : OpusSender(voiceconn, track), FLAC::Decoder::Stream() {
+template<typename F>
+FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, F* read_buffer)  :
+		OpusSender(voiceconn), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
 	/* Init the flac decoder */
 	this->init();
 
@@ -13,24 +8,28 @@ FlacSender::FlacSender(const dpp::voiceconn* const voiceconn, Track* const track
 	_resampler = speex_resampler_init(2, 44100, 48000, 10, nullptr);
 }
 
-FlacSender::~FlacSender() {
+template<typename F>
+FlacSender<F>::~FlacSender() {
 	/* Destroy the resampler */
 	speex_resampler_destroy(_resampler);
 	_resampler = nullptr;
 }
 
-void FlacSender::Run() {
+template<typename F>
+void FlacSender<F>::Run() {
 	/* Decode all FLAC data and send OPUS to the discord */
 	process_until_end_of_stream();
 	finish();
 }
 
-FLAC__StreamDecoderReadStatus FlacSender::read_callback(FLAC__byte* buffer, size_t* bytes) {
-	if (ReadBuffer(buffer, bytes)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+template<typename F>
+FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(FLAC__byte* buffer, size_t* bytes) {
+	if ((*_read_buffer)(buffer, bytes)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	else return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 }
 
-FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
+template<typename F>
+FLAC__StreamDecoderWriteStatus FlacSender<F>::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
 	unsigned int in_left_size = frame->header.blocksize;
 	unsigned int in_right_size = frame->header.blocksize;
 	short in_left[frame->header.blocksize];
@@ -69,7 +68,8 @@ FLAC__StreamDecoderWriteStatus FlacSender::write_callback(const FLAC__Frame* fra
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-void FlacSender::error_callback(FLAC__StreamDecoderErrorStatus status) {
+template<typename F>
+void FlacSender<F>::error_callback(FLAC__StreamDecoderErrorStatus status) {
 	if (status == 0) return;
 
 	Logger::Fatal("Error while convert a FLAC data to a raw PCM");

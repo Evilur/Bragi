@@ -43,29 +43,6 @@ DeezerTrack::~DeezerTrack() {
 	_http = nullptr;
 }
 
-bool DeezerTrack::ReadBuffer(byte* buffer, unsigned long* buffer_size) {
-	/* Set the chunk size */
-	constexpr int chunk_size = 2048;
-	*buffer_size = chunk_size * 3;
-
-	/* If http steam has ended, or we have aborted the playback */
-	if (!_http->CanRead() || IsAborted()) {
-		*buffer_size = 0;
-		return false;
-	}
-
-	/* Read 3 raw chunks */
-	_http->Read((char*)buffer, *buffer_size);
-
-	/* Set the init vectors */
-	unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
-
-	/* Decrypt the first chunk */
-	BF_cbc_encrypt(buffer, buffer, chunk_size, &_bf_key, ivec, BF_DECRYPT);
-
-	return true;
-}
-
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
 	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_duration));
 	if (is_playing_now) msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _title));
@@ -95,8 +72,31 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	/* Create a new http client */
 	_http = new HttpClient(_encrypted_data_url);
 
+	/* Lambda for reading the track data by buffers */
+	auto read_buffer = [this](byte* buffer, unsigned long* buffer_size) {
+		/* Set the chunk size */
+		constexpr int chunk_size = 2048;
+		*buffer_size = chunk_size * 3;
+
+		/* If http steam has ended, or we have aborted the playback */
+		if (!_http->CanRead() || IsAborted()) {
+			*buffer_size = 0;
+			return false;
+		}
+
+		/* Read 3 raw chunks */
+		_http->Read((char*)buffer, *buffer_size);
+
+		/* Set the init vectors */
+		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
+
+		/* Decrypt the first chunk */
+		BF_cbc_encrypt(buffer, buffer, chunk_size, &_bf_key, ivec, BF_DECRYPT);
+		return true;
+	};
+
 	/* Run the opus sender */
-	FlacSender(voiceconn, this).Run();
+	FlacSender<typeof(read_buffer)>(voiceconn, &read_buffer).Run();
 
 	/* Insert the EOF marker, if not aborted */
 	if (!IsAborted()) voiceconn->voiceclient->insert_marker();

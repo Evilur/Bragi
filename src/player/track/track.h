@@ -21,8 +21,6 @@ public:
 
 	void AsyncPlay(const dpp::voiceconn* voiceconn);
 
-	virtual bool ReadBuffer(byte* buffer, unsigned long* buffer_size) = 0;
-
 	virtual Track* Next() = 0;
 
 protected:
