@@ -14,11 +14,29 @@ void LinkedList<T>::Append(T element) {
 }
 
 template<typename T>
-template<typename IterFunc>
-void LinkedList<T>::Iterate(IterFunc func) {
-	Node* node_ptr = _head;
-	while (node_ptr != nullptr) {
-		func(node_ptr->value);
-		node_ptr = node_ptr->next;
-	}
+LinkedList<T>::Iterator LinkedList<T>::begin() const { return Iterator(_head); }
+
+template<typename T>
+LinkedList<T>::Iterator LinkedList<T>::end() const { return nullptr; }
+
+template<typename T>
+LinkedList<T>::Node::Node(T value) : value(value) { }
+
+template<typename T>
+LinkedList<T>::Iterator::Iterator(LinkedList::Node* node_ptr) : _node(node_ptr) { }
+
+template<typename T>
+bool LinkedList<T>::Iterator::operator!=(const LinkedList::Iterator &other) {
+	return _node != other._node;
+}
+
+template<typename T>
+const T &LinkedList<T>::Iterator::operator*() const {
+	return _node->value;
+}
+
+template<typename T>
+LinkedList<T>::Iterator &LinkedList<T>::Iterator::operator++() {
+	_node = _node->next;
+	return *this;
 }

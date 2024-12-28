@@ -5,17 +5,34 @@
 
 template<typename T>
 class LinkedList final {
+	struct Iterator;
+	struct Node;
 public:
 	void Append(T element);
 
-	template<typename IterFunc>
-	void Iterate(IterFunc func);
+	Iterator begin() const;
+
+	Iterator end() const;
 
 private:
 	struct Node {
-		Node(T value) : value(value) { };
+		Node(T value);
+
 		T value;
 		Node* next = nullptr;
+	};
+
+	struct Iterator {
+		Iterator(LinkedList<T>::Node* node_ptr);
+
+		bool operator!=(const Iterator &other);
+
+		const T &operator*() const;
+
+		Iterator &operator++();
+
+	private:
+		Node* _node;
 	};
 
 	Node* _head = nullptr;
