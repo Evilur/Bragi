@@ -46,6 +46,7 @@ ADD_EXECUTABLE(Bragi
     src/util/json.cpp
     src/util/parser.cpp
     src/command/next.cpp
+    src/util/linked_list.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp)
