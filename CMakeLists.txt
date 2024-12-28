@@ -19,6 +19,7 @@ ADD_EXECUTABLE(Bragi
     src/command/list.cpp
     src/command/loop.cpp
     src/command/skip.cpp
+    src/command/next.cpp
 
     # Discord audio senders
     src/sender/opus_sender.cpp
@@ -44,8 +45,6 @@ ADD_EXECUTABLE(Bragi
     src/util/color.cpp
     src/util/json.cpp
     src/util/parser.cpp
-    src/command/next.cpp
-    src/util/linked_list.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp)

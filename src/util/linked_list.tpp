@@ -1,6 +1,3 @@
-#include "linked_list.h"
-#include "player/guild_player.h"
-
 template<typename T>
 void LinkedList<T>::Append(T element) {
 	/* If the list was empty */
@@ -16,9 +13,12 @@ void LinkedList<T>::Append(T element) {
 	_tail = _tail->next;
 }
 
-/* Use the list only for this types */
-template
-class LinkedList<GuildPlayer*>;
-
-template
-class LinkedList<Track*>;
+template<typename T>
+template<typename IterFunc>
+void LinkedList<T>::Iterate(IterFunc func) {
+	Node* node_ptr = _head;
+	while (node_ptr != nullptr) {
+		func(node_ptr->value);
+		node_ptr = node_ptr->next;
+	}
+}

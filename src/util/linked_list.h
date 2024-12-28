@@ -9,13 +9,7 @@ public:
 	void Append(T element);
 
 	template<typename IterFunc>
-	void Iterate(IterFunc func) {
-		Node* node_ptr = _head;
-		while (node_ptr != nullptr) {
-			func(node_ptr->value);
-			node_ptr = node_ptr->next;
-		}
-	}
+	void Iterate(IterFunc func);
 
 private:
 	struct Node {
@@ -27,5 +21,7 @@ private:
 	Node* _head = nullptr;
 	Node* _tail = nullptr;
 };
+
+#include "linked_list.tpp"
 
 #endif
