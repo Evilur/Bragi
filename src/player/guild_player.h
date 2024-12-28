@@ -2,6 +2,7 @@
 #define BRAGI_GUILD_PLAYER_H
 
 #include "player/track/track.h"
+#include "util/linked_list.h"
 #include "playlist.h"
 
 #include <dpp/dpp.h>
@@ -42,10 +43,7 @@ private:
 	bool IsPlayerReady();
 
 private:
-	static inline constexpr unsigned short PLAYERS_DELTA = 4;
-	static inline unsigned int _max_players_count = PLAYERS_DELTA;
-	static inline unsigned int _players_count = 0;
-	static inline GuildPlayer** _players = new GuildPlayer* [PLAYERS_DELTA];
+	static inline LinkedList<GuildPlayer*> _players;
 	static inline LoopType _loop_type = DISABLED;
 
 	static GuildPlayer* Add(const dpp::snowflake &guild_id);

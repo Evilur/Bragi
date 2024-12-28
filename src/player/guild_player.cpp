@@ -144,34 +144,23 @@ void GuildPlayer::HandleReadyState() {
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
-	/* Try to get the guild in the array */
-	for (unsigned int i = 0; i < _players_count; i++)
-		if (_players[i]->guild_id == guild_id) return _players[i];
+	/* Try to get the guild in the list */
+	for (GuildPlayer* player: _players)
+		if (player->guild_id == guild_id) return player;
 
-	/* If there is not a such guild we need to add it to the array */
+	/* If there is not a such guild player we need to add it to the array */
 	return Add(guild_id);
 }
 
 bool GuildPlayer::IsPlayerReady() { return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready(); }
 
 GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
-	/* Increase the number of guilds */
-	_players_count++;
+	/* Create a new guild player */
+	GuildPlayer* player = new GuildPlayer(guild_id);
 
-	/* Try to get the empty place for the pointer */
-	for (unsigned int i = _max_players_count - PLAYERS_DELTA; i < _max_players_count; i++) {
-		if (_players[i] != nullptr) continue;
-		_players[i] = new GuildPlayer(guild_id);
-		return _players[i];
-	}
+	/* Add it to the list */
+	_players.Append(player);
 
-	/* If the array with pointer is full we need to increase it */
-	auto** new_guilds = new GuildPlayer* [_max_players_count + PLAYERS_DELTA];
-	for (unsigned int i = 0; i < _max_players_count; i++) new_guilds[i] = _players[i];
-	delete[] _players;
-	_players = new_guilds;
-
-	/* Add the new guild to the array */
-	_players[_max_players_count] = new GuildPlayer(guild_id);
-	return _players[_max_players_count += PLAYERS_DELTA];
+	/* Return a new player */
+	return player;
 }
