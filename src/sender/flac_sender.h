@@ -18,17 +18,17 @@ public:
 
 	void Run() override;
 
-	FLAC__StreamDecoderReadStatus read_callback(FLAC__byte* buffer, size_t* bytes) override;
+	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* bytes) override;
 
-	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) override;
+	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const int* const* buffer) override;
 
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	SpeexResamplerState* _resampler = nullptr;
+	SpeexResamplerState* _resampler;
 	std::stringstream _stream;
 	signed long _stream_size = 0;
-	const F* _read_buffer;
+	const F* _read_buffer_func;
 };
 
 #include "flac_sender.tpp"

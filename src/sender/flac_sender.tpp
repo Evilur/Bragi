@@ -1,11 +1,9 @@
 template<typename F>
 FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, F* read_buffer)  :
-		OpusSender(voiceconn), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
+		OpusSender(voiceconn), FLAC::Decoder::Stream(), _read_buffer_func(read_buffer),
+		_resampler(speex_resampler_init(2, 44100, 48000, 10, nullptr)) {
 	/* Init the flac decoder */
 	this->init();
-
-	/* Init the resampler */
-	_resampler = speex_resampler_init(2, 44100, 48000, 10, nullptr);
 }
 
 template<typename F>
@@ -23,13 +21,13 @@ void FlacSender<F>::Run() {
 }
 
 template<typename F>
-FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(FLAC__byte* buffer, size_t* bytes) {
-	if ((*_read_buffer)(buffer, bytes)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(byte* buffer, unsigned long* bytes) {
+	if ((*_read_buffer_func)(buffer, bytes)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	else return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 }
 
 template<typename F>
-FLAC__StreamDecoderWriteStatus FlacSender<F>::write_callback(const FLAC__Frame* frame, const FLAC__int32* const* buffer) {
+FLAC__StreamDecoderWriteStatus FlacSender<F>::write_callback(const FLAC__Frame* frame, const int* const* buffer) {
 	unsigned int in_left_size = frame->header.blocksize;
 	unsigned int in_right_size = frame->header.blocksize;
 	short in_left[frame->header.blocksize];
