@@ -43,7 +43,8 @@ private:
 	bool IsPlayerReady();
 
 private:
-	static inline LinkedList<GuildPlayer*> _players;
+	static constexpr unsigned char OPT_NUMBER = 10;
+	static inline LinkedList<GuildPlayer*> _players[OPT_NUMBER];
 	static inline LoopType _loop_type = DISABLED;
 
 	static GuildPlayer* Add(const dpp::snowflake &guild_id);

@@ -145,7 +145,7 @@ void GuildPlayer::HandleReadyState() {
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the list */
-	for (GuildPlayer* player: _players)
+	for (GuildPlayer* player: _players[guild_id % OPT_NUMBER])
 		if (player->guild_id == guild_id) return player;
 
 	/* If there is not a such guild player we need to add it to the array */
@@ -159,7 +159,7 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	GuildPlayer* player = new GuildPlayer(guild_id);
 
 	/* Add it to the list */
-	_players.Append(player);
+	_players[guild_id % OPT_NUMBER].Append(player);
 
 	/* Return a new player */
 	return player;
