@@ -76,7 +76,6 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	auto read_buffer = [this](byte* buffer, unsigned long* buffer_size) {
 		/* Set the chunk size */
 		constexpr int chunk_size = 2048;
-		*buffer_size = chunk_size * 3;
 
 		/* If http steam has ended, or we have aborted the playback */
 		if (!_http->CanRead() || IsAborted()) {
@@ -85,13 +84,17 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 		}
 
 		/* Read 3 raw chunks */
-		_http->Read((char*)buffer, *buffer_size);
+		_http->Read((char*)buffer, chunk_size * 3);
+
+		/* Set the buffer size according to the recieved data size */
+		*buffer_size = _http->PrevCount();
 
 		/* Set the init vectors */
 		unsigned char ivec[] = { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
 
 		/* Decrypt the first chunk */
-		BF_cbc_encrypt(buffer, buffer, chunk_size, &_bf_key, ivec, BF_DECRYPT);
+		if (*buffer_size >= chunk_size)
+			BF_cbc_encrypt(buffer, buffer, chunk_size, &_bf_key, ivec, BF_DECRYPT);
 		return true;
 	};
 

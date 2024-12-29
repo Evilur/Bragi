@@ -45,6 +45,8 @@ bool HttpClient::CanRead() const { return !_stream->eof(); }
 
 void HttpClient::Read(char* buffer, const int size) { _stream->read(buffer, size); }
 
+int HttpClient::PrevCount() const { return _stream->gcount(); }
+
 const char* HttpClient::ReadAll() {
 	/* If there is a right content size */
 	if (_content_length > 0) {

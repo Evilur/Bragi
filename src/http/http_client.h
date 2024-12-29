@@ -13,6 +13,8 @@ public:
 
 	void Read(char* buffer, int size);
 
+	int PrevCount() const;
+
 	/** Read all http document
 	 * @warning return data is an allocated memory so you need to free it later
 	 * @return a char aray with all http document data

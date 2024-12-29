@@ -70,6 +70,6 @@ template<typename F>
 void FlacSender<F>::error_callback(FLAC__StreamDecoderErrorStatus status) {
 	if (status == 0) return;
 
-	Logger::Fatal("Error while convert a FLAC data to a raw PCM");
-	Logger::Fatal(strerror(status));
+	Logger::Warn("Error while convert a FLAC data to a raw PCM");
+	Logger::Warn(strerror(status));
 }
