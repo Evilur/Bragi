@@ -26,6 +26,13 @@
 #define DIC_SKIP_MSG "**:track_next: Треков пропущено: `{}`**"
 #define DIC_SKIP_WRONG_NUM_FOR_SKIP "**Невозможно пропустить такое количество треков**"
 
+//speed command
+#define DIC_SLASH_SPEED "Изменить скорость воспроизведения трека"
+#define DIC_SLASH_SPEED_PERCENT "Процент скорости воспроизведения"
+#define DIC_SLASH_SPEED_MORE_THAN "**Максимальная скорость - 250%**"
+#define DIC_SLASH_SPEED_LESS_THAN "**Минимальная скорость - 25%**"
+#define DIC_SLASH_SPEED_MSG "**:asterisk: Скорость воспроизведения: `{}%`**"
+
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
 #define DIC_SLASH_LIST_MSG_EMPTY_TITLE "**Плейлист пуст**"

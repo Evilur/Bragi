@@ -45,6 +45,7 @@ ADD_EXECUTABLE(Bragi
     src/util/color.cpp
     src/util/json.cpp
     src/util/parser.cpp
+    src/command/speed.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp)

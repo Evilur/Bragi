@@ -13,6 +13,7 @@
 #include "command/loop.h"
 #include "command/next.h"
 #include "util/path.h"
+#include "command/speed.h"
 
 int main() {
 	/* Init static classes */
@@ -49,6 +50,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	else if (command_name == "loop") Loop::Exec(event);
 	else if (command_name == "ping") Ping::Exec(event);
 	else if (command_name == "join") Join::Exec(event);
+	else if (command_name == "speed") Speed::Exec(event);
 	else if (command_name == "leave") Leave::Exec(event);
 }
 
@@ -69,6 +71,7 @@ void on_message_create(const dpp::message_create_t &event) {
 	else if (command == "loop") Loop::Exec(event, argument);
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
+	else if (command == "sp" || command == "speed") Speed::Exec(event, argument);
 	else if (command == "leave") Leave::Exec(event);
 }
 
@@ -96,7 +99,12 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::slashcommand("play", DIC_SLASH_PLAY, bot->me.id).add_option(dpp::command_option(dpp::co_string, "query", DIC_SLASH_PLAY_QUERY, true)));
 
 	bot->global_command_create(
-			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_SKIP_NUMBER, false)));
+			dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id)
+					.add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_SKIP_NUMBER, false)));
+
+	bot->global_command_create(
+			dpp::slashcommand("speed", DIC_SLASH_SPEED, bot->me.id)
+					.add_option(dpp::command_option(dpp::co_integer, "percent", DIC_SLASH_SPEED_PERCENT, true)));
 
 	bot->global_command_create(
 			dpp::slashcommand("next", DIC_SLASH_NEXT, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_NEXT_ORDINAL, false)));

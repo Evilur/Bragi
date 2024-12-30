@@ -10,14 +10,14 @@ void Skip::Exec(const dpp::slashcommand_t &event) {
 	dpp::command_value num_for_skip_par = event.get_parameter("number");
 	if (num_for_skip_par.index() != 0) num_for_skip = std::get<long>(num_for_skip_par);
 
-	/* Send the message to the channel */
+	/* Reply the slash command */
 	try { event.reply(Exec(event.command.guild_id, event.command.channel_id, num_for_skip)); }
 	catch (BragiException &exception) { event.reply(exception.Message()); }
 }
 
 void Skip::Exec(const dpp::message_create_t &event, const std::string &argument) {
 	/* Get number of tracks for skip (if exists) */
-	unsigned short num_for_skip = argument.empty() ? 1 : Parser::ToUInt16(argument.c_str() + argument.find_first_not_of(' '));
+	const unsigned short num_for_skip = argument.empty() ? 1 : Parser::ToUInt16(argument.c_str() + argument.find_first_not_of(' '));
 
 	/* Send the message to the channel */
 	try { event.send(Exec(event.msg.guild_id, event.msg.channel_id, num_for_skip)); }
