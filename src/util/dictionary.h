@@ -45,9 +45,9 @@
 #define DIC_SLASH_NEXT_PLAYLIST_EMPTY "**Плейлист пуст**"
 
 //loop command
-#define DIC_SLASH_LOOP "Включить/выключить повторение треков"
+#define DIC_SLASH_LOOP "Включить/выключить повторение"
 #define DIC_SLASH_LOOP_TYPE "Тип повторения"
-#define DIC_SLASH_LOOP_TYPE_DISABLED "**:arrow_right: Повторение треков выключено**"
+#define DIC_SLASH_LOOP_TYPE_DISABLED "**:arrow_right: Повторение выключено**"
 #define DIC_SLASH_LOOP_TYPE_TRACK "**:repeat_one: Включено повторение трека**"
 #define DIC_SLASH_LOOP_TYPE_PLAYLIST "**:repeat: Включено повторение плейлиста**"
 
