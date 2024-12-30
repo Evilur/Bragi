@@ -12,9 +12,7 @@
 template<typename F>
 class FlacSender final : private OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* const voiceconn, F* read_buffer);
-
-	~FlacSender();
+	FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, F* read_buffer);
 
 	void Run() override;
 
@@ -25,7 +23,6 @@ public:
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	SpeexResamplerState* _resampler;
 	std::stringstream _stream;
 	signed long _stream_size = 0;
 	const F* _read_buffer_func;

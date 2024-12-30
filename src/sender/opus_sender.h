@@ -5,6 +5,7 @@
 #include "player/track/track.h"
 
 #include <dpp/discordclient.h>
+#include <speex/speex_resampler.h>
 
 class OpusSender {
 public:
@@ -14,7 +15,7 @@ public:
 	static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS * sizeof(short);
 	static constexpr int OPUS_CHUNK_SIZE = 1024;
 
-	OpusSender(const dpp::voiceconn* const voiceconn);
+	OpusSender(const dpp::voiceconn* const voiceconn, const byte speed_percent);
 
 	virtual ~OpusSender();
 
@@ -22,6 +23,7 @@ public:
 
 protected:
 	OpusEncoder* _encoder = nullptr;
+	SpeexResamplerState* _resampler;
 	const dpp::voiceconn* const _voiceconn;
 };
 

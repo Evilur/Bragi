@@ -19,6 +19,8 @@ public:
 
 	dpp::message Skip(const dpp::snowflake &channel_id, const unsigned short num_for_skip);
 
+	dpp::message SetSpeed(const dpp::snowflake &channel_id, const byte speed_percent);
+
 	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
 
 	dpp::message Loop(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
@@ -33,14 +35,15 @@ public:
 
 	void HandleMarker();
 
-public:
-	static GuildPlayer* Get(const dpp::snowflake &guild_id);
-
 private:
 	const dpp::voiceconn* _voiceconn = nullptr;
+	byte _speed_percent = 100;
 	Playlist _playlist;
 
 	bool IsPlayerReady();
+
+public:
+	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 
 private:
 	static constexpr unsigned char OPT_NUMBER = 10;

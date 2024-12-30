@@ -99,7 +99,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	};
 
 	/* Run the opus sender */
-	FlacSender<typeof(read_buffer)>(voiceconn, &read_buffer).Run();
+	FlacSender<typeof(read_buffer)>(voiceconn, GetSpeed(), &read_buffer).Run();
 
 	/* Insert the EOF marker, if not aborted */
 	if (!IsAborted()) voiceconn->voiceclient->insert_marker();

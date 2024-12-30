@@ -13,7 +13,7 @@ dpp::message GuildPlayer::HandleTrack(const dpp::snowflake &user_id, const dpp::
 	/* If player is ready */
 	if (IsPlayerReady()) {
 		_playlist.Add(track);  //Add a track to the playlist
-		if (need_to_play_first_track) track->AsyncPlay(_voiceconn);  //Play the current track
+		if (need_to_play_first_track) track->AsyncPlay(_voiceconn, _speed_percent);  //Play the current track
 		return result_msg;  //Return the track message
 	}
 
@@ -34,13 +34,21 @@ dpp::message GuildPlayer::Skip(const dpp::snowflake &channel_id, const unsigned 
 	unsigned short num_of_skipped = _playlist.Skip(num_for_skip);
 
 	/* Stop the audio and clear the packet queue */
-	_voiceconn->voiceclient->stop_audio();
+	if (IsPlayerReady()) _voiceconn->voiceclient->stop_audio();
 
 	/* If the playlist isn't empty, play the next track */
-	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn, _speed_percent);
 
 	/* Return the message */
 	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_of_skipped));
+}
+
+dpp::message GuildPlayer::SetSpeed(const dpp::snowflake &channel_id, const byte speed_percent) {
+	/* Set the speed percent */
+	_speed_percent = speed_percent;
+
+	/* Return a message */
+	return dpp::message(channel_id, std::format(DIC_SLASH_SPEED_MSG, speed_percent));
 }
 
 dpp::message GuildPlayer::PlaylistMessage(const dpp::snowflake &channel_id) { return _playlist.Message(channel_id); }
@@ -73,7 +81,7 @@ dpp::message GuildPlayer::Next(const dpp::snowflake &channel_id, unsigned short 
 	/* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
 	if (is_playing) {
 		_voiceconn->voiceclient->stop_audio();
-		next_track->AsyncPlay(_voiceconn);
+		next_track->AsyncPlay(_voiceconn, _speed_percent);
 	}
 
 	/* Return the message */
@@ -118,19 +126,19 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 
 void GuildPlayer::HandleMarker() {
 	/* Check the loop type */
-	if (_loop_type == TRACK) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	if (_loop_type == TRACK) _playlist.CurrentTrack()->AsyncPlay(_voiceconn, _speed_percent);
 	else if (_loop_type == PLAYLIST) {
 		/* Move the first track to the end of the playlist */
 		_playlist.RepeatPlaylist();
 
 		/* Play the next track */
-		_playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+		_playlist.CurrentTrack()->AsyncPlay(_voiceconn, _speed_percent);
 	} else {
 		/* Handle the playlist eof */
 		_playlist.HandleEof();
 
 		/* If the playlist isn't empty, play the next track */
-		if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+		if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn, _speed_percent);
 	}
 }
 
@@ -140,7 +148,7 @@ void GuildPlayer::HandleReadyState() {
 	_voiceconn->voiceclient->set_send_audio_type(dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
 	/* If we need to play the first track */
-	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn);
+	if (!_playlist.IsEmpty()) _playlist.CurrentTrack()->AsyncPlay(_voiceconn, _speed_percent);
 }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {

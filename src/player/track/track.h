@@ -19,7 +19,7 @@ public:
 
 	void Abort();
 
-	void AsyncPlay(const dpp::voiceconn* voiceconn);
+	void AsyncPlay(const dpp::voiceconn* voiceconn, const byte speed_percent);
 
 	virtual Track* Next() = 0;
 
@@ -28,11 +28,14 @@ protected:
 
 	virtual void Play(const dpp::voiceconn* voiceconn) = 0;
 
+	const byte &GetSpeed() const;
+
 	bool IsAborted();
 
 private:
 	std::thread* _play_thread = nullptr;
 	bool _is_aborted = false;
+	byte _speed_percent = 100;
 };
 
 #endif

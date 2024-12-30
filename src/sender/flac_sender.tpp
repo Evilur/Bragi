@@ -1,16 +1,8 @@
 template<typename F>
-FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, F* read_buffer)  :
-		OpusSender(voiceconn), FLAC::Decoder::Stream(), _read_buffer_func(read_buffer),
-		_resampler(speex_resampler_init(2, 44100, 48000, 10, nullptr)) {
+FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, F* read_buffer)  :
+		OpusSender(voiceconn, speed_percent), FLAC::Decoder::Stream(), _read_buffer_func(read_buffer) {
 	/* Init the flac decoder */
 	this->init();
-}
-
-template<typename F>
-FlacSender<F>::~FlacSender() {
-	/* Destroy the resampler */
-	speex_resampler_destroy(_resampler);
-	_resampler = nullptr;
 }
 
 template<typename F>
