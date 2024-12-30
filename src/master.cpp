@@ -111,9 +111,9 @@ void on_ready(const dpp::ready_t &event) {
 
 	bot->global_command_create(dpp::slashcommand("loop", DIC_SLASH_LOOP, bot->me.id).add_option(
 			dpp::command_option(dpp::co_string, "type", DIC_SLASH_LOOP_TYPE, false)
-					.add_choice(dpp::command_option_choice("Disabled", "loop_disabled"))
-					.add_choice(dpp::command_option_choice("Track", "loop_track"))
-					.add_choice(dpp::command_option_choice("Playlist", "loop_playlist"))));
+					.add_choice(dpp::command_option_choice("Disabled", "d"))
+					.add_choice(dpp::command_option_choice("Track", "t"))
+					.add_choice(dpp::command_option_choice("Playlist", "p"))));
 
 	bot->global_command_create(dpp::slashcommand("list", DIC_SLASH_LIST, bot->me.id));
 

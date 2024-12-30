@@ -16,9 +16,9 @@ void Loop::Exec(const dpp::slashcommand_t &event) {
 	const std::string loop_type_str = std::get<std::string>(loop_type_par);
 
 	/* Send the message to the channel */
-	if (loop_type_str == "loop_track")
+	if (loop_type_str == "t")
 		return event.reply(GuildPlayer::Get(event.command.guild_id)->Loop(event.command.channel_id, GuildPlayer::LoopType::TRACK));
-	else if (loop_type_str == "loop_playlist")
+	else if (loop_type_str == "p")
 		return event.reply(GuildPlayer::Get(event.command.guild_id)->Loop(event.command.channel_id, GuildPlayer::LoopType::PLAYLIST));
 	else
 		return event.reply(GuildPlayer::Get(event.command.guild_id)->Loop(event.command.channel_id, GuildPlayer::LoopType::DISABLED));
