@@ -17,10 +17,7 @@ void Track::Abort() {
 }
 
 void Track::AsyncPlay(const dpp::voiceconn* voiceconn, const byte speed_percent) {
-	_speed_percent = speed_percent;
-	_play_thread = new std::thread(&Track::Play, this, voiceconn);
+	_play_thread = new std::thread(&Track::Play, this, voiceconn, speed_percent);
 }
 
-bool Track::IsAborted() { return _is_aborted; }
-
-const byte &Track::GetSpeed() const { return _speed_percent; }
+bool Track::IsAborted() const { return _is_aborted; }

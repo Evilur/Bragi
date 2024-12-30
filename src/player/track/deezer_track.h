@@ -21,7 +21,7 @@ public:
 
 	std::string GetTrackData() const override;
 
-	Track* Next() override;
+	Track* Next() const override;
 
 private:
 	/* Ids */
@@ -50,7 +50,7 @@ private:
 	std::thread* _init_thread = nullptr;
 	HttpClient* _http = nullptr;
 
-	void Play(const dpp::voiceconn* voiceconn) override;
+	void Play(const dpp::voiceconn* voiceconn, const byte speed_percent) override;
 
 	void GetKey(unsigned char* buffer);
 };

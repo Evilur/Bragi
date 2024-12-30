@@ -60,12 +60,12 @@ dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snow
 
 std::string DeezerTrack::GetTrackData() const { return std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _title, _artist_name); }
 
-Track* DeezerTrack::Next() {
+Track* DeezerTrack::Next() const {
 	if (_next >= _total) return nullptr;
 	return DeezerClient::Search(_next_query, _next);
 }
 
-void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
+void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent) {
 	/* Wait for initialization */
 	if (_init_thread->joinable()) _init_thread->join();
 
@@ -99,7 +99,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn) {
 	};
 
 	/* Run the opus sender */
-	FlacSender<typeof(read_buffer)>(voiceconn, GetSpeed(), &read_buffer).Run();
+	FlacSender<typeof(read_buffer)>(voiceconn, speed_percent, &read_buffer).Run();
 
 	/* Insert the EOF marker, if not aborted */
 	if (!IsAborted()) voiceconn->voiceclient->insert_marker();
