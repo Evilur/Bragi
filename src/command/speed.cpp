@@ -6,7 +6,9 @@
 
 void Speed::Exec(const dpp::slashcommand_t &event) {
 	/* Get the track speed in percents */
-	const long speed_percent = std::get<long>(event.get_parameter("percent"));
+	long speed_percent = 100;
+	dpp::command_value speed_percent_par = event.get_parameter("percent");
+	if (speed_percent_par.index() != 0) speed_percent = std::get<long>(speed_percent_par);
 
 	/* Reply the slash command */
 	try { event.reply(Exec(event.command.guild_id, event.command.channel_id, speed_percent)); }

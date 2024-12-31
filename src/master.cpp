@@ -104,7 +104,7 @@ void on_ready(const dpp::ready_t &event) {
 
 	bot->global_command_create(
 			dpp::slashcommand("speed", DIC_SLASH_SPEED, bot->me.id)
-					.add_option(dpp::command_option(dpp::co_integer, "percent", DIC_SLASH_SPEED_PERCENT, true)));
+					.add_option(dpp::command_option(dpp::co_integer, "percent", DIC_SLASH_SPEED_PERCENT, false)));
 
 	bot->global_command_create(
 			dpp::slashcommand("next", DIC_SLASH_NEXT, bot->me.id).add_option(dpp::command_option(dpp::co_integer, "number", DIC_SLASH_NEXT_ORDINAL, false)));
