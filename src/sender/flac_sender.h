@@ -16,15 +16,13 @@ public:
 
 	void Run() override;
 
-	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* bytes) override;
+	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* buffer_size) override;
 
 	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const int* const* buffer) override;
 
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
 
 private:
-	std::stringstream _stream;
-	signed long _stream_size = 0;
 	const F* _read_buffer_func;
 };
 
