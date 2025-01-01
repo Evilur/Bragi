@@ -1,5 +1,7 @@
 #include "opus_sender.h"
 
+#include <unistd.h>
+
 OpusSender::OpusSender(const dpp::voiceconn* const voiceconn, const byte speed_percent) :
 		_voiceconn(voiceconn), _resampler_output_freq(FREQ * 100 / speed_percent) {
 	_encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
@@ -23,9 +25,15 @@ void OpusSender::SendData(const short* in_left, const short* in_right, const uns
 	short out_left[out_left_size], out_right[out_right_size];
 
 	/* Resample input data and put the result to the output arrays */
-	unsigned int in_left_size = in_size, in_right_size = in_size;
-	speex_resampler_process_int(_resampler, 0, in_left, &in_left_size, out_left, &out_left_size);
-	speex_resampler_process_int(_resampler, 1, in_right, &in_right_size, out_right, &out_right_size);
+	{
+		unsigned int in_left_size = in_size, in_right_size = in_size;
+		speex_resampler_process_int(_resampler, 0, in_left, &in_left_size, out_left, &out_left_size);
+		speex_resampler_process_int(_resampler, 1, in_right, &in_right_size, out_right, &out_right_size);
+	}
+
+	/* If we have at least 30 secs in the queue */
+	if (_voiceconn->voiceclient->get_secs_remaining() > 30)
+		usleep(5000000);  //Sleep 5 secs before sending the new data
 
 	/* Read the data and send it to the discord */
 	for (int i = 0; i < out_left_size; i++) {
