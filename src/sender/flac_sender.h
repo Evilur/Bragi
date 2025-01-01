@@ -16,14 +16,14 @@ public:
 
 	void Run() override;
 
+private:
+	const F* _read_buffer_func;
+
 	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* buffer_size) override;
 
 	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const int* const* buffer) override;
 
 	void error_callback(FLAC__StreamDecoderErrorStatus status) override;
-
-private:
-	const F* _read_buffer_func;
 };
 
 #include "flac_sender.tpp"
