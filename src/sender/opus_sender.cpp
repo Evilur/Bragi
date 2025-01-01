@@ -33,15 +33,15 @@ void OpusSender::SendData(const short* in_left, const short* in_right, const uns
 		*_pcm_buffer_ptr++ = out_left[i];
 		*_pcm_buffer_ptr++ = out_right[i];
 
-		/* If we have eniugh, send the data to the discod */
-		if (_pcm_buffer_ptr == _pcm_buffer_end) {
-			/* Convert ot OPUS and send the data to the discord */
-			unsigned char opus_buffer[OPUS_CHUNK_SIZE];
-			int len = opus_encode(_encoder, _pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
-			_voiceconn->voiceclient->send_audio_opus(opus_buffer, len, 60);
+		/* If we have enough, send the data to the discod */
+		if (_pcm_buffer_ptr != _pcm_buffer_end) continue;
 
-			/* Reset the pointer */
-			_pcm_buffer_ptr = _pcm_buffer;
-		}
+		/* Convert ot OPUS and send the data to the discord */
+		unsigned char opus_buffer[OPUS_CHUNK_SIZE];
+		int len = opus_encode(_encoder, _pcm_buffer, FRAME_SIZE, opus_buffer, OPUS_CHUNK_SIZE);
+		_voiceconn->voiceclient->send_audio_opus(opus_buffer, len, 60);
+
+		/* Reset the pointer */
+		_pcm_buffer_ptr = _pcm_buffer;
 	}
 }
