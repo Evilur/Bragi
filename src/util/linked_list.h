@@ -10,13 +10,19 @@ class LinkedList final {
 public:
 	~LinkedList();
 
+	T &Head();
+
 	void Push(T element);
 
 	void PopFront();
 
 	void PopFront(unsigned int count);
 
+	void PopFront(unsigned int count, void(*eval_value)(T));
+
 	void Remove(unsigned int index, unsigned int count = 1);
+
+	void Remove(unsigned int index, unsigned int count, void(*eval_value)(T));
 
 	T &operator[](unsigned int index) const;
 
