@@ -8,7 +8,17 @@ class LinkedList final {
 	struct Iterator;
 	struct Node;
 public:
+	~LinkedList();
+
 	void Append(T element);
+
+	void PopFront();
+
+	void PopFront(unsigned int count);
+
+	void Remove(unsigned int index, unsigned int count = 1);
+
+	T &operator[](unsigned int index) const;
 
 	Iterator begin() const;
 
