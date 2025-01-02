@@ -3,8 +3,9 @@
 template<typename T>
 LinkedList<T>::~LinkedList() {
 	while (_head != nullptr) {
-		delete _head;
+		Node* temp_node = _head;
 		_head = _head->next;
+		delete temp_node;
 	}
 }
 
@@ -25,6 +26,7 @@ void LinkedList<T>::Push(T element) {
 
 template<typename T>
 void LinkedList<T>::PopFront() {
+	if (_head == nullptr) throw std::runtime_error("LinkedList: PopFront() index out of range");
 	Node* unnes_node = _head;
 	_head = _head->next;
 	delete unnes_node;
@@ -33,6 +35,7 @@ void LinkedList<T>::PopFront() {
 template<typename T>
 void LinkedList<T>::PopFront(unsigned int count) {
 	while (count-- > 0) {
+		if (_head == nullptr) throw std::runtime_error("LinkedList: PopFront(unsigned int) index out of range");
 		Node* unnes_node = _head;
 		_head = _head->next;
 		delete unnes_node;
@@ -51,13 +54,13 @@ void LinkedList<T>::Remove(unsigned int index, unsigned int count) {
 	Node* node_before = _head;
 	while (index-- > 1) {
 		node_before = node_before->next;
-		if (!node_before) throw std::runtime_error("LinkedList: index out of range");
+		if (!node_before) throw std::runtime_error("LinkedList: Remove(unsigned int, unsigned int) index out of range");
 	}
 
 	/* Get the first node after deletions, and delete others */
 	Node* node_after = node_before->next;
 	while (count-- > 0) {
-		if (!node_after) throw std::runtime_error("LinkedList: index out of range");
+		if (!node_after) throw std::runtime_error("LinkedList: Remove(unsigned int, unsigned int) index out of range");
 		Node* unnes_node = node_after;
 		node_after = node_after->next;
 		delete unnes_node;
@@ -72,7 +75,7 @@ T &LinkedList<T>::operator[](unsigned int index) const {
 	Node* node_ptr = _head;
 	while (index-- > 0) {
 		node_ptr = node_ptr->next;
-		if (!node_ptr) throw std::runtime_error("LinkedList: index out of range");
+		if (!node_ptr) throw std::runtime_error("LinkedList: operator[](unsigned int) index out of range");
 	}
 	return node_ptr->value;
 }
