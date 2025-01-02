@@ -35,5 +35,5 @@ dpp::message Play::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &us
 	if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND, channel_id, SOFT);
 
 	/* Play the track or add it to the playlist */
-	return GuildPlayer::Get(guild_id)->HandleTrack(user_id, channel_id, track);
+	return GuildPlayer::Get(guild_id)->PlayCommand(user_id, channel_id, track);
 }

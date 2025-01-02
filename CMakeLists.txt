@@ -20,6 +20,7 @@ ADD_EXECUTABLE(Bragi
     src/command/loop.cpp
     src/command/skip.cpp
     src/command/next.cpp
+    src/command/speed.cpp
 
     # Discord audio senders
     src/sender/opus_sender.cpp
@@ -36,7 +37,6 @@ ADD_EXECUTABLE(Bragi
     src/player/track/deezer_track.cpp
     src/player/track/track.cpp
     src/player/guild_player.cpp
-    src/player/playlist.cpp
 
     # Some different utils
     src/util/logger.cpp
@@ -45,7 +45,6 @@ ADD_EXECUTABLE(Bragi
     src/util/color.cpp
     src/util/json.cpp
     src/util/parser.cpp
-    src/command/speed.cpp
 )
 
 TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp)

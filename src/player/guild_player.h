@@ -3,7 +3,6 @@
 
 #include "player/track/track.h"
 #include "util/linked_list.h"
-#include "playlist.h"
 
 #include <dpp/dpp.h>
 
@@ -15,32 +14,35 @@ public:
 
 	explicit GuildPlayer(const dpp::snowflake &guild_id);
 
-	dpp::message HandleTrack(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
+	dpp::message PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
-	dpp::message Skip(const dpp::snowflake &channel_id, const unsigned short num_for_skip);
+	dpp::message SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip);
 
-	dpp::message SetSpeed(const dpp::snowflake &channel_id, const byte speed_percent);
+	dpp::message SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent);
 
-	dpp::message PlaylistMessage(const dpp::snowflake &channel_id);
+	dpp::message ListCommand(const dpp::snowflake &channel_id);
 
-	dpp::message Loop(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
+	dpp::message LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
 
-	dpp::message Next(const dpp::snowflake &channel_id, const unsigned short track_ordinal);
+	dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
 
-	dpp::message Leave(const dpp::snowflake &channel_id);
+	dpp::message LeaveCommand(const dpp::snowflake &channel_id);
 
-	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	std::string JoinCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 
 	void HandleReadyState();
 
 	void HandleMarker();
 
 private:
+	LinkedList<Track*> _tracks;
+	unsigned short _tracks_size = 0;
 	const dpp::voiceconn* _voiceconn = nullptr;
 	byte _speed_percent = 100;
-	Playlist _playlist;
 
 	bool IsPlayerReady();
+
+	inline bool IsEmpty() const;
 
 public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);

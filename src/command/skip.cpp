@@ -25,5 +25,5 @@ void Skip::Exec(const dpp::message_create_t &event, const std::string &argument)
 }
 
 dpp::message Skip::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const unsigned short num_for_skip) {
-	return GuildPlayer::Get(guild_id)->Skip(channel_id, num_for_skip);
+	return GuildPlayer::Get(guild_id)->SkipCommand(channel_id, num_for_skip);
 }

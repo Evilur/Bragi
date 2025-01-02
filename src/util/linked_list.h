@@ -8,21 +8,19 @@ class LinkedList final {
 	struct Iterator;
 	struct Node;
 public:
+	typedef void(*FreeElement)(T);
+
 	~LinkedList();
 
 	T &Head();
 
 	void Push(T element);
 
-	void PopFront();
+	void PopFront(const FreeElement free_element = FreeElementPlaceholder);
 
-	void PopFront(unsigned int count);
+	void PopFront(unsigned int count, const FreeElement free_element = FreeElementPlaceholder);
 
-	void PopFront(unsigned int count, void(*eval_value)(T));
-
-	void Remove(unsigned int index, unsigned int count = 1);
-
-	void Remove(unsigned int index, unsigned int count, void(*eval_value)(T));
+	void Remove(unsigned int index, unsigned int count = 1, const FreeElement free_element = FreeElementPlaceholder);
 
 	T &operator[](unsigned int index) const;
 
@@ -32,7 +30,7 @@ public:
 
 private:
 	struct Node {
-		Node(T value);
+		Node(const T &value);
 
 		T value;
 		Node* next = nullptr;
@@ -53,6 +51,8 @@ private:
 
 	Node* _head = nullptr;
 	Node* _tail = nullptr;
+
+	inline static void FreeElementPlaceholder(T);
 };
 
 #include "linked_list.tpp"
