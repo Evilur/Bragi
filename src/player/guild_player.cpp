@@ -167,7 +167,7 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	GuildPlayer* player = new GuildPlayer(guild_id);
 
 	/* Add it to the list */
-	_players[guild_id % OPT_NUMBER].Append(player);
+	_players[guild_id % OPT_NUMBER].Push(player);
 
 	/* Return a new player */
 	return player;

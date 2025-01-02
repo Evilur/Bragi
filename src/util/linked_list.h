@@ -10,7 +10,7 @@ class LinkedList final {
 public:
 	~LinkedList();
 
-	void Append(T element);
+	void Push(T element);
 
 	void PopFront();
 

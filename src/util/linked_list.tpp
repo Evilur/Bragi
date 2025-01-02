@@ -9,7 +9,7 @@ LinkedList<T>::~LinkedList() {
 }
 
 template<typename T>
-void LinkedList<T>::Append(T element) {
+void LinkedList<T>::Push(T element) {
 	/* If the list was empty */
 	if (!_head) {
 		_head = new Node(element);
