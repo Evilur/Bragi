@@ -26,9 +26,9 @@ public:
 
 	dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
 
-	dpp::message LeaveCommand(const dpp::snowflake &channel_id);
+	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
 
-	std::string JoinCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+	std::string Leave(const dpp::snowflake &channel_id);
 
 	void HandleReadyState();
 

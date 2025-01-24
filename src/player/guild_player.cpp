@@ -23,7 +23,7 @@ dpp::message GuildPlayer::PlayCommand(const dpp::snowflake &user_id, const dpp::
 	}
 
 	/* If player is not ready */
-	result_msg.content.insert(0, JoinCommand(user_id, channel_id) + '\n');  //Join to the channel and insert the message to the result message
+	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert the message to the result message
 
 	/* Add a track to the playlist (if we successfully joined the channel) */
 	_tracks.Push(track);
@@ -127,17 +127,7 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 	return next_track->GetMessage(is_playing, channel_id);
 }
 
-dpp::message GuildPlayer::LeaveCommand(const dpp::snowflake &channel_id) {
-	/* If the bot isn't in a voice channel */
-	if (_voiceconn == nullptr)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
-
-	ds_client->disconnect_voice(guild_id);
-	_voiceconn = nullptr;
-	return dpp::message(channel_id, DIC_LEFT);
-}
-
-std::string GuildPlayer::JoinCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get voice channels */
 	dpp::guild* guild = dpp::find_guild(guild_id);
 	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
@@ -161,6 +151,16 @@ std::string GuildPlayer::JoinCommand(const dpp::snowflake &user_id, const dpp::s
 	/* If all is OK */
 	ds_client->connect_voice(guild_id, user_vc->id);
 	return std::format(DIC_JOINED, user_vc->name);
+}
+
+std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
+	/* If the bot isn't in a voice channel */
+	if (_voiceconn == nullptr)
+		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
+
+	ds_client->disconnect_voice(guild_id);
+	_voiceconn = nullptr;
+	return DIC_LEFT;
 }
 
 void GuildPlayer::HandleMarker() {
