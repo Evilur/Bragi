@@ -4,6 +4,7 @@
 #include <dpp/dpp.h>
 #include <string>
 #include "master.h"
+#include "sender/opus_sender.h"
 
 class Track {
 public:
@@ -24,15 +25,15 @@ public:
 	virtual Track* Next() const = 0;
 
 protected:
-	const unsigned short _duration;
+	const unsigned short duration;
 
 	virtual void Play(const dpp::voiceconn* voiceconn, const byte speed_percent) = 0;
 
-	bool IsAborted() const;
+	void SetSender(OpusSender* sender);
 
 private:
 	std::thread* _play_thread = nullptr;
-	bool _is_aborted = false;
+	OpusSender* _sender = nullptr;
 };
 
 #endif

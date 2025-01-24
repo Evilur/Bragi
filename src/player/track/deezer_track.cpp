@@ -44,7 +44,7 @@ DeezerTrack::~DeezerTrack() {
 }
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const {
-	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_duration));
+	std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(duration));
 	if (is_playing_now) msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _title));
 	else msg_body.insert(0, std::format(DIC_TRACK_ADD_TO_PLAYLIST, _title));
 
@@ -78,7 +78,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent
 		constexpr int chunk_size = 2048;
 
 		/* If http steam has ended, or we have aborted the playback */
-		if (!_http->CanRead() || IsAborted()) {
+		if (!_http->CanRead()) {
 			*buffer_size = 0;
 			return false;
 		}
@@ -98,15 +98,8 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent
 		return true;
 	};
 
-	/* Run the opus sender */
-	FlacSender<typeof(read_buffer)>(voiceconn, speed_percent, &read_buffer).Run();
-
-	/* Insert the EOF marker, if not aborted */
-	if (!IsAborted()) voiceconn->voiceclient->insert_marker();
-
-	/* Delete the http client */
-	delete _http;
-	_http = nullptr;
+	/* Set the opus sender */
+	SetSender(new FlacSender(voiceconn, speed_percent, &read_buffer));
 }
 
 void DeezerTrack::GetKey(unsigned char* buffer) {

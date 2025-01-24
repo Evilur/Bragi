@@ -2,7 +2,7 @@
 #define BRAGI_OPUS_SENDER_H
 
 #include "opus/opus.h"
-#include "player/track/track.h"
+#include "master.h"
 
 #include <dpp/discordclient.h>
 #include <speex/speex_resampler.h>
@@ -15,8 +15,14 @@ public:
 
 	virtual void Run() = 0;
 
+	void Abort();
+
+	bool IsAborted() const;
+
 protected:
 	void SendData(const short* in_left, const short* in_right, const unsigned short in_size);
+
+	void InsertEOF();
 
 private:
 	static constexpr int FREQ = 48000;
@@ -27,10 +33,11 @@ private:
 	static constexpr int RESAMPLER_INPUT_FREQ = 44100;
 	const int _resampler_output_freq;
 
+	bool _is_aborted = false;
 	short _pcm_buffer[PCM_CHUNK_SIZE];
 	short* _pcm_buffer_ptr = _pcm_buffer;
-	const short* const _pcm_buffer_end = _pcm_buffer + PCM_CHUNK_SIZE;
 
+	const short* const _pcm_buffer_end = _pcm_buffer + PCM_CHUNK_SIZE;
 	const dpp::voiceconn* const _voiceconn;
 	SpeexResamplerState* _resampler;
 	OpusEncoder* _encoder;

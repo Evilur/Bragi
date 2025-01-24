@@ -1,4 +1,5 @@
 #include "opus_sender.h"
+#include "util/logger.h"
 
 #include <unistd.h>
 
@@ -18,9 +19,15 @@ OpusSender::~OpusSender() {
 	_resampler = nullptr;
 }
 
+void OpusSender::Abort() { _is_aborted = true; }
+
+bool OpusSender::IsAborted() const { return _is_aborted; }
+
 void OpusSender::SendData(const short* in_left, const short* in_right, const unsigned short in_size) {
-	/* Init arrays for output (resampled) data */
+	/* Get the output pcm array size with some extra space for overflow protection */
 	const unsigned int out_size = in_size * _resampler_output_freq / RESAMPLER_INPUT_FREQ + 64;
+
+	/* Init arrays for output (resampled) data */
 	unsigned int out_left_size = out_size, out_right_size = out_size;
 	short out_left[out_left_size], out_right[out_right_size];
 
@@ -31,10 +38,6 @@ void OpusSender::SendData(const short* in_left, const short* in_right, const uns
 		speex_resampler_process_int(_resampler, 1, in_right, &in_right_size, out_right, &out_right_size);
 	}
 
-	/* If we have at least 30 secs in the queue */
-	if (_voiceconn->voiceclient->get_secs_remaining() > 30)
-		usleep(5000000);  //Sleep 5 secs before sending the new data
-
 	/* Read the data and send it to the discord */
 	for (int i = 0; i < out_left_size; i++) {
 		/* Read the data */
@@ -42,7 +45,7 @@ void OpusSender::SendData(const short* in_left, const short* in_right, const uns
 		*_pcm_buffer_ptr++ = out_right[i];
 
 		/* If we have enough, send the data to the discod */
-		if (_pcm_buffer_ptr != _pcm_buffer_end) continue;
+		if (_pcm_buffer_ptr < _pcm_buffer_end) continue;
 
 		/* Convert ot OPUS and send the data to the discord */
 		unsigned char opus_buffer[OPUS_CHUNK_SIZE];
@@ -52,4 +55,9 @@ void OpusSender::SendData(const short* in_left, const short* in_right, const uns
 		/* Reset the pointer */
 		_pcm_buffer_ptr = _pcm_buffer;
 	}
+}
+
+void OpusSender::InsertEOF() {
+	/* Insert the EOF marker, if not aborted */
+	if (!_is_aborted) _voiceconn->voiceclient->insert_marker();
 }

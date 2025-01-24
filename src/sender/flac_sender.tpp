@@ -1,6 +1,6 @@
 template<typename F>
-FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, F* read_buffer)  :
-		OpusSender(voiceconn, speed_percent), FLAC::Decoder::Stream(), _read_buffer_func(read_buffer) {
+FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, const F* const read_buffer)  :
+		OpusSender(voiceconn, speed_percent), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
 	/* Init the flac decoder */
 	this->init();
 }
@@ -10,11 +10,12 @@ void FlacSender<F>::Run() {
 	/* Decode all FLAC data and send OPUS to the discord */
 	process_until_end_of_stream();
 	finish();
+	InsertEOF();
 }
 
 template<typename F>
 FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(byte* buffer, unsigned long* buffer_size) {
-	if ((*_read_buffer_func)(buffer, buffer_size)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+	if ((*_read_buffer)(buffer, buffer_size) && !IsAborted()) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	else return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 }
 
@@ -29,7 +30,9 @@ FLAC__StreamDecoderWriteStatus FlacSender<F>::write_callback(const FLAC__Frame* 
 
 	/* Send the data to the discord */
 	SendData(in_left, in_right, frame->header.blocksize);
-	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+
+	if (IsAborted()) return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+	else return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
 template<typename F>

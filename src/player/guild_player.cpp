@@ -39,7 +39,7 @@ dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned
 	if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, SOFT);
 
 	/* Stop the audio and clear the packet queue */
-	_tracks.Head()->Abort();  //TODO: FIX THE LONG EXECUTION OF THIS LINE
+	_tracks.Head()->Abort();
 	if (IsPlayerReady()) _voiceconn->voiceclient->stop_audio();
 
 	/* Get the current track number for skip */
@@ -179,6 +179,7 @@ void GuildPlayer::HandleMarker() {
 	} else {
 		/* Remove the first track in the list */
 		_tracks.PopFront([](Track* track) { delete track; });
+		_tracks_size--;
 
 		/* If the playlist isn't empty, play the next track */
 		if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);

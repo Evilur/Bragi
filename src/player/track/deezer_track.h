@@ -6,6 +6,7 @@
 #include "util/dictionary.h"
 #include "http/http_client.h"
 #include "master.h"
+#include "sender/opus_sender.h"
 
 class DeezerTrack final : public Track {
 public:

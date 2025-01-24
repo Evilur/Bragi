@@ -10,14 +10,14 @@
 #include <speex/speex_resampler.h>
 
 template<typename F>
-class FlacSender final : private OpusSender, private FLAC::Decoder::Stream {
+class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, F* read_buffer);
+	FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, const F* const read_buffer);
 
 	void Run() override;
 
 private:
-	const F* _read_buffer_func;
+	const F* const _read_buffer;
 
 	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* buffer_size) override;
 
