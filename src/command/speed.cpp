@@ -1,5 +1,5 @@
 #include "speed.h"
-#include "player/guild_player.h"
+#include "guild//guild_player.h"
 #include "exception/bragi_exception.h"
 #include "util/parser.h"
 #include "util/dictionary.h"

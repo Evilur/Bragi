@@ -2,7 +2,7 @@
 #define BRAGI_LOOP_H
 
 #include "master.h"
-#include "player/guild_player.h"
+#include "guild//guild_player.h"
 
 #include <dpp/dpp.h>
 

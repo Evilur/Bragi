@@ -2,7 +2,7 @@
 #include "master.h"
 #include "exception/bragi_exception.h"
 #include "util/parser.h"
-#include "player/guild_player.h"
+#include "guild//guild_player.h"
 
 void Next::Exec(const dpp::slashcommand_t &event) {
 	/* Set the bot to thinking state */

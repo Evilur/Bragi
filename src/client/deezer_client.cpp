@@ -3,7 +3,7 @@
 #include "util/settings.h"
 #include "util/json.h"
 #include "util/logger.h"
-#include "player/track/deezer_track.h"
+#include "track/deezer_track.h"
 #include "http/https_client.h"
 
 #include <iostream>

@@ -1,7 +1,7 @@
 #ifndef BRAGI_DEEZER_CLIENT_H
 #define BRAGI_DEEZER_CLIENT_H
 
-#include "player/track/deezer_track.h"
+#include "track/deezer_track.h"
 
 #include <string>
 

@@ -3,7 +3,7 @@
 #include "command/ping.h"
 #include "command/join.h"
 #include "command/leave.h"
-#include "player/guild_player.h"
+#include "guild/guild_player.h"
 #include "util/logger.h"
 #include "util/settings.h"
 #include "client/deezer_client.h"
