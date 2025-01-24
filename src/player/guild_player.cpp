@@ -95,8 +95,6 @@ dpp::message GuildPlayer::LoopCommand(const dpp::snowflake &channel_id, const Lo
 }
 
 dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
-	/* TODO: FIX BUGS */
-
 	/* If the playlist is empty, throw an exception */
 	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, SOFT);
 
