@@ -25,29 +25,32 @@ public:
 	Track* Next() const override;
 
 private:
-	/* Ids */
-	const unsigned int _id;
-	const unsigned int _album_id;
-	const unsigned int _artist_id;
+	const struct {
+		const unsigned int id;
+		const std::string title;
+		const std::string token;
+	} _track;
 
-	/* Titles */
-	const std::string _title;
-	const std::string _album_title;
-	const std::string _artist_name;
+	const struct {
+		const unsigned int id;
+		const std::string title;
+		const std::string picture_id;
+	} _album;
 
-	/* Pictures */
-	const std::string _album_picture;
-	const std::string _artist_picture;
+	const struct {
+		const unsigned int id;
+		const std::string name;
+		const std::string picture_id;
+	} _artist;
 
-	/* Others */
-	std::string _encrypted_data_url;
-	const std::string _token;
-	const std::string _next_query;
-	const unsigned short _total;
-	const unsigned short _next;
+	struct {
+		const unsigned short total;
+		const unsigned short next;
+		const std::string next_query;
+	} _search;
 
-	/* Tech data */
 	BF_KEY _bf_key;
+	std::string _encrypted_data_url;
 	std::thread* _init_thread = nullptr;
 	HttpClient* _http = nullptr;
 
