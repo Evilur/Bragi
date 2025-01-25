@@ -7,7 +7,7 @@
 
 #pragma region HTTP_TEMPLATES
 
-#define DEEZER_BASIC_HEADERS \
+#define DEEZER_BASIC_HEADERS_TEMPLATE \
 "Accept: application/json, text/plain, */*\n"\
 "Content-Type: text/plain;charset=UTF-8\n"\
 "User-Agent: Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0\n"\
@@ -16,26 +16,26 @@
 "Accept-Charset: utf-8,ISO-8859-1;q=0.8,*;q=0.7\n"\
 "Cookie: arl="
 
-#define DEEZER_URL_UPDATE_SESSION \
+#define DEEZER_UPDATE_SESSION_URL \
 "www.deezer.com/ajax/gw-light.php?version=8.32.0"\
 "&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"\
 "&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&method=deezer.getUserData"\
 "&api_version=1.0&api_token"
 
-#define DEEZER_URL_TEMPLATE_SEARCH_TRACK \
+#define DEEZER_SEARCH_TRACK_TEMPLATE_URL \
 "api.deezer.com/1.0/gateway.php?"\
 "api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"\
 "&method=search.music&sid="
 
-#define DEEZER_URL_TEMPLATE_DECODED_URL \
+#define DEEZER_SEARCH_TRACK_TEMPLATE_BODY \
+"{{\"query\":\"{}\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":{}}}"
+
+#define DEEZER_GET_URL_TEMPLATE_URL \
 "media.deezer.com/v1/get_url?version=8.32.0"\
 "&api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output=3&input=3"\
 "&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang=en&sid="
 
-#define DEEZER_BODY_TEMPLATE_SEARCH_TRACK \
-"{{\"query\":\"{}\",\"nb\":1,\"output\":\"TRACK\",\"filter\":\"TRACK\",\"start\":{}}}"
-
-#define DEEZER_BODY_TEMPLATE_DECODED_URL \
+#define DEEZER_GET_URL_TEMPLATE_BODY \
 "{{\"license_token\":\"{}\",\"media\":[{{\"type\":\"FULL\",\"formats\":[{{\"format\":"\
 "\"{}\",\"cipher\":\"BF_CBC_STRIPE\"}}]}}],\"track_tokens\":[\"{}\"]}}"
 
@@ -43,7 +43,7 @@
 
 class DeezerClient final {
 public:
-	enum TrackQuality : char { MP3_128, MP3_320, FLAC };
+	enum TrackQuality : byte { MP3_128, MP3_320, FLAC };
 
 	static void Init();
 
