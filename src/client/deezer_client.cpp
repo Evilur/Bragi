@@ -1,10 +1,10 @@
 #include "deezer_client.h"
-#include "http/http_client.h"
+#include "web/http_client.h"
 #include "util/settings.h"
 #include "util/json.h"
 #include "util/logger.h"
 #include "track/deezer_track.h"
-#include "http/https_client.h"
+#include "web/https_client.h"
 
 #include <iostream>
 

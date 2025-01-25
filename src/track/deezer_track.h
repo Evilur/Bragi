@@ -4,7 +4,7 @@
 #include <openssl/blowfish.h>
 #include "track.h"
 #include "util/dictionary.h"
-#include "http/http_client.h"
+#include "web/http_client.h"
 #include "master.h"
 #include "sender/opus_sender.h"
 

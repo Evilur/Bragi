@@ -2,7 +2,7 @@
 #define BRAGI_FLAC_SENDER_H
 
 #include "opus_sender.h"
-#include "http/http_client.h"
+#include "web/http_client.h"
 #include "util/logger.h"
 
 #include <FLAC++/decoder.h>

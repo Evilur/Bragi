@@ -30,8 +30,8 @@ ADD_EXECUTABLE(Bragi
     src/exception/json_exception.cpp
 
     # Http clients
-    src/http/http_client.cpp
-    src/http/https_client.cpp
+    src/web/http_client.cpp
+    src/web/https_client.cpp
 
     # Guild player
     src/guild/guild_player.cpp
