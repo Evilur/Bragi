@@ -23,7 +23,7 @@ int main() {
 	DeezerClient::Init();
 
 	/* Create a bot cluster */
-	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content);
+	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content, 0, 0, 1, false);
 
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
