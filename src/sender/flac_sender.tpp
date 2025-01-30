@@ -15,7 +15,7 @@ void FlacSender<F>::Run() {
 
 template<typename F>
 FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(byte* buffer, unsigned long* buffer_size) {
-	if ((*_read_buffer)(buffer, buffer_size) && !IsAborted()) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+	if (!IsAborted() && (*_read_buffer)(buffer, buffer_size)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	else return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 }
 
@@ -41,4 +41,5 @@ void FlacSender<F>::error_callback(FLAC__StreamDecoderErrorStatus status) {
 
 	Logger::Warn("Error while convert a FLAC data to a raw PCM");
 	Logger::Warn(strerror(status));
+	Abort();
 }
