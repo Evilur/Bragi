@@ -47,6 +47,8 @@ Json::operator std::string() const {
 	return result.str();
 }
 
+Json::operator const char*() const { return ((std::string)(*this)).c_str(); }
+
 Json::operator unsigned short() const { return Parser::ToUInt16(_data); }
 
 Json::operator short() const { return Parser::ToInt16(_data); }

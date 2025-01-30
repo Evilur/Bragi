@@ -22,6 +22,8 @@ public:
 
 	explicit operator std::string() const;
 
+	explicit operator const char*() const;
+
 	explicit operator unsigned short() const;
 
 	explicit operator short() const;
