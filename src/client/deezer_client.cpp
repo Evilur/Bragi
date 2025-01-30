@@ -54,11 +54,11 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	return result;
 }
 
-std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQuality quality) {
+std::string DeezerClient::GetTrackUrl(const std::string &token, TrackQuality quality) {
 	do {
 		/* Send the https request */
 		std::string http_body = std::format(DEEZER_GET_URL_TEMPLATE_BODY, _license_token, TRACK_QUALITY_STR[quality], token);
-		HttpsClient http_client = HttpsClient(_url_get_decoded_track_url, _headers, http_body, "POST");
+		HttpsClient http_client = HttpsClient(_url_get_track_url, _headers, http_body, "POST");
 		const char* json_string = http_client.ReadAll();
 
 		/* Init the JSON object */
@@ -74,6 +74,7 @@ std::string DeezerClient::GetEncodedTrackUrl(const std::string &token, TrackQual
 		return result;
 	} while (quality-- >= 0);  //If there is no such track quality decrese it
 
+	/* Code execution should NEVER reach here */
 	throw std::logic_error("Cannot find the encoded track url");
 }
 
@@ -99,7 +100,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 
 	/* Update the dependent urls */
 	_url_search_track = DEEZER_SEARCH_TRACK_TEMPLATE_URL + _session_id;
-	_url_get_decoded_track_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
+	_url_get_track_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
 
 	/* Get user data for logging */
 	if (verbose) {

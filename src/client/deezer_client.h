@@ -49,7 +49,7 @@ public:
 
 	static DeezerTrack* Search(const std::string &query, unsigned int start = 0);
 
-	static std::string GetEncodedTrackUrl(const std::string &token, TrackQuality quality = FLAC);
+	static std::string GetTrackUrl(const std::string &token, TrackQuality quality = FLAC);
 
 private:
 	static constexpr char TRACK_QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
@@ -59,7 +59,7 @@ private:
 	static inline std::string _license_token;
 
 	static inline std::string _url_search_track;
-	static inline std::string _url_get_decoded_track_url;
+	static inline std::string _url_get_track_url;
 
 	static inline unsigned long _session_timestamp;
 	static constexpr unsigned int DELTA_TIME = 600;

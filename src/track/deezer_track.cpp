@@ -25,7 +25,7 @@ DeezerTrack::DeezerTrack(const unsigned short track_duration,
 	/* Get the encypted data url in the new thread */
 	_init_thread = new std::thread([this]() {
 		/* Set the url of the encrypted track data */
-		_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_track.token);
+		_encrypted_data_url = DeezerClient::GetTrackUrl(_track.token);
 
 		/* Set the blowfish cipher key */
 		unsigned char key_buffer[MD5_DIGEST_LENGTH];
