@@ -12,16 +12,17 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-DeezerTrack::DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
-                         const std::string &title, const std::string &album_title, const std::string &artist_name,
-                         const std::string &album_picture, const std::string &artist_picture,
-                         const std::string &duration, const std::string &token, const std::string &next_query,
-                         const unsigned short &total, const unsigned short &next) :
-		Track(Parser::ToUInt16(duration.c_str())),
-		_track(Parser::ToUInt32(id.c_str()), title, token),
-		_album(Parser::ToUInt32(album_id.c_str()), album_title, album_picture),
-		_artist(Parser::ToUInt32(artist_id.c_str()), artist_name, artist_picture),
-		_search(total, next, next_query) {
+DeezerTrack::DeezerTrack(const unsigned short track_duration,
+                         const unsigned int track_id, const std::string &track_title, const std::string &track_token,
+                         const unsigned int album_id, const std::string &album_title, const std::string &album_picture_id,
+                         const unsigned int artist_id, const std::string &artist_name, const std::string &artist_picture_id,
+                         const unsigned short search_total, const unsigned short search_next, const std::string &search_query) :
+		Track(track_duration),
+		_track(track_id, track_title, track_token),
+		_album(album_id, album_title, album_picture_id),
+		_artist(artist_id, artist_name, artist_picture_id),
+		_search(search_total, search_next, search_query) {
+	/* Get the encypted data url in the new thread */
 	_init_thread = new std::thread([this]() {
 		/* Set the url of the encrypted track data */
 		_encrypted_data_url = DeezerClient::GetEncodedTrackUrl(_track.token);

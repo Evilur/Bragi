@@ -10,11 +10,11 @@
 
 class DeezerTrack final : public Track {
 public:
-	DeezerTrack(const std::string &id, const std::string &album_id, const std::string &artist_id,
-	            const std::string &title, const std::string &album_title, const std::string &artist_name,
-	            const std::string &album_picture, const std::string &artist_picture,
-	            const std::string &duration, const std::string &token, const std::string &next_query,
-	            const unsigned short &total, const unsigned short &next);
+	DeezerTrack(const unsigned short track_duration,
+	            const unsigned int track_id, const std::string &track_title, const std::string &track_token,
+	            const unsigned int album_id, const std::string &album_title, const std::string &album_picture_id,
+	            const unsigned int artist_id, const std::string &artist_name, const std::string &artist_picture_id,
+	            const unsigned short search_total, const unsigned short search_next, const std::string &search_query);
 
 	~DeezerTrack();
 

@@ -5,6 +5,7 @@
 #include "util/logger.h"
 #include "track/deezer_track.h"
 #include "web/https_client.h"
+#include "util/parser.h"
 
 #include <iostream>
 
@@ -40,11 +41,12 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 
 	/* Create the track instance */
 	DeezerTrack* result =
-			new DeezerTrack((std::string)json_track["SNG_ID"], (std::string)json_track["ALB_ID"], (std::string)json_track["ART_ID"],
-			                (std::string)json_track["SNG_TITLE"], (std::string)json_track["ALB_TITLE"], (std::string)json_track["ART_NAME"],
-			                (std::string)json_track["ALB_PICTURE"], (std::string)json_track["ART_PICTURE"],
-			                (std::string)json_track["DURATION"], (std::string)json_track["TRACK_TOKEN"], query,
-			                (unsigned short)json_results["total"], (unsigned short)json_results["next"]);
+			new DeezerTrack(
+					Parser::ToUInt16((const char*)json_track["DURATION"]),
+					Parser::ToUInt32((const char*)json_track["SNG_ID"]), (std::string)json_track["SNG_TITLE"], (std::string)json_track["TRACK_TOKEN"],
+					Parser::ToUInt32((const char*)json_track["ALB_ID"]), (std::string)json_track["ALB_TITLE"], (std::string)json_track["ALB_PICTURE"],
+					Parser::ToUInt32((const char*)json_track["ART_ID"]), (std::string)json_track["ART_NAME"], (std::string)json_track["ART_PICTURE"],
+					(unsigned short)json_results["total"], (unsigned short)json_results["next"], query);
 
 	/* Free the memory and return a result */
 	delete[] json_string;
