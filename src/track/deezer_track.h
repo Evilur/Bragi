@@ -1,16 +1,19 @@
 #ifndef BRAGI_DEEZER_TRACK_H
 #define BRAGI_DEEZER_TRACK_H
 
-#include <openssl/blowfish.h>
 #include "track.h"
 #include "util/dictionary.h"
 #include "web/http_client.h"
 #include "master.h"
 #include "sender/opus_sender.h"
 
+#include <openssl/blowfish.h>
+
 class DeezerTrack final : public Track {
 public:
-	DeezerTrack(const unsigned short track_duration,
+	enum Quality : byte { MP3_128, MP3_320, FLAC };
+
+	DeezerTrack(const unsigned short track_duration, Quality quality,
 	            const unsigned int track_id, const std::string &track_title, const std::string &track_token,
 	            const unsigned int album_id, const std::string &album_title, const std::string &album_picture_id,
 	            const unsigned int artist_id, const std::string &artist_name, const std::string &artist_picture_id,
@@ -25,6 +28,9 @@ public:
 	Track* Next() const override;
 
 private:
+	const Quality _quality;
+	std::string _data_url;
+
 	const struct {
 		const unsigned int id;
 		const std::string title;
@@ -50,7 +56,6 @@ private:
 	} _search;
 
 	BF_KEY _bf_key;
-	std::string _encrypted_data_url;
 	std::thread* _init_thread = nullptr;
 	HttpClient* _http = nullptr;
 

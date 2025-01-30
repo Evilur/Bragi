@@ -12,12 +12,12 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-DeezerTrack::DeezerTrack(const unsigned short track_duration,
+DeezerTrack::DeezerTrack(const unsigned short track_duration, Quality quality,
                          const unsigned int track_id, const std::string &track_title, const std::string &track_token,
                          const unsigned int album_id, const std::string &album_title, const std::string &album_picture_id,
                          const unsigned int artist_id, const std::string &artist_name, const std::string &artist_picture_id,
                          const unsigned short search_total, const unsigned short search_next, const std::string &search_query) :
-		Track(track_duration),
+		Track(track_duration), _quality(quality),
 		_track(track_id, track_title, track_token),
 		_album(album_id, album_title, album_picture_id),
 		_artist(artist_id, artist_name, artist_picture_id),
@@ -25,7 +25,7 @@ DeezerTrack::DeezerTrack(const unsigned short track_duration,
 	/* Get the encypted data url in the new thread */
 	_init_thread = new std::thread([this]() {
 		/* Set the url of the encrypted track data */
-		_encrypted_data_url = DeezerClient::GetTrackUrl(_track.token);
+		_data_url = DeezerClient::GetTrackUrl(_track.token, _quality);
 
 		/* Set the blowfish cipher key */
 		unsigned char key_buffer[MD5_DIGEST_LENGTH];
@@ -70,7 +70,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent
 	if (_init_thread->joinable()) _init_thread->join();
 
 	/* Create a new http client */
-	_http = new HttpClient(_encrypted_data_url);
+	_http = new HttpClient(_data_url);
 
 	/* Lambda for reading the track data by buffers */
 	auto read_buffer = [this](byte* buffer, unsigned long* buffer_size) {

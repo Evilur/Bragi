@@ -9,10 +9,6 @@
 
 #include <iostream>
 
-DeezerClient::TrackQuality &operator--(DeezerClient::TrackQuality &quality, int) {
-	return quality = (DeezerClient::TrackQuality)(quality - 1);
-}
-
 void DeezerClient::Init() {
 	/* Init the arl token and headers for the deezer requests */
 	_headers = DEEZER_BASIC_HEADERS_TEMPLATE + Settings::GetArlToken();
@@ -26,8 +22,8 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	else _session_timestamp = c_time;
 
 	/* Send the http request */
-	std::string http_body = std::format(DEEZER_SEARCH_TRACK_TEMPLATE_BODY, query, start);
-	HttpClient http_client = HttpClient(_url_search_track, _headers, http_body, "POST");
+	const std::string http_body = std::format(DEEZER_SEARCH_TRACK_TEMPLATE_BODY, query, start);
+	HttpClient http_client = HttpClient(_search_track_url, _headers, http_body, "POST");
 	const char* json_string = http_client.ReadAll();
 
 	/* Init the JSON object */
@@ -39,10 +35,14 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	if (total == 0) return nullptr;
 	const Json json_track = json_results["data"][0];
 
+	/* TODO: GET THE BEST AVAILABLE TRACK QUALITY */
+	/* Get the best available track quality */
+	DeezerTrack::Quality track_quality = DeezerTrack::FLAC;
+
 	/* Create the track instance */
 	DeezerTrack* result =
 			new DeezerTrack(
-					Parser::ToUInt16((const char*)json_track["DURATION"]),
+					Parser::ToUInt16((const char*)json_track["DURATION"]), track_quality,
 					Parser::ToUInt32((const char*)json_track["SNG_ID"]), (std::string)json_track["SNG_TITLE"], (std::string)json_track["TRACK_TOKEN"],
 					Parser::ToUInt32((const char*)json_track["ALB_ID"]), (std::string)json_track["ALB_TITLE"], (std::string)json_track["ALB_PICTURE"],
 					Parser::ToUInt32((const char*)json_track["ART_ID"]), (std::string)json_track["ART_NAME"], (std::string)json_track["ART_PICTURE"],
@@ -54,28 +54,20 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	return result;
 }
 
-std::string DeezerClient::GetTrackUrl(const std::string &token, TrackQuality quality) {
-	do {
-		/* Send the https request */
-		std::string http_body = std::format(DEEZER_GET_URL_TEMPLATE_BODY, _license_token, TRACK_QUALITY_STR[quality], token);
-		HttpsClient http_client = HttpsClient(_url_get_track_url, _headers, http_body, "POST");
-		const char* json_string = http_client.ReadAll();
+std::string DeezerClient::GetTrackUrl(const std::string &token, DeezerTrack::Quality quality) {
+	/* Send the https request */
+	const std::string http_body = std::format(DEEZER_GET_URL_TEMPLATE_BODY, _license_token, TRACK_QUALITY_STR[quality], token);
+	HttpsClient http_client = HttpsClient(_get_track_url_url, _headers, http_body, "POST");
+	const char* json_string = http_client.ReadAll();
 
-		/* Init the JSON object */
-		const Json json_media = Json(json_string)["data"][0]["media"];
+	/* Init the JSON object */
+	const Json json_media = Json(json_string)["data"][0]["media"];
+	const std::string result = ((std::string)json_media[0]["sources"][0]["url"]).substr(8);
 
-		/* If there is no track in such quality */
-		if (json_media.IsEmpty()) continue;
-		std::string result = ((std::string)json_media[0]["sources"][0]["url"]).substr(8);
-
-		/* If the track in such quality exists */
-		delete[] json_string;
-		json_string = nullptr;
-		return result;
-	} while (quality-- >= 0);  //If there is no such track quality decrese it
-
-	/* Code execution should NEVER reach here */
-	throw std::logic_error("Cannot find the encoded track url");
+	/* If the track in such quality exists */
+	delete[] json_string;
+	json_string = nullptr;
+	return result;
 }
 
 void DeezerClient::UpdateSession(const bool verbose) {
@@ -99,8 +91,8 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	_session_timestamp = (unsigned long)json_results["SERVER_TIMESTAMP"];
 
 	/* Update the dependent urls */
-	_url_search_track = DEEZER_SEARCH_TRACK_TEMPLATE_URL + _session_id;
-	_url_get_track_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
+	_search_track_url = DEEZER_SEARCH_TRACK_TEMPLATE_URL + _session_id;
+	_get_track_url_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
 
 	/* Get user data for logging */
 	if (verbose) {
