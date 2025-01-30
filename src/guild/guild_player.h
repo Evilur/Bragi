@@ -48,8 +48,7 @@ public:
 	static GuildPlayer* Get(const dpp::snowflake &guild_id);
 
 private:
-	static constexpr unsigned char OPT_NUMBER = 10;
-	static inline LinkedList<GuildPlayer*> _players[OPT_NUMBER];
+	static inline LinkedList<GuildPlayer*> _players;
 	static inline LoopType _loop_type = DISABLED;
 
 	static GuildPlayer* Add(const dpp::snowflake &guild_id);
