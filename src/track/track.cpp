@@ -15,7 +15,7 @@ Track::~Track() {
 }
 
 void Track::Abort() {
-	_sender->Abort();
+	if (_sender != nullptr) _sender->Abort();
 	if (_play_thread != nullptr && _play_thread->joinable()) _play_thread->join();
 }
 
