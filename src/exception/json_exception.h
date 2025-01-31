@@ -4,7 +4,7 @@
 #include <exception>
 #include <string>
 
-class JsonException final : std::exception {
+class JsonException final {
 public:
 	explicit JsonException(const char* json_data, const char* query);
 

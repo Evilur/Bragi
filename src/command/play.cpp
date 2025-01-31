@@ -26,13 +26,13 @@ void Play::Exec(const dpp::message_create_t &event, const std::string &argument)
 
 dpp::message Play::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &user_id, const std::string &query, const dpp::snowflake &channel_id) {
 	/* If there isn't required parameters */
-	if (query.empty()) throw BragiException(DIC_SLASH_NO_PARAMETER, channel_id, HARD);
+	if (query.empty()) throw BragiException(DIC_SLASH_NO_PARAMETER, channel_id, BragiException::HARD);
 
 	/* Search the Deezer track */
 	Track* track = DeezerClient::Search(query);
 
 	/* If there is no such track */
-	if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND, channel_id, SOFT);
+	if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND, channel_id, BragiException::SOFT);
 
 	/* Play the track or add it to the playlist */
 	return GuildPlayer::Get(guild_id)->PlayCommand(user_id, channel_id, track);

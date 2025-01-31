@@ -33,10 +33,10 @@ dpp::message GuildPlayer::PlayCommand(const dpp::snowflake &user_id, const dpp::
 
 dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip) {
 	/* If the playlist is empty */
-	if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, SOFT);
+	if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, BragiException::SOFT);
 
 	/* If we can't skip that number of tracks */
-	if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, SOFT);
+	if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, BragiException::SOFT);
 
 	/* Stop the audio and clear the packet queue */
 	_tracks.Head()->Abort();
@@ -96,7 +96,7 @@ dpp::message GuildPlayer::LoopCommand(const dpp::snowflake &channel_id, const Lo
 
 dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
 	/* If the playlist is empty, throw an exception */
-	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, SOFT);
+	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, BragiException::SOFT);
 
 	/* Get the index of the track */
 	if (track_index == 0 || track_index > _tracks_size) track_index = _tracks_size - 1;
@@ -111,7 +111,7 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 	Track* next_track = old_track->Next();
 
 	/* If there is no new track */
-	if (next_track == nullptr) throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, channel_id, SOFT);
+	if (next_track == nullptr) throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, channel_id, BragiException::SOFT);
 
 	/* Delete the old track and replace with the next one */
 	delete old_track;
@@ -135,15 +135,15 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 
 	/* If the user isn't in a voice channel */
 	if (user_vc == nullptr)
-		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, HARD);
+		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, BragiException::HARD);
 
 	/* If the user and a bot already in the same channel */
 	if (IsPlayerReady() && bot_vc != nullptr && bot_vc->id == user_vc->id)
-		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, SOFT);
+		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, BragiException::SOFT);
 
 	/* If bot can not connect to the channel or speak there */
 	if (!user_vc->get_user_permissions(&bot->me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot->me).can(dpp::p_speak))
-		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, HARD);
+		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, BragiException::HARD);
 
 	/* If bot in the voice channel we need to disconnect */
 	if (bot_vc != nullptr) ds_client->disconnect_voice(guild_id);
@@ -156,7 +156,7 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (_voiceconn == nullptr)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, SOFT);
+		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, BragiException::SOFT);
 
 	ds_client->disconnect_voice(guild_id);
 	_voiceconn = nullptr;
