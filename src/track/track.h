@@ -29,11 +29,11 @@ protected:
 
 	virtual void Play(const dpp::voiceconn* voiceconn, const byte speed_percent) = 0;
 
-	void SetSender(OpusSender* sender);
+	void SetOpusSender(OpusSender* sender);
 
 private:
 	std::thread* _play_thread = nullptr;
-	OpusSender* _sender = nullptr;
+	OpusSender* _opus_sender = nullptr;
 };
 
 #endif

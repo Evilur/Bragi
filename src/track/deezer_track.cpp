@@ -99,7 +99,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent
 	};
 
 	/* Set the opus sender */
-	SetSender(new FlacSender(voiceconn, speed_percent, &read_buffer));
+	SetOpusSender(new FlacSender(voiceconn, speed_percent, &read_buffer));
 }
 
 void DeezerTrack::GetKey(unsigned char* buffer) {
