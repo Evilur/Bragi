@@ -33,28 +33,6 @@ int main() {
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
 
-	bot->on_log([](const dpp::log_t &event) {
-		std::string penis[] = {
-				"Trace", "Debug", "Info", "Warning", "Error", "Critical"
-		};
-		switch (event.severity) {
-			//case dpp::ll_trace:
-			case dpp::ll_info:
-				Logger::Info(std::format("{}: {}", penis[event.severity], event.message));
-				break;
-			case dpp::ll_debug:
-				Logger::Debug(std::format("{}: {}", penis[event.severity], event.message));
-				break;
-			case dpp::ll_warning:
-				Logger::Warn(std::format("{}: {}", penis[event.severity], event.message));
-				break;
-			case dpp::ll_error:
-			case dpp::ll_critical:
-				Logger::Fatal(std::format("{}: {}", penis[event.severity], event.message));
-				break;
-		}
-	});
-
 	/* Start the bot */
 	Logger::Info("Starting the bot");
 	bot->start(dpp::st_wait);

@@ -42,4 +42,5 @@ void FlacSender<F>::error_callback(FLAC__StreamDecoderErrorStatus status) {
 	Logger::Warn("Error while convert a FLAC data to a raw PCM");
 	Logger::Warn(strerror(status));
 	Abort();
+	sleep(1);  //This is for debugging
 }
