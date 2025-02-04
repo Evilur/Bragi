@@ -24,7 +24,6 @@ int main() {
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content, 0, 0, 1, false);
-	bot_user = &bot->me;
 
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
@@ -63,10 +62,6 @@ void on_message_create(const dpp::message_create_t &event) {
 	const unsigned long space_sep = event.msg.content.find(' ');
 	std::string command = event.msg.content.substr(1, space_sep - 1);
 	std::string argument = space_sep == std::string::npos ? "" : event.msg.content.substr(space_sep + 1);
-
-	if (command == "penis") {
-		//GuildPlayer::Get(event.msg.guild_id)->PENIS();
-	}
 
 	/* Check for commands */
 	if (command == "p" || command == "play") Play::Exec(event, argument);

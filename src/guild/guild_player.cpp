@@ -191,27 +191,6 @@ void GuildPlayer::HandleMarker() {
 	}
 }
 
-
-
-
-
-
-
-
-/*void GuildPlayer::HandleChannelSwitch(const dpp::snowflake &channel_id) {
-	*//* If the bot doesn't switch the channel, exit the method *//*
-	if (_voiceclient == nullptr || true) return;
-
-	*//* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client *//*
-	if (!IsEmpty()) _tracks.Head()->Abort();
-
-	*//* Protect ourselves from acessing the old voice client *//*
-	_voiceclient = nullptr;
-
-	*//* Connect to the new voice channel *//*
-	ds_client->connect_voice(guild_id, channel_id);
-}*/
-
 void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
 	Logger::Warn("Ready");
 
@@ -226,12 +205,6 @@ void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient)
 
 	Logger::Warn(dpp::find_channel(_voiceclient->channel_id)->name);
 }
-
-
-
-
-
-
 
 inline bool GuildPlayer::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }
 
