@@ -191,9 +191,25 @@ void GuildPlayer::HandleMarker() {
 	}
 }
 
-void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
-	Logger::Warn("Ready");
+void GuildPlayer::HandleVoiceStateUpdate(const dpp::snowflake &channel_id) {
+	/* If the voice client isn't initialized, exit the method */
+	if (!_voiceclient) return;
 
+	/* If the voice channel doesn't change, exit the method */
+	if (_voiceclient->channel_id == channel_id) return;
+
+	/* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
+	if (!IsEmpty()) _tracks.Head()->Abort();
+
+	/* Reset the old voice connection */
+	_voiceclient->stop_audio();
+	_voiceclient = nullptr;
+
+	/* If the bot reconnect to the other voice channelm connect to the new voice channel */
+	if (channel_id) ds_client->connect_voice(guild_id, channel_id);
+}
+
+void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
 	/* Update the voice */
 	_voiceclient = voiceclient;
 
@@ -202,8 +218,6 @@ void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient)
 
 	/* If we need to play the first track, play it */
 	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
-
-	Logger::Warn(dpp::find_channel(_voiceclient->channel_id)->name);
 }
 
 inline bool GuildPlayer::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }

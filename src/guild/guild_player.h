@@ -30,6 +30,8 @@ public:
 
 	std::string Leave(const dpp::snowflake &channel_id);
 
+	void HandleVoiceStateUpdate(const dpp::snowflake &channel_id);
+
 	void HandleReadyState(dpp::discord_voice_client* const voiceconn);
 
 	void HandleMarker();

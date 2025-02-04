@@ -28,9 +28,32 @@ int main() {
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
 	bot->on_message_create(on_message_create);
+	bot->on_voice_state_update(on_voice_state_update);
 	bot->on_voice_ready(on_voice_ready);
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
+
+	bot->on_log([](const dpp::log_t &event) {
+		std::string penis[] = {
+				"Trace", "Debug", "Info", "Warning", "Error", "Critical"
+		};
+		switch (event.severity) {
+			//case dpp::ll_trace:
+			case dpp::ll_info:
+				Logger::Info(std::format("{}: {}", penis[event.severity], event.message));
+				break;
+			case dpp::ll_debug:
+				Logger::Debug(std::format("{}: {}", penis[event.severity], event.message));
+				break;
+			case dpp::ll_warning:
+				Logger::Warn(std::format("{}: {}", penis[event.severity], event.message));
+				break;
+			case dpp::ll_error:
+			case dpp::ll_critical:
+				Logger::Fatal(std::format("{}: {}", penis[event.severity], event.message));
+				break;
+		}
+	});
 
 	/* Start the bot */
 	Logger::Info("Starting the bot");
@@ -73,6 +96,14 @@ void on_message_create(const dpp::message_create_t &event) {
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "sp" || command == "speed") Speed::Exec(event, argument);
 	else if (command == "leave") Leave::Exec(event);
+}
+
+void on_voice_state_update(const dpp::voice_state_update_t &event) {
+	/* If there isn't the bot, exit the function */
+	if (event.state.user_id != bot->me.id) return;
+
+	/* Handle the voice state udpate */
+	GuildPlayer::Get(event.state.guild_id)->HandleVoiceStateUpdate(event.state.channel_id);
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
