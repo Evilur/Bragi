@@ -36,8 +36,8 @@ void Track::Abort() {
 	_play_thread = nullptr;
 }
 
-void Track::AsyncPlay(const dpp::voiceconn* voiceconn, const byte speed_percent) {
-	_play_thread = new std::thread(&Track::Play, this, voiceconn, speed_percent);
+void Track::AsyncPlay(dpp::discord_voice_client* const voiceclient, const byte speed_percent) {
+	_play_thread = new std::thread(&Track::Play, this, voiceclient, speed_percent);
 }
 
 void Track::SetOpusSender(OpusSender* sender) {

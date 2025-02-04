@@ -59,7 +59,7 @@ private:
 	std::thread* _init_thread = nullptr;
 	HttpClient* _http = nullptr;
 
-	void Play(const dpp::voiceconn* voiceconn, const byte speed_percent) override;
+	void Play(dpp::discord_voice_client* const voiceclient, const byte speed_percent) override;
 
 	void GetKey(unsigned char* buffer);
 };

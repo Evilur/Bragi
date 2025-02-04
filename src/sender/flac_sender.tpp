@@ -1,6 +1,6 @@
 template<typename F>
-FlacSender<F>::FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, const F* const read_buffer)  :
-		OpusSender(voiceconn, speed_percent), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
+FlacSender<F>::FlacSender(dpp::discord_voice_client* const voiceclient, const byte speed_percent, const F* const read_buffer)  :
+		OpusSender(voiceclient, speed_percent), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
 	/* Init the flac decoder */
 	this->init();
 }

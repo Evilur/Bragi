@@ -11,6 +11,10 @@
 #define DEBUG_LOG(str)
 #endif
 
+typedef unsigned char byte;
+
+typedef signed char s_byte;
+
 inline dpp::discord_client* ds_client = nullptr;
 inline dpp::cluster* bot = nullptr;
 
@@ -23,9 +27,5 @@ void on_voice_ready(const dpp::voice_ready_t &event);
 void on_voice_track_marker(const dpp::voice_track_marker_t &event);
 
 void on_ready(const dpp::ready_t &event);
-
-typedef unsigned char byte;
-
-typedef signed char s_byte;
 
 #endif

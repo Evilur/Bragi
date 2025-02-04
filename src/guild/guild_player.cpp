@@ -18,7 +18,7 @@ dpp::message GuildPlayer::PlayCommand(const dpp::snowflake &user_id, const dpp::
 		_tracks.Push(track);
 		_tracks_size++;
 
-		if (need_to_play_first_track) track->AsyncPlay(_voiceconn, _speed_percent);  //Play the current track
+		if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
 		return result_msg;  //Return the track message
 	}
 
@@ -40,7 +40,7 @@ dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned
 
 	/* Stop the audio and clear the packet queue */
 	_tracks.Head()->Abort();
-	if (IsPlayerReady()) _voiceconn->voiceclient->stop_audio();
+	if (IsPlayerReady()) _voiceclient->stop_audio();
 
 	/* Get the current track number for skip */
 	if (num_for_skip > _tracks_size) num_for_skip = _tracks_size;
@@ -50,7 +50,7 @@ dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned
 	_tracks_size -= num_for_skip;
 
 	/* If the playlist isn't empty, play the next track */
-	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);
+	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 
 	/* Return the message */
 	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_for_skip));
@@ -119,8 +119,8 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 
 	/* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
 	if (is_playing) {
-		_voiceconn->voiceclient->stop_audio();
-		next_track->AsyncPlay(_voiceconn, _speed_percent);
+		_voiceclient->stop_audio();
+		next_track->AsyncPlay(_voiceclient, _speed_percent);
 	}
 
 	/* Return the message */
@@ -128,44 +128,51 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 }
 
 std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
-	/* Get voice channels */
-	dpp::guild* guild = dpp::find_guild(guild_id);
-	dpp::channel* bot_vc = dpp::find_channel(guild->voice_members.find(bot->me.id)->second.channel_id);
-	dpp::channel* user_vc = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
+	/* Get the user voice channel */
+	const dpp::guild* const guild = dpp::find_guild(guild_id);
+	const dpp::channel* const user_voice_channel = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
 
 	/* If the user isn't in a voice channel */
-	if (user_vc == nullptr)
+	if (!user_voice_channel)
 		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, BragiException::HARD);
 
 	/* If the user and a bot already in the same channel */
-	if (IsPlayerReady() && bot_vc != nullptr && bot_vc->id == user_vc->id)
+	if (IsPlayerReady() && _voiceclient->channel_id == user_voice_channel->id)
 		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, BragiException::SOFT);
 
 	/* If bot can not connect to the channel or speak there */
-	if (!user_vc->get_user_permissions(&bot->me).can(dpp::p_connect) || !user_vc->get_user_permissions(&bot->me).can(dpp::p_speak))
+	dpp::permission channel_permission = user_voice_channel->get_user_permissions(&bot->me);
+	if (!channel_permission.can(dpp::p_connect) || !channel_permission.can(dpp::p_speak))
 		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, BragiException::HARD);
 
-	/* If bot in the voice channel we need to disconnect */
-	if (bot_vc != nullptr) ds_client->disconnect_voice(guild_id);
+	/* If we have a track in our playlist, abort it */
+	if (!IsEmpty()) _tracks.Head()->Abort();
 
-	/* If all is OK */
-	ds_client->connect_voice(guild_id, user_vc->id);
-	return std::format(DIC_JOINED, user_vc->name);
+	/* Connect to the new channel */
+	ds_client->connect_voice(guild_id, user_voice_channel->id);
+
+	/* Reset the old voice connection */
+	_voiceclient = nullptr;
+
+	/* Return the result to the channel */
+	return std::format(DIC_JOINED, user_voice_channel->name);
 }
 
 std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
-	if (_voiceconn == nullptr)
+	if (!_voiceclient)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, BragiException::SOFT);
 
+	/* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
+	if (!IsEmpty()) _tracks.Head()->Abort();
 	ds_client->disconnect_voice(guild_id);
-	_voiceconn = nullptr;
+	_voiceclient = nullptr;
 	return DIC_LEFT;
 }
 
 void GuildPlayer::HandleMarker() {
 	/* Check the loop type */
-	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);
+	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 	else if (_loop_type == PLAYLIST) {
 		/* Move the first track to the end of the playlist */
 		Track* track = _tracks.Head();
@@ -173,25 +180,62 @@ void GuildPlayer::HandleMarker() {
 		_tracks.Push(track);
 
 		/* Play the next track */
-		_tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);
+		_tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 	} else {
 		/* Remove the first track in the list */
 		_tracks.PopFront([](Track* track) { delete track; });
 		_tracks_size--;
 
 		/* If the playlist isn't empty, play the next track */
-		if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);
+		if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 	}
 }
 
-void GuildPlayer::HandleReadyState() {
-	/* Update the voice */
-	_voiceconn = ds_client->get_voice(guild_id);
-	_voiceconn->voiceclient->set_send_audio_type(dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
-	/* If we need to play the first track */
-	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceconn, _speed_percent);
+
+
+
+
+
+
+/*void GuildPlayer::HandleChannelSwitch(const dpp::snowflake &channel_id) {
+	*//* If the bot doesn't switch the channel, exit the method *//*
+	if (_voiceclient == nullptr || true) return;
+
+	*//* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client *//*
+	if (!IsEmpty()) _tracks.Head()->Abort();
+
+	*//* Protect ourselves from acessing the old voice client *//*
+	_voiceclient = nullptr;
+
+	*//* Connect to the new voice channel *//*
+	ds_client->connect_voice(guild_id, channel_id);
+}*/
+
+void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
+	Logger::Warn("Ready");
+
+	/* Update the voice */
+	_voiceclient = voiceclient;
+
+	/* Set the audio type to store data in the buffer before sending */
+	_voiceclient->set_send_audio_type(dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
+
+	/* If we need to play the first track, play it */
+	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+
+	Logger::Warn(dpp::find_channel(_voiceclient->channel_id)->name);
 }
+
+
+
+
+
+
+
+inline bool GuildPlayer::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }
+
+inline bool GuildPlayer::IsEmpty() const { return !_tracks_size; }
 
 GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the list */
@@ -201,10 +245,6 @@ GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
 	/* If there is not a such guild player we need to add it to the array */
 	return Add(guild_id);
 }
-
-bool GuildPlayer::IsPlayerReady() { return _voiceconn != nullptr && _voiceconn->voiceclient != nullptr && _voiceconn->voiceclient->is_ready(); }
-
-inline bool GuildPlayer::IsEmpty() const { return !_tracks_size; }
 
 GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Create a new guild player */

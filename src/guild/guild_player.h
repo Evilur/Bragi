@@ -30,17 +30,17 @@ public:
 
 	std::string Leave(const dpp::snowflake &channel_id);
 
-	void HandleReadyState();
+	void HandleReadyState(dpp::discord_voice_client* const voiceconn);
 
 	void HandleMarker();
 
 private:
 	LinkedList<Track*> _tracks;
 	unsigned short _tracks_size = 0;
-	const dpp::voiceconn* _voiceconn = nullptr;
+	dpp::discord_voice_client* _voiceclient = nullptr;
 	byte _speed_percent = 100;
 
-	bool IsPlayerReady();
+	inline bool IsPlayerReady();
 
 	inline bool IsEmpty() const;
 

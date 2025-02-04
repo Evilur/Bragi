@@ -65,7 +65,7 @@ Track* DeezerTrack::Next() const {
 	return DeezerClient::Search(_search.next_query, _search.next);
 }
 
-void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent) {
+void DeezerTrack::Play(dpp::discord_voice_client* const voiceclient, const byte speed_percent) {
 	/* Wait for initialization */
 	if (_init_thread->joinable()) _init_thread->join();
 
@@ -99,7 +99,7 @@ void DeezerTrack::Play(const dpp::voiceconn* voiceconn, const byte speed_percent
 	};
 
 	/* Set the opus sender */
-	SetOpusSender(new FlacSender(voiceconn, speed_percent, &read_buffer));
+	SetOpusSender(new FlacSender(voiceclient, speed_percent, &read_buffer));
 }
 
 void DeezerTrack::GetKey(unsigned char* buffer) {

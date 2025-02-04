@@ -9,7 +9,7 @@
 
 class OpusSender {
 public:
-	OpusSender(const dpp::voiceconn* const voiceconn, const byte speed_percent);
+	OpusSender(dpp::discord_voice_client* const voiceclient, const byte speed_percent);
 
 	virtual ~OpusSender();
 
@@ -38,7 +38,7 @@ private:
 	short* _pcm_buffer_ptr = _pcm_buffer;
 
 	const short* const _pcm_buffer_end = _pcm_buffer + PCM_CHUNK_SIZE;
-	const dpp::voiceconn* const _voiceconn;
+	dpp::discord_voice_client* const _voiceclient;
 	SpeexResamplerState* _resampler;
 	OpusEncoder* _encoder;
 };

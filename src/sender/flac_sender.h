@@ -12,7 +12,7 @@
 template<typename F>
 class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(const dpp::voiceconn* const voiceconn, const byte speed_percent, const F* const read_buffer);
+	FlacSender(dpp::discord_voice_client* const voiceclient, const byte speed_percent, const F* const read_buffer);
 
 	void Run() override;
 

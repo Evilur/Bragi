@@ -24,6 +24,7 @@ int main() {
 
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content, 0, 0, 1, false);
+	bot_user = &bot->me;
 
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
@@ -63,6 +64,10 @@ void on_message_create(const dpp::message_create_t &event) {
 	std::string command = event.msg.content.substr(1, space_sep - 1);
 	std::string argument = space_sep == std::string::npos ? "" : event.msg.content.substr(space_sep + 1);
 
+	if (command == "penis") {
+		//GuildPlayer::Get(event.msg.guild_id)->PENIS();
+	}
+
 	/* Check for commands */
 	if (command == "p" || command == "play") Play::Exec(event, argument);
 	else if (command == "s" || command == "skip") Skip::Exec(event, argument);
@@ -76,7 +81,7 @@ void on_message_create(const dpp::message_create_t &event) {
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->HandleReadyState();
+	GuildPlayer::Get(event.voice_client->server_id)->HandleReadyState(event.voice_client);
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
