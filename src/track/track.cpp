@@ -22,10 +22,10 @@ Track::~Track() { /* Abort the opus sender */
 
 void Track::Abort() {
 	/* Abort the opus sender */
-	if (_opus_sender != nullptr) _opus_sender->Abort();
+	if (_opus_sender) _opus_sender->Abort();
 
 	/* Join the play thread */
-	if (_play_thread != nullptr && _play_thread->joinable()) _play_thread->join();
+	if (_play_thread && _play_thread->joinable()) _play_thread->join();
 
 	/* Delete the opus sender */
 	delete _opus_sender;
@@ -41,9 +41,11 @@ void Track::AsyncPlay(dpp::discord_voice_client* const voiceclient, const byte s
 }
 
 void Track::SetOpusSender(OpusSender* sender) {
-	/* Need to abort track before new initialization */
-	if (_opus_sender != nullptr) throw std::runtime_error("Opus Sender already initialized");
+	/* Delete the old opus sender */
+	if (_opus_sender) _opus_sender->Abort();
+	delete _opus_sender;
 
+	/* Set the new opus sender */
 	_opus_sender = sender;
 	_opus_sender->Run();
 }
