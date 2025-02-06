@@ -11,8 +11,8 @@
 #define DEBUG_LOG(str)
 #endif
 
-#define VERBOSE_LOG true
-#define VERBOSE_LOG_LEVEL 1
+#define DPP_LOG false
+#define DPP_LOG_LEVEL 1
 
 typedef unsigned char byte;
 
@@ -33,7 +33,7 @@ void on_voice_track_marker(const dpp::voice_track_marker_t &event);
 
 void on_ready(const dpp::ready_t &event);
 
-#if VERBOSE_LOG
+#if DPP_LOG
 
 void on_log(const dpp::log_t &event);
 

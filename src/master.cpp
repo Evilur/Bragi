@@ -33,7 +33,7 @@ int main() {
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
 
-#if VERBOSE_LOG
+#if DPP_LOG
 	bot->on_log(on_log);
 #endif
 
@@ -145,7 +145,7 @@ void on_ready(const dpp::ready_t &event) {
 	Logger::Info("Bot is ready");
 }
 
-#if VERBOSE_LOG
+#if DPP_LOG
 
 void on_log(const dpp::log_t &event) {
 	/* Define the log level strings */
@@ -170,7 +170,7 @@ void on_log(const dpp::log_t &event) {
 			break;
 		case dpp::ll_error:
 		case dpp::ll_critical:
-			Logger::Debug(std::format("{}: {}", log_level_str[event.severity], event.message));
+			Logger::Fatal(std::format("{}: {}", log_level_str[event.severity], event.message));
 			break;
 	}
 }
