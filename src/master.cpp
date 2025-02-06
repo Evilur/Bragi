@@ -154,7 +154,7 @@ void on_log(const dpp::log_t &event) {
 	};
 
 	/* Check the log level */
-	if (event.severity < VERBOSE_LOG_LEVEL) return;
+	if (event.severity < DPP_LOG_LEVEL) return;
 
 	/* Log the message */
 	switch (event.severity) {
