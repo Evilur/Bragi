@@ -33,6 +33,10 @@ int main() {
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
 
+#if VERBOSE_LOG
+	bot->on_log(on_log);
+#endif
+
 	/* Start the bot */
 	Logger::Info("Starting the bot");
 	bot->start(dpp::st_wait);
@@ -140,3 +144,35 @@ void on_ready(const dpp::ready_t &event) {
 
 	Logger::Info("Bot is ready");
 }
+
+#if VERBOSE_LOG
+
+void on_log(const dpp::log_t &event) {
+	/* Define the log level strings */
+	constexpr char log_level_str[6][9] = {
+			"Trace", "Debug", "Info", "Warning", "Error", "Critical"
+	};
+
+	/* Check the log level */
+	if (event.severity < VERBOSE_LOG_LEVEL) return;
+
+	/* Log the message */
+	switch (event.severity) {
+		case dpp::ll_trace:
+		case dpp::ll_info:
+			Logger::Info(std::format("{}: {}", log_level_str[event.severity], event.message));
+			break;
+		case dpp::ll_debug:
+			Logger::Debug(std::format("{}: {}", log_level_str[event.severity], event.message));
+			break;
+		case dpp::ll_warning:
+			Logger::Warn(std::format("{}: {}", log_level_str[event.severity], event.message));
+			break;
+		case dpp::ll_error:
+		case dpp::ll_critical:
+			Logger::Debug(std::format("{}: {}", log_level_str[event.severity], event.message));
+			break;
+	}
+}
+
+#endif
