@@ -26,7 +26,7 @@ void Path::CreateDir(const fs::path dir, const int e_code) {
 
 const fs::path Path::USER_ROOT_DIR = fs::path(getenv("HOME"));
 const fs::path Path::CONFIG_FILE = USER_ROOT_DIR / ".config/Bragi.ini";
-const fs::path Path::LOG_DIR = USER_ROOT_DIR / ".local/share/Bragi";
+const fs::path Path::LOG_DIR = USER_ROOT_DIR / ".cache/Bragi";
 
 /* Windows */
 #else
