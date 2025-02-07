@@ -16,7 +16,10 @@ void FlacSender<F>::Run() {
 template<typename F>
 FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(byte* buffer, unsigned long* buffer_size) {
 	if (!IsAborted() && (*_read_buffer)(buffer, buffer_size)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
-	else return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+	else {
+		*buffer_size = 0;
+		return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+	};
 }
 
 template<typename F>
@@ -31,8 +34,7 @@ FLAC__StreamDecoderWriteStatus FlacSender<F>::write_callback(const FLAC__Frame* 
 	/* Send the data to the discord */
 	SendData(in_left, in_right, frame->header.blocksize);
 
-	if (IsAborted()) return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-	else return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
 template<typename F>
