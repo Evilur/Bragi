@@ -1,16 +1,63 @@
 #ifndef BRAGI_LOGGER_H
 #define BRAGI_LOGGER_H
 
+#include "master.h"
+
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <cstdio>
 
+#pragma region MACRO
+
+#define TRACE_LOG(msg)
+#define DEBUG_LOG(msg)
+#define INFO_LOG(msg)
+#define WARN_LOG(msg)
+#define ERROR_LOG(msg)
+#define FATAL_LOG(msg)
+
+#if LOG_LEVEL == 0
+#undef TRACE_LOG
+#define TRACE_LOG(msg) Logger::Log(msg, Logger::TRACE);
+#endif
+#if LOG_LEVEL <= 1
+#undef DEBUG_LOG
+#define DEBUG_LOG(msg) Logger::Log(msg, Logger::DEBUG);
+#endif
+#if LOG_LEVEL <= 2
+#undef INFO_LOG
+#define INFO_LOG(msg) Logger::Log(msg, Logger::INFO);
+#endif
+#if LOG_LEVEL <= 3
+#undef WARN_LOG
+#define WARN_LOG(msg) Logger::Log(msg, Logger::WARN);
+#endif
+#if LOG_LEVEL <= 4
+#undef ERROR_LOG
+#define ERROR_LOG(msg) Logger::Log(msg, Logger::ERROR);
+#endif
+#if LOG_LEVEL <= 5
+#undef FATAL_LOG
+#define FATAL_LOG(msg) Logger::Log(msg, Logger::FATAL);
+#endif
+
+#pragma endregion
+
 /* Class for logging important messages */
 class Logger final {
 public:
+	/* Enumerator with log levels */
+	enum LogLevel : byte { TRACE, DEBUG, INFO, WARN, ERROR, FATAL };
+
 	/* Init the logger (for filesystem) */
 	static void Init();
+
+	template<typename T>
+	static void Trace(T message) { Log(message, TRACE); }
+
+	template<typename T>
+	static void Debug(T message) { Log(message, DEBUG); }
 
 	template<typename T>
 	static void Info(T message) { Log(message, INFO); }
@@ -19,15 +66,24 @@ public:
 	static void Warn(T message) { Log(message, WARN); }
 
 	template<typename T>
-	static void Fatal(T message) { Log(message, FATAL); }
+	static void Error(T message) { Log(message, ERROR); }
 
 	template<typename T>
-	static void Debug(T message) { Log(message, DEBUG); }
+	static void Fatal(T message) { Log(message, FATAL); }
+
+	/* Master log method */
+	template<typename T>
+	static void Log(T message, LogLevel log_level) {
+		/* Get the prefix. Format: '\e[35m[1970.01.01 00:00:00] DEBUG: ' */
+		char prefix[30];
+		sprintf(prefix, "%s[%s] %s", COLOR_CODE_STR[log_level], GetDate(), LOG_LEVEL_STR[log_level]);
+
+		/* Log the message */
+		std::cout << prefix << message << std::endl;
+		*_stream << prefix << message << std::endl;
+	}
 
 private:
-	/* Enumerator with log levels */
-	enum LogLevel : unsigned char { INFO, WARN, FATAL, DEBUG };
-
 	/* Log file stream */
 	inline static std::ofstream* _stream = nullptr;
 
@@ -35,15 +91,8 @@ private:
 	inline static char _current_date[20] = "1970.01.01 00:00:00";
 
 	/* Stock logging hideouts */
-	static constexpr char LOG_LEVEL_STR[4][10] = { " Info]:  ", " Warn]:  ", " Fatal]: ", " Debug]: " };
-	static constexpr char COLOR_CODE_STR[4][6] = { "\033[34m", "\033[33m", "\033[31m", "\033[35m" };
-
-	/* Master log method */
-	template<typename T>
-	static void Log(T message, LogLevel log_level) {
-		std::cout << COLOR_CODE_STR[log_level] << '[' << GetDate() << LOG_LEVEL_STR[log_level] << message << std::endl;
-		*_stream << COLOR_CODE_STR[log_level] << '[' << GetDate() << LOG_LEVEL_STR[log_level] << message << std::endl;
-	}
+	static constexpr char LOG_LEVEL_STR[6][8] = { "TRACE: ", "DEBUG: ", "INFO:  ", "WARN:  ", "ERROR: ", "FATAL: " };
+	static constexpr char COLOR_CODE_STR[6][6] = { "\e[30m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m" };
 
 	/* Remove the old log files */
 	static void CleanLogs();

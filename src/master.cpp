@@ -32,8 +32,7 @@ int main() {
 	bot->on_voice_ready(on_voice_ready);
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
-
-#if DPP_LOG
+#if DPP_LOG_ENABLED
 	bot->on_log(on_log);
 #endif
 
@@ -145,34 +144,14 @@ void on_ready(const dpp::ready_t &event) {
 	Logger::Info("Bot is ready");
 }
 
-#if DPP_LOG
+#if DPP_LOG_ENABLED
 
 void on_log(const dpp::log_t &event) {
-	/* Define the log level strings */
-	constexpr char log_level_str[6][9] = {
-			"Trace", "Debug", "Info", "Warning", "Error", "Critical"
-	};
-
 	/* Check the log level */
 	if (event.severity < DPP_LOG_LEVEL) return;
 
 	/* Log the message */
-	switch (event.severity) {
-		case dpp::ll_trace:
-		case dpp::ll_info:
-			Logger::Info(std::format("{}: {}", log_level_str[event.severity], event.message));
-			break;
-		case dpp::ll_debug:
-			Logger::Debug(std::format("{}: {}", log_level_str[event.severity], event.message));
-			break;
-		case dpp::ll_warning:
-			Logger::Warn(std::format("{}: {}", log_level_str[event.severity], event.message));
-			break;
-		case dpp::ll_error:
-		case dpp::ll_critical:
-			Logger::Fatal(std::format("{}: {}", log_level_str[event.severity], event.message));
-			break;
-	}
+	Logger::Log(event.message, (Logger::LogLevel)event.severity);
 }
 
 #endif
