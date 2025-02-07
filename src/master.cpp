@@ -37,7 +37,7 @@ int main() {
 #endif
 
 	/* Start the bot */
-	Logger::Info("Starting the bot");
+	INFO_LOG("Starting the bot");
 	bot->start(dpp::st_wait);
 	return 0;
 }
@@ -141,7 +141,7 @@ void on_ready(const dpp::ready_t &event) {
 			dpp::command_option(dpp::co_attachment, "file8", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
 			dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));*/
 
-	Logger::Info("Bot is ready");
+	INFO_LOG("Bot is ready");
 }
 
 #if DPP_LOG_ENABLED

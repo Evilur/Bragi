@@ -81,7 +81,7 @@ void DeezerClient::UpdateSession(const bool verbose) {
 
 	/* Check the user for existing */
 	if ((unsigned int)json_user["USER_ID"] == 0) {
-		Logger::Fatal("Invalid Deezer ARL token");
+		FATAL_LOG("Invalid Deezer ARL token");
 		exit(100);
 	}
 
@@ -101,8 +101,8 @@ void DeezerClient::UpdateSession(const bool verbose) {
 		const std::string user_offer = (std::string)json_results["OFFER_NAME"];
 
 		/* Log the user data */
-		Logger::Info(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email));
-		Logger::Info(std::format("Current Deezer subscription - {}", user_offer));
+		INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email));
+		INFO_LOG(std::format("Current Deezer subscription - {}", user_offer));
 	}
 
 	/* Free the memory */
