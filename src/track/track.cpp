@@ -37,15 +37,22 @@ void Track::Abort() {
 }
 
 void Track::AsyncPlay(dpp::discord_voice_client* const voiceclient, const byte speed_percent) {
+	/* Join the old play thread */
+	if (_play_thread && _play_thread->joinable()) _play_thread->join();
+
+	/* Delete the old play thread and set the new one */
+	delete _play_thread;
 	_play_thread = new std::thread(&Track::Play, this, voiceclient, speed_percent);
 }
 
 void Track::SetOpusSender(OpusSender* sender) {
-	/* Delete the old opus sender */
+	/* Abort the opus sender */
 	if (_opus_sender) _opus_sender->Abort();
-	delete _opus_sender;
 
-	/* Set the new opus sender */
+	/* Delete the old opus sender and set the new one */
+	delete _opus_sender;
 	_opus_sender = sender;
+
+	/* Run the new opus sender */
 	_opus_sender->Run();
 }
