@@ -91,7 +91,7 @@ private:
 	inline static char _current_date[20] = "1970.01.01 00:00:00";
 
 	/* Stock logging hideouts */
-	static constexpr char LOG_LEVEL_STR[6][8] = { "TRACE: ", "DEBUG: ", "INFO:  ", "WARN:  ", "ERROR: ", "FATAL: " };
+	static constexpr char LOG_LEVEL_STR[6][8] = { "Trace: ", "Debug: ", "Info:  ", "Warn:  ", "Error: ", "Fatal: " };
 	static constexpr char COLOR_CODE_STR[6][6] = { "\e[30m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m" };
 
 	/* Remove the old log files */
