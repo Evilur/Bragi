@@ -50,7 +50,7 @@ dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned
 	_tracks_size -= num_for_skip;
 
 	/* If the playlist isn't empty, play the next track */
-	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+	if (!IsEmpty() && IsPlayerReady()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 
 	/* Return the message */
 	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_for_skip));
@@ -120,7 +120,7 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 	/* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
 	if (is_playing) {
 		_voiceclient->stop_audio();
-		next_track->AsyncPlay(_voiceclient, _speed_percent);
+		if (IsPlayerReady()) next_track->AsyncPlay(_voiceclient, _speed_percent);
 	}
 
 	/* Return the message */
