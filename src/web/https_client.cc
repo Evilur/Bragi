@@ -12,11 +12,11 @@ HttpsClient::HttpsClient(const std::string &url, const std::string &headers, con
 	const std::string get = request.substr(get_index);
 
 	/* Init the socket connection */
-	asio::io_service svc;
+	asio::io_context svc;
 	asio::ssl::context ctx(asio::ssl::context::method::sslv23_client);
 	asio::ssl::stream <asio::ip::tcp::socket> ssock(svc, ctx);
 	asio::ip::tcp::resolver resolver(svc);
-	auto it = resolver.resolve({ host, "443" });
+	auto it = resolver.resolve(host, "443");
 	asio::connect(ssock.lowest_layer(), it);
 	ssock.handshake(asio::ssl::stream_base::handshake_type::client);
 

@@ -23,7 +23,9 @@ int main() {
 	DeezerClient::Init();
 
 	/* Create a bot cluster */
-	bot = new dpp::cluster(Settings::GetBotToken(), dpp::i_default_intents | dpp::i_message_content, 0, 0, 1, false);
+	bot = new dpp::cluster(Settings::GetBotToken(),
+                           dpp::i_default_intents | dpp::i_message_content,
+                           0, 0, 1, false);
 
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
@@ -76,7 +78,7 @@ void on_message_create(const dpp::message_create_t &event) {
 	else if (command == "ping") Ping::Exec(event);
 	else if (command == "j" || command == "join") Join::Exec(event);
 	else if (command == "sp" || command == "speed") Speed::Exec(event, argument);
-	else if (command == "leave") Leave::Exec(event);
+	else if (command == "teave") Leave::Exec(event);
 }
 
 void on_voice_state_update(const dpp::voice_state_update_t &event) {
@@ -97,7 +99,7 @@ void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
 
 void on_ready(const dpp::ready_t &event) {
 	/* Init the discord client */
-	ds_client = event.from;
+	ds_client = event.from();
 
 	/* Add slash commands */
 	bot->global_command_create(dpp::slashcommand("ping", DIC_SLASH_PING, bot->me.id));
