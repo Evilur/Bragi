@@ -101,8 +101,8 @@ void DeezerClient::UpdateSession(const bool verbose) {
 		const std::string user_offer = (std::string)json_results["OFFER_NAME"];
 
 		/* Log the user data */
-		INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email));
-		INFO_LOG(std::format("Current Deezer subscription - {}", user_offer));
+		INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email).c_str());
+		INFO_LOG(std::format("Current Deezer subscription - {}", user_offer).c_str());
 	}
 
 	/* Free the memory */
