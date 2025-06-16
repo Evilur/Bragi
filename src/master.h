@@ -1,10 +1,9 @@
 #ifndef BRAGI_MASTER_H
 #define BRAGI_MASTER_H
 
-#include <dpp/dpp.h>
+#include "types/base.h"
 
-using byte = unsigned char;
-using s_byte = signed char;
+#include <dpp/dpp.h>
 
 inline dpp::discord_client* ds_client = nullptr;
 inline dpp::cluster* bot = nullptr;
