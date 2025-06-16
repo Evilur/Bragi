@@ -1,5 +1,8 @@
 #include "logger.h"
 
+#include <ctime>
+#include <cstdarg>
+
 void Logger::Log(FILE* stream,
                 const LogLevel log_level,
                 const char* format, ...) {

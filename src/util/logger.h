@@ -1,13 +1,7 @@
 #ifndef BRAGI_LOGGER_H
 #define BRAGI_LOGGER_H
 
-#include "master.h"
-
-#include <string>
-#include <iostream>
-#include <fstream>
 #include <cstdio>
-#include <cstdarg>
 
 #define LOG_LEVEL 0
 

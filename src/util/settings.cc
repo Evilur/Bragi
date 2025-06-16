@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <regex>
+#include <iostream>
 
 void Settings::Init() {
 	INFO_LOG("Initializing tokens");
