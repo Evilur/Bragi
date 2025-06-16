@@ -6,19 +6,9 @@
 #include <ctime>
 #include <set>
 
-void Logger::Init() {
-	fs::path log_file = Path::LOG_DIR / std::string(GetDate()).append(".log");
-	_stream = new std::ofstream(log_file);
-	std::cout << "Log file: " << log_file.c_str() << std::endl;
-	CleanLogs();
-}
-
-void Logger::CleanLogs() {
-	char counter = 0;
-	std::set<fs::path> list;
-	for (const fs::path &entry: fs::directory_iterator(Path::LOG_DIR)) list.insert(entry);
-	for (const fs::path &log_file: list) if (list.size() - counter++ > 15) std::remove(log_file.c_str());
-}
+#define LOG_LEVEL 0
+#define DPP_LOG_LEVEL 0
+#define DPP_LOG_ENABLED false
 
 const char* Logger::GetDate() {
 	/* Output example: 2023.10.21 17:05:55 */

@@ -1,4 +1,4 @@
 # Sources
-*.cpp   text eol=lf linguist-language=C++
+*.cc    text eol=lf linguist-language=C++
 *.h     text eol=lf linguist-language=C++
 *.txt   text eol=lf

@@ -8,8 +8,6 @@
 #include <fstream>
 #include <cstdio>
 
-#pragma region MACRO
-
 #define TRACE_LOG(msg)
 #define DEBUG_LOG(msg)
 #define INFO_LOG(msg)
@@ -41,8 +39,6 @@
 #undef FATAL_LOG
 #define FATAL_LOG(msg) Logger::Log(msg, Logger::FATAL);
 #endif
-
-#pragma endregion
 
 /* Class for logging important messages */
 class Logger final {
@@ -80,22 +76,15 @@ public:
 
 		/* Log the message */
 		std::cout << prefix << message << std::endl;
-		*_stream << prefix << message << std::endl;
 	}
 
 private:
-	/* Log file stream */
-	inline static std::ofstream* _stream = nullptr;
-
 	/* Date pointer (20 chars is enough to record the date and time: 2024.09.17 18:51:47 + \0) */
 	inline static char _current_date[20] = "1970.01.01 00:00:00";
 
 	/* Stock logging hideouts */
 	static constexpr char LOG_LEVEL_STR[6][8] = { "Trace: ", "Debug: ", "Info:  ", "Warn:  ", "Error: ", "Fatal: " };
-	static constexpr char COLOR_CODE_STR[6][6] = { "\e[30m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m" };
-
-	/* Remove the old log files */
-	static void CleanLogs();
+	static constexpr char COLOR_CODE_STR[6][6] = { "\e[37m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m" };
 
 	/* Get the current formatted date */
 	static const char* GetDate();
