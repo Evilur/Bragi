@@ -31,9 +31,6 @@ int main() {
 	bot->on_voice_ready(on_voice_ready);
 	bot->on_voice_track_marker(on_voice_track_marker);
 	bot->on_ready(on_ready);
-#if DPP_LOG_ENABLED
-	bot->on_log(on_log);
-#endif
 
 	/* Start the bot */
 	INFO_LOG("Starting the bot");
