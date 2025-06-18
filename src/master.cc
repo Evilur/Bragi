@@ -5,7 +5,7 @@
 #include "command/leave.h"
 #include "guild/guild_player.h"
 #include "util/logger.h"
-#include "util/settings.h"
+#include "util/properties.h"
 #include "client/deezer_client.h"
 #include "command/play.h"
 #include "command/list.h"
@@ -16,11 +16,10 @@
 
 int main() {
 	/* Init static classes */
-	Settings::Init();
 	DeezerClient::Init();
 
 	/* Create a bot cluster */
-	bot = new dpp::cluster(Settings::GetBotToken(),
+	bot = new dpp::cluster(Properties::BotToken(),
                            dpp::i_default_intents | dpp::i_message_content,
                            0, 0, 1, false);
 
@@ -56,7 +55,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 
 void on_message_create(const dpp::message_create_t &event) {
 	/* If a message doesn't start with the command prefix exit the method */
-	if (!event.msg.content.starts_with(Settings::GetPrefix())) return;
+	if (!event.msg.content.starts_with(Properties::PREFIX)) return;
 
 	/* Get a command name and arguments */
 	const unsigned long space_sep = event.msg.content.find(' ');

@@ -1,6 +1,6 @@
 #include "deezer_client.h"
 #include "web/http_client.h"
-#include "util/settings.h"
+#include "util/properties.h"
 #include "util/json.h"
 #include "util/logger.h"
 #include "track/deezer_track.h"
@@ -11,7 +11,7 @@
 
 void DeezerClient::Init() {
 	/* Init the arl token and headers for the deezer requests */
-	_headers = DEEZER_BASIC_HEADERS_TEMPLATE + Settings::GetArlToken();
+	_headers = DEEZER_BASIC_HEADERS_TEMPLATE + std::string(Properties::ArlToken());
 	UpdateSession(true);
 }
 
