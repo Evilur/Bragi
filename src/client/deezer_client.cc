@@ -9,12 +9,6 @@
 
 #include <iostream>
 
-void DeezerClient::Init() {
-	/* Init the arl token and headers for the deezer requests */
-	_headers = DEEZER_BASIC_HEADERS_TEMPLATE + std::string(Properties::ArlToken());
-	UpdateSession(true);
-}
-
 DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int start) {
 	/* If the session has been expired update it */
 	const unsigned long c_time = time(nullptr);
@@ -70,7 +64,7 @@ std::string DeezerClient::GetTrackUrl(const std::string &token, DeezerTrack::Qua
 	return result;
 }
 
-void DeezerClient::UpdateSession(const bool verbose) {
+void DeezerClient::UpdateSession() {
 	/* Send the http request */
 	HttpClient http_client = HttpClient(DEEZER_UPDATE_SESSION_URL, _headers);
 	const char* json_string = http_client.ReadAll();
@@ -95,15 +89,13 @@ void DeezerClient::UpdateSession(const bool verbose) {
 	_get_track_url_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
 
 	/* Get user data for logging */
-	if (verbose) {
-		const std::string user_name = (std::string)json_user["BLOG_NAME"];
-		const std::string user_email = (std::string)json_user["EMAIL"];
-		const std::string user_offer = (std::string)json_results["OFFER_NAME"];
+    const std::string user_name = (std::string)json_user["BLOG_NAME"];
+    const std::string user_email = (std::string)json_user["EMAIL"];
+    const std::string user_offer = (std::string)json_results["OFFER_NAME"];
 
-		/* Log the user data */
-		INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email).c_str());
-		INFO_LOG(std::format("Current Deezer subscription - {}", user_offer).c_str());
-	}
+    /* Log the user data */
+    INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email).c_str());
+    INFO_LOG(std::format("Current Deezer subscription - {}", user_offer).c_str());
 
 	/* Free the memory */
 	delete[] json_string;

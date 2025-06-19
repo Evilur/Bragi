@@ -2,6 +2,7 @@
 #define BRAGI_DEEZER_CLIENT_H
 
 #include "track/deezer_track.h"
+#include "util/properties.h"
 
 #include <string>
 
@@ -43,8 +44,6 @@
 
 class DeezerClient final {
 public:
-	static void Init();
-
 	static DeezerTrack* Search(const std::string &query, unsigned int start = 0);
 
 	static std::string GetTrackUrl(const std::string &token, DeezerTrack::Quality quality);
@@ -52,20 +51,20 @@ public:
 private:
 	static constexpr char TRACK_QUALITY_STR[3][8] = { "MP3_128", "MP3_320", "FLAC" };
 
-	static inline std::string _headers;
+	static inline std::string _headers = DEEZER_BASIC_HEADERS_TEMPLATE + std::string(Properties::ArlToken());
 	static inline std::string _session_id;
 	static inline std::string _license_token;
 
 	static inline std::string _search_track_url;
 	static inline std::string _get_track_url_url;
 
-	static inline unsigned long _session_timestamp;
+	static inline unsigned long _session_timestamp = 0;
 	static constexpr unsigned int DELTA_TIME = 600;
 
 	/** Update the deezer session
 	 * @param verbose true if we need to log the user data; false else
 	 */
-	static void UpdateSession(bool verbose = false);
+	static void UpdateSession();
 };
 
 #endif
