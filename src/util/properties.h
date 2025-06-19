@@ -13,7 +13,7 @@ private:
     inline static const char* _bot_token = nullptr;
     inline static const char* _arl_token = nullptr;
 
-    static const char* InitToken(const char* var,
+    static void InitToken(const char* var,
                                  const char* &token_ptr);
 };
 

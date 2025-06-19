@@ -21,8 +21,8 @@ const char* Properties::ArlToken() {
     return _arl_token;
 }
 
-const char* Properties::InitToken(const char* var,
-                                  const char* &token_ptr) {
+void Properties::InitToken(const char* var,
+                           const char* &token_ptr) {
     /* Obtain the token from the env */
     token_ptr = getenv(var);
 
@@ -33,7 +33,4 @@ const char* Properties::InitToken(const char* var,
         FATAL_LOG("Can't obtain %s from the environment", var);
         exit(1);
     }
-
-    /* Return the token */
-    return token_ptr;
 }

@@ -6,7 +6,6 @@
 #include "guild/guild_player.h"
 #include "util/logger.h"
 #include "util/properties.h"
-#include "client/deezer_client.h"
 #include "command/play.h"
 #include "command/list.h"
 #include "command/skip.h"
@@ -15,9 +14,6 @@
 #include "command/speed.h"
 
 int main() {
-	/* Init static classes */
-	DeezerClient::Init();
-
 	/* Create a bot cluster */
 	bot = new dpp::cluster(Properties::BotToken(),
                            dpp::i_default_intents | dpp::i_message_content,
