@@ -1,5 +1,5 @@
 #include "master.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 #include "command/ping.h"
 #include "command/join.h"
 #include "command/leave.h"
@@ -120,29 +120,5 @@ void on_ready(const dpp::ready_t &event) {
 
 	bot->global_command_create(dpp::slashcommand("list", DIC_SLASH_LIST, bot->me.id));
 
-	/*bot->global_command_create(dpp::slashcommand("play-attachment", DIC_SLASH_PLAY_ATTACHMENT, bot->me.id).add_option(
-			dpp::command_option(dpp::co_attachment, "file", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file1", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file2", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file3", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file4", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file5", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file6", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file7", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file8", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)).add_option(
-			dpp::command_option(dpp::co_attachment, "file9", DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT, false)));*/
-
 	INFO_LOG("Bot is ready");
 }
-
-#if DPP_LOG_ENABLED
-
-void on_log(const dpp::log_t &event) {
-	/* Check the log level */
-	if (event.severity < DPP_LOG_LEVEL) return;
-
-	/* Log the message */
-	Logger::Log(event.message, (Logger::LogLevel)event.severity);
-}
-
-#endif

@@ -2,7 +2,7 @@
 #include "guild//guild_player.h"
 #include "exception/bragi_exception.h"
 #include "util/parser.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 
 void Speed::Exec(const dpp::slashcommand_t &event) {
 	/* Get the track speed in percents */

@@ -2,7 +2,7 @@
 #define BRAGI_DEEZER_TRACK_H
 
 #include "track.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 #include "web/http_client.h"
 #include "master.h"
 #include "sender/opus_sender.h"

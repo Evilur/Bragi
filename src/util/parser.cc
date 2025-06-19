@@ -1,6 +1,6 @@
 #include <iostream>
 #include "parser.h"
-#include "dictionary.h"
+#include "locale/locale.h"
 
 byte Parser::ToUInt8(const char* data) {
 	byte result = 0;

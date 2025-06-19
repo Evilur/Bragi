@@ -1,6 +1,6 @@
 #include "master.h"
 #include "guild_player.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 #include "exception/bragi_exception.h"
 #include "util/logger.h"
 #include "util/color.h"

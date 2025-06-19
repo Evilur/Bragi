@@ -26,7 +26,7 @@ void Properties::InitToken(const char* var,
     /* Obtain the token from the env */
     token_ptr = getenv(var);
 
-    /* Print the result */
+    /* Check the result and print the message according to it */
     if (token_ptr) {
         INFO_LOG("%s has been obtained from the environment", var);
     } else {

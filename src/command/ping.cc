@@ -1,7 +1,7 @@
 #include "master.h"
 #include "ping.h"
 #include "util/color.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 
 #include <chrono>
 

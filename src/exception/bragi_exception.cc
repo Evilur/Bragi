@@ -1,6 +1,6 @@
 #include "bragi_exception.h"
 #include "util/color.h"
-#include "util/dictionary.h"
+#include "locale/locale.h"
 
 BragiException::BragiException(const char* e_data, const dpp::snowflake &channel_id, const Type e_type)
 		: _e_data(e_data), _channel_id(channel_id), _e_type(e_type) { }
