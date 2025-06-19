@@ -16,7 +16,7 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 	else _session_timestamp = c_time;
 
 	/* Send the http request */
-	const std::string http_body = std::format(DEEZER_SEARCH_TRACK_TEMPLATE_BODY, query, start);
+	const std::string http_body = std::format(SEARCH_TRACK_BODY_TEMPLATE, query, start);
 	HttpClient http_client = HttpClient(_search_track_url, _headers, http_body, "POST");
 	const char* json_string = http_client.ReadAll();
 
@@ -50,7 +50,7 @@ DeezerTrack* DeezerClient::Search(const std::string &query, const unsigned int s
 
 std::string DeezerClient::GetTrackUrl(const std::string &token, DeezerTrack::Quality quality) {
 	/* Send the https request */
-	const std::string http_body = std::format(DEEZER_GET_URL_TEMPLATE_BODY, _license_token, TRACK_QUALITY_STR[quality], token);
+	const std::string http_body = std::format(GET_URL_BODY_TEMPLATE, _license_token, TRACK_QUALITY_STR[quality], token);
 	HttpsClient http_client = HttpsClient(_get_track_url_url, _headers, http_body, "POST");
 	const char* json_string = http_client.ReadAll();
 
@@ -65,8 +65,11 @@ std::string DeezerClient::GetTrackUrl(const std::string &token, DeezerTrack::Qua
 }
 
 void DeezerClient::UpdateSession() {
+    /* Set headers */
+    _headers = HEADERS_TEMPLATE + std::string(Properties::ArlToken());
+
 	/* Send the http request */
-	HttpClient http_client = HttpClient(DEEZER_UPDATE_SESSION_URL, _headers);
+	HttpClient http_client = HttpClient(UPDATE_SESSION_URL, _headers);
 	const char* json_string = http_client.ReadAll();
 
 	/* Init the JSON objects */
@@ -85,8 +88,8 @@ void DeezerClient::UpdateSession() {
 	_session_timestamp = (unsigned long)json_results["SERVER_TIMESTAMP"];
 
 	/* Update the dependent urls */
-	_search_track_url = DEEZER_SEARCH_TRACK_TEMPLATE_URL + _session_id;
-	_get_track_url_url = DEEZER_GET_URL_TEMPLATE_URL + _session_id;
+	_search_track_url = SEARCH_TRACK_URL_TEMPLATE + _session_id;
+	_get_track_url_url = GET_URL_URL_TEMPLATE + _session_id;
 
 	/* Get user data for logging */
     const std::string user_name = (std::string)json_user["BLOG_NAME"];
@@ -94,8 +97,8 @@ void DeezerClient::UpdateSession() {
     const std::string user_offer = (std::string)json_results["OFFER_NAME"];
 
     /* Log the user data */
-    INFO_LOG(std::format("Log in Deezer as \"{}\" <{}>", user_name, user_email).c_str());
-    INFO_LOG(std::format("Current Deezer subscription - {}", user_offer).c_str());
+    INFO_LOG("Log in Deezer as \"%s\" <%s>", user_name.c_str(), user_email.c_str());
+    INFO_LOG("Current Deezer subscription - %s", user_offer.c_str());
 
 	/* Free the memory */
 	delete[] json_string;
