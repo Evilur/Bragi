@@ -9,34 +9,6 @@
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
-dpp::message Bragi::PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-}
-
-dpp::message Bragi::SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip) {
-	/* If the playlist is empty */
-	if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, BragiException::SOFT);
-
-	/* If we can't skip that number of tracks */
-	if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, channel_id, BragiException::SOFT);
-
-	/* Stop the audio and clear the packet queue */
-	_tracks.Head()->Abort();
-	if (IsPlayerReady()) _voiceclient->stop_audio();
-
-	/* Get the current track number for skip */
-	if (num_for_skip > _tracks_size) num_for_skip = _tracks_size;
-
-	/* Skip delete track/tracks from the playlist */
-	_tracks.PopFront(num_for_skip, [](Track* track) { delete track; });
-	_tracks_size -= num_for_skip;
-
-	/* If the playlist isn't empty, play the next track */
-	if (!IsEmpty() && IsPlayerReady()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
-
-	/* Return the message */
-	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_for_skip));
-}
-
 dpp::message Bragi::SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent) {
 	/* Set the speed percent */
 	_speed_percent = speed_percent;
@@ -224,49 +196,3 @@ Bragi* Bragi::Add(const dpp::snowflake &guild_id) {
 	/* Return a new player */
 	return player;
 }
-
-void Bragi::JoinCommand(const dpp::slashcommand_t &event) { }
-void Bragi::LeaveCommand(const dpp::slashcommand_t &event) { }
-void Bragi::ListCommand(const dpp::slashcommand_t &event) { }
-void Bragi::LoopCommand(const dpp::slashcommand_t &event) { }
-void Bragi::NextCommand(const dpp::slashcommand_t &event) { }
-void Bragi::PingCommand(const dpp::slashcommand_t &event) { }
-
-void Bragi::PlayCommand(const dpp::slashcommand_t &event) {
-    /* Get query from the command parameter */
-    std::string query = std::get<std::string>(event.get_parameter("query"));
-
-    /* Search the Deezer track */
-    Track* track = DeezerClient::Search(query);
-
-    /* If there is no such track */
-    if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND,
-                                               event.command.channel_id,
-                                               BragiException::SOFT);
-
-    /* If all is OK */
-    bool need_to_play_first_track = IsEmpty();  //If the playlist is empty this track will be played right now
-    dpp::message result_msg = track->GetMessage(need_to_play_first_track, event.command.channel_id);  //Get track message
-
-    /* If player is ready */
-    if (IsPlayerReady()) {
-        /* Add a track to the playlist */
-        _tracks.Push(track);
-        _tracks_size++;
-
-        if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
-        event.reply(result_msg);  //Return the track message
-        return;
-    }
-
-    /* If player is not ready */
-    result_msg.content.insert(0, Join(event.command.usr.id, event.command.channel_id) + '\n');  //Join to the channel and insert the message to the result message
-
-    /* Add a track to the playlist (if we successfully joined the channel) */
-    _tracks.Push(track);
-    _tracks_size++;
-    event.reply(result_msg);  //Return a track message
-}
-
-void Bragi::SkipCommand(const dpp::slashcommand_t &event) { }
-void Bragi::SpeedCommand(const dpp::slashcommand_t &event) { }

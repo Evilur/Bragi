@@ -6,7 +6,6 @@
 #include "util/logger.h"
 #include "util/properties.h"
 #include "command/list.h"
-#include "command/skip.h"
 #include "command/loop.h"
 #include "command/next.h"
 #include "command/speed.h"
@@ -39,7 +38,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 
 	/* Check for commands */
 	if (command_name == "play") bragi->PlayCommand(event);
-	else if (command_name == "skip") Skip::Exec(event);
+	else if (command_name == "skip") bragi->SkipCommand(event);
 	else if (command_name == "list") List::Exec(event);
 	else if (command_name == "next") Next::Exec(event);
 	else if (command_name == "loop") Loop::Exec(event);
