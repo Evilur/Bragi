@@ -1,14 +1,8 @@
 #include "master.h"
 #include "locale/locale.h"
-#include "command/join.h"
-#include "command/leave.h"
 #include "base/bragi.h"
 #include "util/logger.h"
 #include "util/properties.h"
-#include "command/list.h"
-#include "command/loop.h"
-#include "command/next.h"
-#include "command/speed.h"
 #include "exception/bragi_exception.h"
 
 int main() {

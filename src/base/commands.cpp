@@ -3,7 +3,15 @@
 #include "client/deezer_client.h"
 #include "exception/bragi_exception.h"
 
-dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
+    /* Default user for connection */
+    dpp::snowflake user_id = event.command.usr.id;
+
+    /* Get user from the command parameter (if exists) */
+    dpp::command_value user_par = event.get_parameter("user");
+    if (user_par.index() != 0) user_id = event.command.get_resolved_user(std::get<dpp::snowflake>(user_par)).id;
+}
+
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 dpp::message Bragi::ListCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
@@ -73,7 +81,20 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
 
-dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
+    /* Get the track speed in percents */
+    long speed_percent = 100;
+    dpp::command_value speed_percent_par = event.get_parameter("percent");
+    if (speed_percent_par.index() != 0) speed_percent = std::get<long>(speed_percent_par);
+
+    /* Set the speed percent */
+    _speed_percent = speed_percent;
+
+    /* Return a message */
+    return {
+        std::format(_("**:asterisk: Playback rate: `{}%`**"), speed_percent)
+    };
+}
 
 dpp::message Bragi::PingCommand(const dpp::slashcommand_t &event) {
     /* Get the ping */

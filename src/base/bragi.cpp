@@ -9,14 +9,6 @@
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
-dpp::message Bragi::SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent) {
-	/* Set the speed percent */
-	_speed_percent = speed_percent;
-
-	/* Return a message */
-	return dpp::message(channel_id, std::format(DIC_SLASH_SPEED_MSG, speed_percent));
-}
-
 dpp::message Bragi::ListCommand(const dpp::snowflake &channel_id) {
 	if (IsEmpty())
 		return dpp::message(channel_id, dpp::embed()
