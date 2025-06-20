@@ -5,24 +5,24 @@
 class Locale final {
 public:
     static constexpr const char* GetText(const char* text) {
-        if (Compare(text, "Ping"))
-            return "Задержка";
-        else if (Compare(text, "{}ms"))
-            return "{}мс";
-        else return text;
-    }
+#define TRANSLATE(TEXT1, TEXT2) else if (strcmp(text, TEXT1) == 0) return TEXT2
 
-private:
-    constexpr static bool Compare(const char* text1,
-                                  const char* text2) {
-        return strcmp(text1, text2) == 0;
+        if (strcmp(text, "") == 0) return "";
+        /* Speed command */
+        TRANSLATE("**:asterisk: Playback rate: `{}%`**",
+          "**:asterisk: Скорость воспроизведения: `{}%`**");
+
+        /* Ping command */
+        TRANSLATE("Ping",
+          "Задержка");
+        TRANSLATE("{}ms",
+          "{}мс");
+        else return text;
     }
 };
 
 //ping command
 #define DIC_SLASH_PING "Получить задержку бота в мс"
-#define DIC_PING "**Задержка**"
-#define DIC_MS "**{} мс**"
 
 //join command
 #define DIC_SLASH_JOIN "Присоединиться к голосовому каналу"
@@ -49,7 +49,6 @@ private:
 #define DIC_SLASH_SPEED_PERCENT "Процент скорости воспроизведения"
 #define DIC_SLASH_SPEED_MORE_THAN "**Максимальная скорость - 250%**"
 #define DIC_SLASH_SPEED_LESS_THAN "**Минимальная скорость - 25%**"
-#define DIC_SLASH_SPEED_MSG "**:asterisk: Скорость воспроизведения: `{}%`**"
 
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
