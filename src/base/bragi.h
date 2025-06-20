@@ -11,18 +11,18 @@ class Bragi final {
 public:
 	enum LoopType : byte { DISABLED, TRACK, PLAYLIST };
 
-    static void PingCommand(const dpp::slashcommand_t &event);
-
-    void JoinCommand(const dpp::slashcommand_t &event);
-    void LeaveCommand(const dpp::slashcommand_t &event);
-    void ListCommand(const dpp::slashcommand_t &event);
-    void LoopCommand(const dpp::slashcommand_t &event);
-    void NextCommand(const dpp::slashcommand_t &event);
+    dpp::message JoinCommand(const dpp::slashcommand_t &event);
+    dpp::message LeaveCommand(const dpp::slashcommand_t &event);
+    dpp::message ListCommand(const dpp::slashcommand_t &event);
+    dpp::message LoopCommand(const dpp::slashcommand_t &event);
+    dpp::message NextCommand(const dpp::slashcommand_t &event);
     dpp::message PlayCommand(const dpp::slashcommand_t &event);
     dpp::message SkipCommand(const dpp::slashcommand_t &event);
-    void SpeedCommand(const dpp::slashcommand_t &event);
+    dpp::message SpeedCommand(const dpp::slashcommand_t &event);
 
-	const dpp::snowflake guild_id;
+    static dpp::message PingCommand(const dpp::slashcommand_t &event);
+
+    const dpp::snowflake guild_id;
 
 	explicit Bragi(const dpp::snowflake &guild_id);
 

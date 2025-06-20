@@ -42,15 +42,15 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
         const dpp::message message =
                 command_name == "play" ? bragi->PlayCommand(event) :
                 command_name == "skip" ? bragi->SkipCommand(event) :
+                command_name == "list" ? bragi->ListCommand(event) :
+                command_name == "next" ? bragi->NextCommand(event) :
+                command_name == "loop" ? bragi->LoopCommand(event) :
+                command_name == "join" ? bragi->JoinCommand(event) :
+                command_name == "speed" ? bragi->SpeedCommand(event) :
+                command_name == "leave" ? bragi->LeaveCommand(event) :
+                command_name == "ping" ? Bragi::PingCommand(event) :
                 dpp::message("PLACEHOLDER MESSAGE");
         event.reply(message);
-        if (command_name == "list") List::Exec(event);
-        else if (command_name == "next") Next::Exec(event);
-        else if (command_name == "loop") Loop::Exec(event);
-        else if (command_name == "ping") Bragi::PingCommand(event);
-        else if (command_name == "join") Join::Exec(event);
-        else if (command_name == "speed") Speed::Exec(event);
-        else if (command_name == "leave") Leave::Exec(event);
     } catch (BragiException &e) {
         /* Handle the exception and print the error message to the user */
         const dpp::message &message = e.Message();

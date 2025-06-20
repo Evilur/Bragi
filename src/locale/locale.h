@@ -1,5 +1,23 @@
-#ifndef BRAGI_DICTIONARY_H
-#define BRAGI_DICTIONARY_H
+#pragma once
+
+#define _(TEXT) Locale::GetText(TEXT)
+
+class Locale final {
+public:
+    static constexpr const char* GetText(const char* text) {
+        if (Compare(text, "Ping"))
+            return "Задержка";
+        else if (Compare(text, "{}ms"))
+            return "{}мс";
+        else return text;
+    }
+
+private:
+    constexpr static bool Compare(const char* text1,
+                                  const char* text2) {
+        return strcmp(text1, text2) == 0;
+    }
+};
 
 //ping command
 #define DIC_SLASH_PING "Получить задержку бота в мс"
@@ -78,5 +96,3 @@
 
 //http errors
 #define DIC_HTTP_ERROR_CON_CANNOT_BE_ESTABLISHED "Соединение не может быть установлено"
-
-#endif

@@ -1,13 +1,13 @@
 #include "bragi.h"
+#include "master.h"
 #include "client/deezer_client.h"
 #include "exception/bragi_exception.h"
 
-void Bragi::JoinCommand(const dpp::slashcommand_t &event) { }
-void Bragi::LeaveCommand(const dpp::slashcommand_t &event) { }
-void Bragi::ListCommand(const dpp::slashcommand_t &event) { }
-void Bragi::LoopCommand(const dpp::slashcommand_t &event) { }
-void Bragi::NextCommand(const dpp::slashcommand_t &event) { }
-void Bragi::PingCommand(const dpp::slashcommand_t &event) { }
+dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::ListCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 
 dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* Get query from the command parameter */
@@ -73,4 +73,15 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
 
-void Bragi::SpeedCommand(const dpp::slashcommand_t &event) { }
+dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+
+dpp::message Bragi::PingCommand(const dpp::slashcommand_t &event) {
+    /* Get the ping */
+    uint ping = (uint)(bot->rest_ping * 1000.0);
+
+    /* Return the result */
+    return dpp::embed()
+            .set_color(Color::GREEN)
+            .set_title(_("Ping"))
+            .set_description(std::format(_("{}ms"), ping));
+}
