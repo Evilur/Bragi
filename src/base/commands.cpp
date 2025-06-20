@@ -9,7 +9,7 @@ void Bragi::LoopCommand(const dpp::slashcommand_t &event) { }
 void Bragi::NextCommand(const dpp::slashcommand_t &event) { }
 void Bragi::PingCommand(const dpp::slashcommand_t &event) { }
 
-void Bragi::PlayCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* Get query from the command parameter */
     std::string query = std::get<std::string>(event.get_parameter("query"));
 
@@ -32,8 +32,7 @@ void Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks_size++;
 
         if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
-        event.reply(result_msg);  //Return the track message
-        return;
+        return result_msg;  //Return the track message
     }
 
     /* If player is not ready */
@@ -42,10 +41,10 @@ void Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* Add a track to the playlist (if we successfully joined the channel) */
     _tracks.Push(track);
     _tracks_size++;
-    event.reply(result_msg);  //Return a track message
+    return result_msg;  //Return a track message
 }
 
-void Bragi::SkipCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     /* Get number of tracks for skip (if exists) */
     unsigned short num_for_skip = 1;
     dpp::command_value num_for_skip_par = event.get_parameter("number");
@@ -71,7 +70,7 @@ void Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     /* If the playlist isn't empty, play the next track */
     if (!IsEmpty() && IsPlayerReady()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 
-    event.reply(std::format(DIC_SKIP_MSG, num_for_skip));
+    return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
 
 void Bragi::SpeedCommand(const dpp::slashcommand_t &event) { }

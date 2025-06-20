@@ -9,6 +9,7 @@
 #include "command/loop.h"
 #include "command/next.h"
 #include "command/speed.h"
+#include "exception/bragi_exception.h"
 
 int main() {
 	/* Create a bot cluster */
@@ -36,16 +37,25 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
     /* Get the bragi instance */
     Bragi* bragi = Bragi::Get(event.command.guild_id);
 
-	/* Check for commands */
-	if (command_name == "play") bragi->PlayCommand(event);
-	else if (command_name == "skip") bragi->SkipCommand(event);
-	else if (command_name == "list") List::Exec(event);
-	else if (command_name == "next") Next::Exec(event);
-	else if (command_name == "loop") Loop::Exec(event);
-	else if (command_name == "ping") Bragi::PingCommand(event);
-	else if (command_name == "join") Join::Exec(event);
-	else if (command_name == "speed") Speed::Exec(event);
-	else if (command_name == "leave") Leave::Exec(event);
+    try {
+        /* Run a command and get a result message */
+        const dpp::message message =
+                command_name == "play" ? bragi->PlayCommand(event) :
+                command_name == "skip" ? bragi->SkipCommand(event) :
+                dpp::message("PLACEHOLDER MESSAGE");
+        event.reply(message);
+        if (command_name == "list") List::Exec(event);
+        else if (command_name == "next") Next::Exec(event);
+        else if (command_name == "loop") Loop::Exec(event);
+        else if (command_name == "ping") Bragi::PingCommand(event);
+        else if (command_name == "join") Join::Exec(event);
+        else if (command_name == "speed") Speed::Exec(event);
+        else if (command_name == "leave") Leave::Exec(event);
+    } catch (BragiException &e) {
+        /* Handle the exception and print the error message to the user */
+        const dpp::message &message = e.Message();
+        event.reply(message);
+    }
 }
 
 void on_voice_state_update(const dpp::voice_state_update_t &event) {

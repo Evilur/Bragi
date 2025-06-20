@@ -18,8 +18,8 @@ public:
     void ListCommand(const dpp::slashcommand_t &event);
     void LoopCommand(const dpp::slashcommand_t &event);
     void NextCommand(const dpp::slashcommand_t &event);
-    void PlayCommand(const dpp::slashcommand_t &event);
-    void SkipCommand(const dpp::slashcommand_t &event);
+    dpp::message PlayCommand(const dpp::slashcommand_t &event);
+    dpp::message SkipCommand(const dpp::slashcommand_t &event);
     void SpeedCommand(const dpp::slashcommand_t &event);
 
 	const dpp::snowflake guild_id;
