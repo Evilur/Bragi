@@ -1,18 +1,30 @@
-#ifndef BRAGI_GUILD_PLAYER_H
-#define BRAGI_GUILD_PLAYER_H
+#pragma once
 
 #include "track/track.h"
 #include "util/linked_list.h"
+#include "util/color.h"
+#include "locale/locale.h"
 
 #include <dpp/dpp.h>
 
-class GuildPlayer final {
+class Bragi final {
 public:
 	enum LoopType : byte { DISABLED, TRACK, PLAYLIST };
 
+    static void PingCommand(const dpp::slashcommand_t &event);
+
+    void JoinCommand(const dpp::slashcommand_t &event);
+    void LeaveCommand(const dpp::slashcommand_t &event);
+    void ListCommand(const dpp::slashcommand_t &event);
+    void LoopCommand(const dpp::slashcommand_t &event);
+    void NextCommand(const dpp::slashcommand_t &event);
+    void PlayCommand(const dpp::slashcommand_t &event);
+    void SkipCommand(const dpp::slashcommand_t &event);
+    void SpeedCommand(const dpp::slashcommand_t &event);
+
 	const dpp::snowflake guild_id;
 
-	explicit GuildPlayer(const dpp::snowflake &guild_id);
+	explicit Bragi(const dpp::snowflake &guild_id);
 
 	dpp::message PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
 
@@ -47,13 +59,11 @@ private:
 	inline bool IsEmpty() const;
 
 public:
-	static GuildPlayer* Get(const dpp::snowflake &guild_id);
+	static Bragi* Get(const dpp::snowflake &guild_id);
 
 private:
-	static inline LinkedList<GuildPlayer*> _players;
+	static inline LinkedList<Bragi*> _players;
 	static inline LoopType _loop_type = DISABLED;
 
-	static GuildPlayer* Add(const dpp::snowflake &guild_id);
+	static Bragi* Add(const dpp::snowflake &guild_id);
 };
-
-#endif

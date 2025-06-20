@@ -5,33 +5,14 @@
 #include "util/logger.h"
 #include "util/color.h"
 #include "util/parser.h"
+#include "client/deezer_client.h"
 
-GuildPlayer::GuildPlayer(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
+Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
-dpp::message GuildPlayer::PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
-	bool need_to_play_first_track = IsEmpty();  //If the playlist is empty this track will be played right now
-	dpp::message result_msg = track->GetMessage(need_to_play_first_track, channel_id);  //Get track message
-
-	/* If player is ready */
-	if (IsPlayerReady()) {
-		/* Add a track to the playlist */
-		_tracks.Push(track);
-		_tracks_size++;
-
-		if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
-		return result_msg;  //Return the track message
-	}
-
-	/* If player is not ready */
-	result_msg.content.insert(0, Join(user_id, channel_id) + '\n');  //Join to the channel and insert the message to the result message
-
-	/* Add a track to the playlist (if we successfully joined the channel) */
-	_tracks.Push(track);
-	_tracks_size++;
-	return result_msg;  //Return a track message
+dpp::message Bragi::PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track) {
 }
 
-dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip) {
+dpp::message Bragi::SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip) {
 	/* If the playlist is empty */
 	if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, channel_id, BragiException::SOFT);
 
@@ -56,7 +37,7 @@ dpp::message GuildPlayer::SkipCommand(const dpp::snowflake &channel_id, unsigned
 	return dpp::message(channel_id, std::format(DIC_SKIP_MSG, num_for_skip));
 }
 
-dpp::message GuildPlayer::SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent) {
+dpp::message Bragi::SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent) {
 	/* Set the speed percent */
 	_speed_percent = speed_percent;
 
@@ -64,7 +45,7 @@ dpp::message GuildPlayer::SpeedCommand(const dpp::snowflake &channel_id, const b
 	return dpp::message(channel_id, std::format(DIC_SLASH_SPEED_MSG, speed_percent));
 }
 
-dpp::message GuildPlayer::ListCommand(const dpp::snowflake &channel_id) {
+dpp::message Bragi::ListCommand(const dpp::snowflake &channel_id) {
 	if (IsEmpty())
 		return dpp::message(channel_id, dpp::embed()
 				.set_color(Color::GREEN)
@@ -84,7 +65,7 @@ dpp::message GuildPlayer::ListCommand(const dpp::snowflake &channel_id) {
 			.set_description(sstream.str()));
 }
 
-dpp::message GuildPlayer::LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type) {
+dpp::message Bragi::LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type) {
 	/* Update the loop type */
 	_loop_type = loop_type;
 
@@ -94,7 +75,7 @@ dpp::message GuildPlayer::LoopCommand(const dpp::snowflake &channel_id, const Lo
 	else return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_DISABLED);
 }
 
-dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
+dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
 	/* If the playlist is empty, throw an exception */
 	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, BragiException::SOFT);
 
@@ -127,7 +108,7 @@ dpp::message GuildPlayer::NextCommand(const dpp::snowflake &channel_id, unsigned
 	return next_track->GetMessage(is_playing, channel_id);
 }
 
-std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
+std::string Bragi::Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id) {
 	/* Get the user voice channel */
 	const dpp::guild* const guild = dpp::find_guild(guild_id);
 	const dpp::channel* const user_voice_channel = dpp::find_channel(guild->voice_members.find(user_id)->second.channel_id);
@@ -158,7 +139,7 @@ std::string GuildPlayer::Join(const dpp::snowflake &user_id, const dpp::snowflak
 	return std::format(DIC_JOINED, user_voice_channel->name);
 }
 
-std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
+std::string Bragi::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (!_voiceclient)
 		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, BragiException::SOFT);
@@ -170,7 +151,7 @@ std::string GuildPlayer::Leave(const dpp::snowflake &channel_id) {
 	return DIC_LEFT;
 }
 
-void GuildPlayer::HandleMarker() {
+void Bragi::HandleMarker() {
 	/* Check the loop type */
 	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 	else if (_loop_type == PLAYLIST) {
@@ -191,7 +172,7 @@ void GuildPlayer::HandleMarker() {
 	}
 }
 
-void GuildPlayer::HandleVoiceStateUpdate(const dpp::snowflake &channel_id) {
+void Bragi::HandleVoiceStateUpdate(const dpp::snowflake &channel_id) {
 	/* If the voice client isn't initialized, exit the method */
 	if (!_voiceclient) return;
 
@@ -209,7 +190,7 @@ void GuildPlayer::HandleVoiceStateUpdate(const dpp::snowflake &channel_id) {
 	if (channel_id) ds_client->connect_voice(guild_id, channel_id);
 }
 
-void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
+void Bragi::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
 	/* Update the voice */
 	_voiceclient = voiceclient;
 
@@ -220,22 +201,22 @@ void GuildPlayer::HandleReadyState(dpp::discord_voice_client* const voiceclient)
 	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
 }
 
-inline bool GuildPlayer::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }
+inline bool Bragi::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }
 
-inline bool GuildPlayer::IsEmpty() const { return !_tracks_size; }
+inline bool Bragi::IsEmpty() const { return !_tracks_size; }
 
-GuildPlayer* GuildPlayer::Get(const dpp::snowflake &guild_id) {
+Bragi* Bragi::Get(const dpp::snowflake &guild_id) {
 	/* Try to get the guild in the list */
-	for (GuildPlayer* const player: _players)
+	for (Bragi* const player: _players)
 		if (player->guild_id == guild_id) return player;
 
 	/* If there is not a such guild player we need to add it to the array */
 	return Add(guild_id);
 }
 
-GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
+Bragi* Bragi::Add(const dpp::snowflake &guild_id) {
 	/* Create a new guild player */
-	GuildPlayer* player = new GuildPlayer(guild_id);
+	Bragi* player = new Bragi(guild_id);
 
 	/* Add it to the list */
 	_players.Push(player);
@@ -243,3 +224,49 @@ GuildPlayer* GuildPlayer::Add(const dpp::snowflake &guild_id) {
 	/* Return a new player */
 	return player;
 }
+
+void Bragi::JoinCommand(const dpp::slashcommand_t &event) { }
+void Bragi::LeaveCommand(const dpp::slashcommand_t &event) { }
+void Bragi::ListCommand(const dpp::slashcommand_t &event) { }
+void Bragi::LoopCommand(const dpp::slashcommand_t &event) { }
+void Bragi::NextCommand(const dpp::slashcommand_t &event) { }
+void Bragi::PingCommand(const dpp::slashcommand_t &event) { }
+
+void Bragi::PlayCommand(const dpp::slashcommand_t &event) {
+    /* Get query from the command parameter */
+    std::string query = std::get<std::string>(event.get_parameter("query"));
+
+    /* Search the Deezer track */
+    Track* track = DeezerClient::Search(query);
+
+    /* If there is no such track */
+    if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND,
+                                               event.command.channel_id,
+                                               BragiException::SOFT);
+
+    /* If all is OK */
+    bool need_to_play_first_track = IsEmpty();  //If the playlist is empty this track will be played right now
+    dpp::message result_msg = track->GetMessage(need_to_play_first_track, event.command.channel_id);  //Get track message
+
+    /* If player is ready */
+    if (IsPlayerReady()) {
+        /* Add a track to the playlist */
+        _tracks.Push(track);
+        _tracks_size++;
+
+        if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
+        event.reply(result_msg);  //Return the track message
+        return;
+    }
+
+    /* If player is not ready */
+    result_msg.content.insert(0, Join(event.command.usr.id, event.command.channel_id) + '\n');  //Join to the channel and insert the message to the result message
+
+    /* Add a track to the playlist (if we successfully joined the channel) */
+    _tracks.Push(track);
+    _tracks_size++;
+    event.reply(result_msg);  //Return a track message
+}
+
+void Bragi::SkipCommand(const dpp::slashcommand_t &event) { }
+void Bragi::SpeedCommand(const dpp::slashcommand_t &event) { }

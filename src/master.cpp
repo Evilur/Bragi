@@ -1,12 +1,10 @@
 #include "master.h"
 #include "locale/locale.h"
-#include "command/ping.h"
 #include "command/join.h"
 #include "command/leave.h"
 #include "base/bragi.h"
 #include "util/logger.h"
 #include "util/properties.h"
-#include "command/play.h"
 #include "command/list.h"
 #include "command/skip.h"
 #include "command/loop.h"
@@ -21,7 +19,6 @@ int main() {
 
 	/* Create event handlers */
 	bot->on_slashcommand(on_slashcommand);
-	bot->on_message_create(on_message_create);
 	bot->on_voice_state_update(on_voice_state_update);
 	bot->on_voice_ready(on_voice_ready);
 	bot->on_voice_track_marker(on_voice_track_marker);
@@ -37,37 +34,19 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 	/* Get a command name */
 	std::string command_name = event.command.get_command_name();
 
+    /* Get the bragi instance */
+    Bragi* bragi = Bragi::Get(event.command.guild_id);
+
 	/* Check for commands */
-	if (command_name == "play") Play::Exec(event);
+	if (command_name == "play") bragi->PlayCommand(event);
 	else if (command_name == "skip") Skip::Exec(event);
 	else if (command_name == "list") List::Exec(event);
 	else if (command_name == "next") Next::Exec(event);
 	else if (command_name == "loop") Loop::Exec(event);
-	else if (command_name == "ping") Ping::Exec(event);
+	else if (command_name == "ping") Bragi::PingCommand(event);
 	else if (command_name == "join") Join::Exec(event);
 	else if (command_name == "speed") Speed::Exec(event);
 	else if (command_name == "leave") Leave::Exec(event);
-}
-
-void on_message_create(const dpp::message_create_t &event) {
-	/* If a message doesn't start with the command prefix exit the method */
-	if (!event.msg.content.starts_with(Properties::PREFIX)) return;
-
-	/* Get a command name and arguments */
-	const unsigned long space_sep = event.msg.content.find(' ');
-	std::string command = event.msg.content.substr(1, space_sep - 1);
-	std::string argument = space_sep == std::string::npos ? "" : event.msg.content.substr(space_sep + 1);
-
-	/* Check for commands */
-	if (command == "p" || command == "play") Play::Exec(event, argument);
-	else if (command == "s" || command == "skip") Skip::Exec(event, argument);
-	else if (command == "l" || command == "list") List::Exec(event);
-	else if (command == "n" || command == "next") Next::Exec(event, argument);
-	else if (command == "loop") Loop::Exec(event, argument);
-	else if (command == "ping") Ping::Exec(event);
-	else if (command == "j" || command == "join") Join::Exec(event);
-	else if (command == "sp" || command == "speed") Speed::Exec(event, argument);
-	else if (command == "teave") Leave::Exec(event);
 }
 
 void on_voice_state_update(const dpp::voice_state_update_t &event) {
@@ -75,15 +54,15 @@ void on_voice_state_update(const dpp::voice_state_update_t &event) {
 	if (event.state.user_id != bot->me.id) return;
 
 	/* Handle the voice state udpate */
-	GuildPlayer::Get(event.state.guild_id)->HandleVoiceStateUpdate(event.state.channel_id);
+	Bragi::Get(event.state.guild_id)->HandleVoiceStateUpdate(event.state.channel_id);
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->HandleReadyState(event.voice_client);
+	Bragi::Get(event.voice_client->server_id)->HandleReadyState(event.voice_client);
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
-	GuildPlayer::Get(event.voice_client->server_id)->HandleMarker();
+	Bragi::Get(event.voice_client->server_id)->HandleMarker();
 }
 
 void on_ready(const dpp::ready_t &event) {

@@ -27,5 +27,5 @@ void Speed::Exec(const dpp::message_create_t &event, const std::string &argument
 dpp::message Speed::Exec(const dpp::snowflake &guild_id, const dpp::snowflake &channel_id, const long speed_percent) {
 	if (speed_percent < 25) throw BragiException(DIC_SLASH_SPEED_LESS_THAN, channel_id, BragiException::SOFT);
 	else if (speed_percent > 250) throw BragiException(DIC_SLASH_SPEED_MORE_THAN, channel_id, BragiException::SOFT);
-	return GuildPlayer::Get(guild_id)->SpeedCommand(channel_id, (byte)speed_percent);
+	return Bragi::Get(guild_id)->SpeedCommand(channel_id, (byte)speed_percent);
 }

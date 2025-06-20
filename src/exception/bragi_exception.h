@@ -3,7 +3,7 @@
 
 #include <dpp/dpp.h>
 
-class BragiException final {
+class BragiException final : std::exception {
 public:
 	enum Type : char { HARD, SOFT };
 
