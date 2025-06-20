@@ -1,5 +1,5 @@
 #include "master.h"
-#include "guild_player.h"
+#include "bragi.h"
 #include "locale/locale.h"
 #include "exception/bragi_exception.h"
 #include "util/logger.h"

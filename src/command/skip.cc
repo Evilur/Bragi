@@ -1,6 +1,6 @@
 #include "skip.h"
 #include "exception/bragi_exception.h"
-#include "guild//guild_player.h"
+#include "base/bragi.h"
 #include "util/logger.h"
 #include "util/parser.h"
 

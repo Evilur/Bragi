@@ -1,5 +1,5 @@
 #include "list.h"
-#include "guild//guild_player.h"
+#include "base/bragi.h"
 #include "exception/bragi_exception.h"
 
 void List::Exec(const dpp::slashcommand_t &event) {

@@ -1,7 +1,7 @@
 #include "play.h"
 #include "exception/bragi_exception.h"
 #include "client/deezer_client.h"
-#include "guild//guild_player.h"
+#include "base/bragi.h"
 #include "util/logger.h"
 
 /* TODO: Sanitize the input data */

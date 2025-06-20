@@ -3,7 +3,7 @@
 #include "command/ping.h"
 #include "command/join.h"
 #include "command/leave.h"
-#include "guild/guild_player.h"
+#include "base/bragi.h"
 #include "util/logger.h"
 #include "util/properties.h"
 #include "command/play.h"
