@@ -52,7 +52,7 @@ private:
 	LinkedList<Track*> _tracks;
 	unsigned short _tracks_size = 0;
 	dpp::discord_voice_client* _voiceclient = nullptr;
-	byte _speed_percent = 100;
+	byte _playback_rate = 100;
 
 	inline bool IsPlayerReady();
 

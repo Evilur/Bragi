@@ -2,10 +2,8 @@
 #include "bragi.h"
 #include "locale/locale.h"
 #include "exception/bragi_exception.h"
-#include "util/logger.h"
 #include "util/color.h"
 #include "util/parser.h"
-#include "client/deezer_client.h"
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
@@ -65,7 +63,7 @@ dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short
 	/* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
 	if (is_playing) {
 		_voiceclient->stop_audio();
-		if (IsPlayerReady()) next_track->AsyncPlay(_voiceclient, _speed_percent);
+		if (IsPlayerReady()) next_track->AsyncPlay(_voiceclient, _playback_rate);
 	}
 
 	/* Return the message */
@@ -117,7 +115,7 @@ std::string Bragi::Leave(const dpp::snowflake &channel_id) {
 
 void Bragi::HandleMarker() {
 	/* Check the loop type */
-	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 	else if (_loop_type == PLAYLIST) {
 		/* Move the first track to the end of the playlist */
 		Track* track = _tracks.Head();
@@ -125,14 +123,14 @@ void Bragi::HandleMarker() {
 		_tracks.Push(track);
 
 		/* Play the next track */
-		_tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+		_tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 	} else {
 		/* Remove the first track in the list */
 		_tracks.PopFront([](Track* track) { delete track; });
 		_tracks_size--;
 
 		/* If the playlist isn't empty, play the next track */
-		if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+		if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 	}
 }
 
@@ -162,7 +160,7 @@ void Bragi::HandleReadyState(dpp::discord_voice_client* const voiceclient) {
 	_voiceclient->set_send_audio_type(dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
 	/* If we need to play the first track, play it */
-	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+	if (!IsEmpty()) _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 }
 
 inline bool Bragi::IsPlayerReady() { return _voiceclient && _voiceclient->is_ready(); }

@@ -39,7 +39,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks.Push(track);
         _tracks_size++;
 
-        if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _speed_percent);  //Play the current track
+        if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _playback_rate);  //Play the current track
         return result_msg;  //Return the track message
     }
 
@@ -76,23 +76,22 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     _tracks_size -= num_for_skip;
 
     /* If the playlist isn't empty, play the next track */
-    if (!IsEmpty() && IsPlayerReady()) _tracks.Head()->AsyncPlay(_voiceclient, _speed_percent);
+    if (!IsEmpty() && IsPlayerReady()) _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
 
 dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
-    /* Get the track speed in percents */
-    long speed_percent = 100;
-    dpp::command_value speed_percent_par = event.get_parameter("percent");
-    if (speed_percent_par.index() != 0) speed_percent = std::get<long>(speed_percent_par);
+    /* Reset the playback rate */
+    _playback_rate = 100;
 
-    /* Set the speed percent */
-    _speed_percent = speed_percent;
+    /* Get the track speed in percents (if exists) */
+    dpp::command_value speed_percent_par = event.get_parameter("percent");
+    if (speed_percent_par.index() != 0) _playback_rate = std::get<long>(speed_percent_par);
 
     /* Return a message */
     return {
-        std::format(_("**:asterisk: Playback rate: `{}%`**"), speed_percent)
+        std::format(_("**:asterisk: Playback rate: `{}%`**"), _playback_rate)
     };
 }
 
