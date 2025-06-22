@@ -3,6 +3,7 @@
 #include "master.h"
 #include "client/deezer_client.h"
 #include "exception/bragi_exception.h"
+#include "util/parser.h"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     /* Default user for connection */
@@ -14,7 +15,25 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
-dpp::message Bragi::ListCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+
+dpp::message Bragi::ListCommand() {
+    if (IsEmpty())
+        return dpp::embed()
+                .set_color(Color::GREEN)
+                .set_title(_("**Playlist is empty**"));
+
+    std::stringstream playlist_stream;
+    u_int counter = 1;
+    for (const Track* const track: _tracks) {
+        playlist_stream << counter++ << ". " << track->GetTrackData() << '\n';
+    }
+
+    return dpp::embed()
+            .set_color(Color::GREEN)
+            .set_title(_("**Current playlist:**"))
+            .set_description(playlist_stream.str());
+}
+
 dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 
@@ -106,7 +125,7 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     };
 }
 
-dpp::message Bragi::PingCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::PingCommand() {
     /* Get the ping */
     uint ping = (uint)(bot->rest_ping * 1000.0);
 

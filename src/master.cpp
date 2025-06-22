@@ -36,13 +36,13 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
         const dpp::message message =
                 command_name == "play" ? bragi->PlayCommand(event) :
                 command_name == "skip" ? bragi->SkipCommand(event) :
-                command_name == "list" ? bragi->ListCommand(event) :
+                command_name == "list" ? bragi->ListCommand() :
                 command_name == "next" ? bragi->NextCommand(event) :
                 command_name == "loop" ? bragi->LoopCommand(event) :
                 command_name == "join" ? bragi->JoinCommand(event) :
                 command_name == "speed" ? bragi->SpeedCommand(event) :
                 command_name == "leave" ? bragi->LeaveCommand(event) :
-                command_name == "ping" ? Bragi::PingCommand(event) :
+                command_name == "ping" ? Bragi::PingCommand() :
                 dpp::message("PLACEHOLDER MESSAGE");
         event.reply(message);
     } catch (const BragiException &e) {

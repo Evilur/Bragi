@@ -13,20 +13,18 @@ public:
 
     dpp::message JoinCommand(const dpp::slashcommand_t &event);
     dpp::message LeaveCommand(const dpp::slashcommand_t &event);
-    dpp::message ListCommand(const dpp::slashcommand_t &event);
+    dpp::message ListCommand();
     dpp::message LoopCommand(const dpp::slashcommand_t &event);
     dpp::message NextCommand(const dpp::slashcommand_t &event);
     dpp::message PlayCommand(const dpp::slashcommand_t &event);
     dpp::message SkipCommand(const dpp::slashcommand_t &event);
     dpp::message SpeedCommand(const dpp::slashcommand_t &event);
 
-    static dpp::message PingCommand(const dpp::slashcommand_t &event);
+    static dpp::message PingCommand();
 
     const dpp::snowflake guild_id;
 
 	explicit Bragi(const dpp::snowflake &guild_id);
-
-	dpp::message ListCommand(const dpp::snowflake &channel_id);
 
 	dpp::message LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
 

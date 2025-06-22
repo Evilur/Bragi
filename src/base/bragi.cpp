@@ -7,26 +7,6 @@
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
-dpp::message Bragi::ListCommand(const dpp::snowflake &channel_id) {
-	if (IsEmpty())
-		return dpp::message(channel_id, dpp::embed()
-				.set_color(Color::GREEN)
-				.set_title(DIC_SLASH_LIST_MSG_EMPTY_TITLE));
-
-	std::stringstream sstream;
-	unsigned int duration = 0, counter = 1;
-
-	for (const Track* const track: _tracks) {
-		duration += track->GetDuration();
-		sstream << counter++ << ". " << track->GetTrackData() << '\n';
-	}
-
-	return dpp::message(channel_id, dpp::embed()
-			.set_color(Color::GREEN)
-			.set_title(std::format(DIC_SLASH_LIST_MSG_TITLE, Parser::Time(duration)))
-			.set_description(sstream.str()));
-}
-
 dpp::message Bragi::LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type) {
 	/* Update the loop type */
 	_loop_type = loop_type;

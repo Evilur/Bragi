@@ -7,6 +7,12 @@ public:
     static constexpr const char* GetText(const char* text) {
 #define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
+        /* List command */
+        TR("**Current playlist:**",
+           "**Текущий плейлист:**");
+        TR("**Playlist is empty**",
+           "**Плейлист пуст**");
+
         /* Speed command */
         TR("**:asterisk: Playback speed: `{}%`**",
            "**:asterisk: Скорость воспроизведения: `{}%`**");
@@ -59,8 +65,6 @@ public:
 
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"
-#define DIC_SLASH_LIST_MSG_EMPTY_TITLE "**Плейлист пуст**"
-#define DIC_SLASH_LIST_MSG_TITLE "**Текщий плейлист ({}):**"
 #define DIC_SLASH_LIST_FULL_TRACK_DATA "{}\u00A0\u202f\u2014\u00A0\u202f{}"
 
 #define DIC_SLASH_NEXT "Выбрать следующий результат из поиска"
@@ -75,10 +79,6 @@ public:
 #define DIC_SLASH_LOOP_TYPE_TRACK "**:repeat_one: Включено повторение трека**"
 #define DIC_SLASH_LOOP_TYPE_PLAYLIST "**:repeat: Включено повторение плейлиста**"
 
-//play-attachment command
-#define DIC_SLASH_PLAY_ATTACHMENT "Воспроизвести трек из вложений"
-#define DIC_SLASH_PLAY_ATTACHMENT_ATTACHMENT "Трек для воспроизведения"
-
 //track
 #define DIC_TRACK_PLAYING_NOW "**:notes: Сейчас играет: `{}`"
 #define DIC_TRACK_ADD_TO_PLAYLIST "**:notes: В плейлист добавлено: `{}`"
@@ -90,15 +90,8 @@ public:
 #define DIC_TRACK_MORE_THAN_HOUR "{}ч{}м{}с"
 
 //errors
-#define DIC_ERROR "**Ошибка**"
 #define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
 #define DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL "**Бот уже подключен к этому голосовому каналу**"
 #define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**Пользователь должен находиться в голосовом канале**"
 #define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
-#define DIC_ERROR_NO_ATTACHMENTS "**Не было найдено ни одного вложения**"
-#define DIC_ERROR_IS_NOT_A_FILE "**Файл из вложений не является аудио треком**"
 #define DIC_ERROR_TRACK_NOT_FIND "**По данному запросу не было найдено ни одного результата**"
-#define DIC_SLASH_NO_PARAMETER "**В команду не было передано обязательных параметров**"
-
-//http errors
-#define DIC_HTTP_ERROR_CON_CANNOT_BE_ESTABLISHED "Соединение не может быть установлено"
