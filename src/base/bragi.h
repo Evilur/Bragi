@@ -26,8 +26,6 @@ public:
 
 	explicit Bragi(const dpp::snowflake &guild_id);
 
-	dpp::message LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type = (LoopType)((_loop_type + 1) % 3));
-
 	dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
 
 	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);

@@ -43,7 +43,8 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
                 command_name == "speed" ? bragi->SpeedCommand(event) :
                 command_name == "leave" ? bragi->LeaveCommand(event) :
                 command_name == "ping" ? Bragi::PingCommand() :
-                dpp::message("PLACEHOLDER MESSAGE");
+                throw BragiException(_("**Unexpected error**"),
+                                     BragiException::HARD);
         event.reply(message);
     } catch (const BragiException &e) {
         /* Handle the exception and print the error message to the user */

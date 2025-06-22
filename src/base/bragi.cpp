@@ -7,16 +7,6 @@
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
-dpp::message Bragi::LoopCommand(const dpp::snowflake &channel_id, const LoopType loop_type) {
-	/* Update the loop type */
-	_loop_type = loop_type;
-
-	/* Send the reply _message */
-	if (loop_type == TRACK) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_TRACK);
-	else if (loop_type == PLAYLIST) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_PLAYLIST);
-	else return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_DISABLED);
-}
-
 dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
 	/* If the playlist is empty, throw an exception */
 	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::SOFT);

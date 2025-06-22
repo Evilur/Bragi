@@ -13,6 +13,14 @@ public:
         TR("**Playlist is empty**",
            "**Плейлист пуст**");
 
+        /* Loop command */
+        TR("**:repeat_one: Track repeat enabled**",
+           "**:repeat_one: Повторение трека включено**");
+        TR("**:repeat: Playlist repeat enabled**",
+           "**:repeat: Повторение плейлиста включено**");
+        TR("**:arrow_right: Repeat disabled**",
+           "**:arrow_right: Повторение отключено**");
+
         /* Speed command */
         TR("**:asterisk: Playback speed: `{}%`**",
            "**:asterisk: Скорость воспроизведения: `{}%`**");
@@ -75,9 +83,6 @@ public:
 //loop command
 #define DIC_SLASH_LOOP "Включить/выключить повторение"
 #define DIC_SLASH_LOOP_TYPE "Тип повторения"
-#define DIC_SLASH_LOOP_TYPE_DISABLED "**:arrow_right: Повторение выключено**"
-#define DIC_SLASH_LOOP_TYPE_TRACK "**:repeat_one: Включено повторение трека**"
-#define DIC_SLASH_LOOP_TYPE_PLAYLIST "**:repeat: Включено повторение плейлиста**"
 
 //track
 #define DIC_TRACK_PLAYING_NOW "**:notes: Сейчас играет: `{}`"

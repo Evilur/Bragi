@@ -34,7 +34,31 @@ dpp::message Bragi::ListCommand() {
             .set_description(playlist_stream.str());
 }
 
-dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
+    /* Get the loop type slash command parameter */
+    dpp::command_value loop_type_param = event.get_parameter("type");
+
+    /* If there is no parameters, get the next variant in cycle */
+    if (loop_type_param.index() == 0)
+        _loop_type = (LoopType)((_loop_type + 1) % 3);
+    /* Else get the parameter value */
+    else {
+        const std::string loop_type_string =
+                std::get<std::string>(loop_type_param);
+        _loop_type = loop_type_string == "t" ? TRACK :
+                     loop_type_string == "p" ? PLAYLIST :
+                     DISABLED;
+    }
+
+    /* Return the result */
+    if (_loop_type == TRACK)
+        return  { _("**:repeat_one: Track repeat enabled**") };
+    else if (_loop_type == PLAYLIST)
+        return { _("**:repeat: Playlist repeat enabled**") };
+    else
+        return { _("**:arrow_right: Repeat disabled**") };
+}
+
 dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
 
 dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
