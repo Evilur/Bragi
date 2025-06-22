@@ -10,6 +10,10 @@ public:
         /* Speed command */
         TR("**:asterisk: Playback speed: `{}%`**",
            "**:asterisk: Скорость воспроизведения: `{}%`**");
+        TR("**Minimum speed - 25%**",
+           "**Минимальная скорость - 25%**");
+        TR("**Maximum speed - 250%**",
+           "**Максимальная скорость - 250%**");
 
         /* Ping command */
         TR("Ping",
@@ -52,8 +56,6 @@ public:
 //speed command
 #define DIC_SLASH_SPEED "Изменить скорость воспроизведения трека"
 #define DIC_SLASH_SPEED_PERCENT "Процент скорости воспроизведения"
-#define DIC_SLASH_SPEED_MORE_THAN "**Максимальная скорость - 250%**"
-#define DIC_SLASH_SPEED_LESS_THAN "**Минимальная скорость - 25%**"
 
 //list command
 #define DIC_SLASH_LIST "Вывести текущий список воспроизведения"

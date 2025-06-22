@@ -90,8 +90,12 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
                            std::get<s_long>(playback_rate_param) : 100;
 
     /* Check for overflow */
-    if (playback_rate < 20) throw BragiException(_("PLACEHOLDER"), BragiException::HARD);
-    else if (playback_rate > 250) throw BragiException(_("PLACEHOLDER"), BragiException::HARD);
+    if (playback_rate < 25)
+        throw BragiException(_("**Minimum speed - 25%**"),
+                             BragiException::HARD);
+    else if (playback_rate > 250)
+        throw BragiException(_("**Maximum speed - 250%**"),
+                             BragiException::HARD);
 
     /* If all is OK */
     _playback_rate = playback_rate;
