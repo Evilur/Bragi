@@ -59,5 +59,5 @@ public:
 
 private:
 	static BragiHashMap _bragi_map;
-	constexpr u_int _bragi_map_size = 10;
+	static constexpr u_int _bragi_map_size = 10;
 };
