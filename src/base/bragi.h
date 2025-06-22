@@ -42,6 +42,7 @@ private:
 	LinkedList<Track*> _tracks;
 	unsigned short _tracks_size = 0;
 	dpp::discord_voice_client* _voiceclient = nullptr;
+    LoopType _loop_type = DISABLED;
 	u_byte _playback_rate = 100;
 
 	inline bool IsPlayerReady();
@@ -53,7 +54,6 @@ public:
 
 private:
 	static inline LinkedList<Bragi*> _players;
-	static inline LoopType _loop_type = DISABLED;
 
 	static Bragi* Add(const dpp::snowflake &guild_id);
 };
