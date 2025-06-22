@@ -9,8 +9,6 @@
 
 class Bragi final {
 public:
-	enum LoopType { DISABLED, TRACK, PLAYLIST };
-
     dpp::message JoinCommand(const dpp::slashcommand_t &event);
 
     dpp::message LeaveCommand();
@@ -44,7 +42,9 @@ public:
 	void HandleMarker();
 
 private:
-	LinkedList<Track*> _tracks;
+    enum LoopType { DISABLED, TRACK, PLAYLIST };
+
+    LinkedList<Track*> _tracks;
 	unsigned short _tracks_size = 0;
 	dpp::discord_voice_client* _voiceclient = nullptr;
     LoopType _loop_type = DISABLED;
@@ -59,6 +59,4 @@ public:
 
 private:
 	static inline LinkedList<Bragi*> _players;
-
-	static Bragi* Add(const dpp::snowflake &guild_id);
 };
