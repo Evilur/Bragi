@@ -17,6 +17,10 @@ public:
         TR("{}ms",
            "{}мс");
 
+        /* Bragi exception */
+        TR("**Error**",
+           "**Ошибка**");
+
         /* If there is no translation for this text, return the source */
         return text;
     }

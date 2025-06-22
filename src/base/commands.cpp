@@ -27,12 +27,11 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
 
     /* If there is no such track */
     if (track == nullptr) throw BragiException(DIC_ERROR_TRACK_NOT_FIND,
-                                               event.command.channel_id,
                                                BragiException::SOFT);
 
     /* If all is OK */
     bool need_to_play_first_track = IsEmpty();  //If the playlist is empty this track will be played right now
-    dpp::message result_msg = track->GetMessage(need_to_play_first_track, event.command.channel_id);  //Get track message
+    dpp::message result_msg = track->GetMessage(need_to_play_first_track, event.command.channel_id);  //Get track _message
 
     /* If player is ready */
     if (IsPlayerReady()) {
@@ -41,16 +40,16 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks_size++;
 
         if (need_to_play_first_track) track->AsyncPlay(_voiceclient, _playback_rate);  //Play the current track
-        return result_msg;  //Return the track message
+        return result_msg;  //Return the track _message
     }
 
     /* If player is not ready */
-    result_msg.content.insert(0, Join(event.command.usr.id, event.command.channel_id) + '\n');  //Join to the channel and insert the message to the result message
+    result_msg.content.insert(0, Join(event.command.usr.id, event.command.channel_id) + '\n');  //Join to the channel and insert the _message to the result _message
 
     /* Add a track to the playlist (if we successfully joined the channel) */
     _tracks.Push(track);
     _tracks_size++;
-    return result_msg;  //Return a track message
+    return result_msg;  //Return a track _message
 }
 
 dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
@@ -60,10 +59,10 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     if (num_for_skip_par.index() != 0) num_for_skip = std::get<long>(num_for_skip_par);
 
     /* If the playlist is empty */
-    if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, event.command.channel_id, BragiException::SOFT);
+    if (IsEmpty()) throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, BragiException::SOFT);
 
     /* If we can't skip that number of tracks */
-    if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, event.command.channel_id, BragiException::SOFT);
+    if (num_for_skip == 0) throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, BragiException::SOFT);
 
     /* Stop the audio and clear the packet queue */
     _tracks.Head()->Abort();
@@ -86,18 +85,18 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     /* Get a parameter from the user (if exists) */
     dpp::command_value playback_rate_param = event.get_parameter("percent");
 
-    /* If there is NO parameters, set playback rate to 100 */
+    /* If there is NO parameters, set playback rate to 100 (else use param) */
     s_long playback_rate = playback_rate_param.index() != 0 ?
                            std::get<s_long>(playback_rate_param) : 100;
 
     /* Check for overflow */
-    if (playback_rate < 20) throw BragiException(_("PLACEHOLDER"), event.command.channel_id, BragiException::HARD);
-    else if (playback_rate > 250) throw BragiException(_("PLACEHOLDER"), event.command.channel_id, BragiException::HARD);
+    if (playback_rate < 20) throw BragiException(_("PLACEHOLDER"), BragiException::HARD);
+    else if (playback_rate > 250) throw BragiException(_("PLACEHOLDER"), BragiException::HARD);
 
     /* If all is OK */
     _playback_rate = playback_rate;
 
-    /* Return a message */
+    /* Return a _message */
     return {
         std::format(_("**:asterisk: Playback speed: `{}%`**"), playback_rate)
     };

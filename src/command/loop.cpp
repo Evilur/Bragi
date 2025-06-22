@@ -16,7 +16,7 @@ void Loop::Exec(const dpp::slashcommand_t &event) {
 	/* Get the loop type in string */
 	const std::string loop_type_str = std::get<std::string>(loop_type_par);
 
-	/* Send the message to the channel */
+	/* Send the _message to the channel */
 	if (loop_type_str == "t")
 		return event.reply(Bragi::Get(event.command.guild_id)->LoopCommand(event.command.channel_id, Bragi::LoopType::TRACK));
 	else if (loop_type_str == "p")

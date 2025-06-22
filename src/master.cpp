@@ -32,7 +32,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
     Bragi* bragi = Bragi::Get(event.command.guild_id);
 
     try {
-        /* Run a command and get a result message */
+        /* Run a command and get a result _message */
         const dpp::message message =
                 command_name == "play" ? bragi->PlayCommand(event) :
                 command_name == "skip" ? bragi->SkipCommand(event) :
@@ -45,9 +45,9 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
                 command_name == "ping" ? Bragi::PingCommand(event) :
                 dpp::message("PLACEHOLDER MESSAGE");
         event.reply(message);
-    } catch (BragiException &e) {
+    } catch (const BragiException &e) {
         /* Handle the exception and print the error message to the user */
-        const dpp::message &message = e.Message();
+        const dpp::message &message = e.GetMessage();
         event.reply(message);
     }
 }

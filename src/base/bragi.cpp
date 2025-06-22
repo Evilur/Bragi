@@ -31,7 +31,7 @@ dpp::message Bragi::LoopCommand(const dpp::snowflake &channel_id, const LoopType
 	/* Update the loop type */
 	_loop_type = loop_type;
 
-	/* Send the reply message */
+	/* Send the reply _message */
 	if (loop_type == TRACK) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_TRACK);
 	else if (loop_type == PLAYLIST) return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_PLAYLIST);
 	else return dpp::message(channel_id, DIC_SLASH_LOOP_TYPE_DISABLED);
@@ -39,7 +39,7 @@ dpp::message Bragi::LoopCommand(const dpp::snowflake &channel_id, const LoopType
 
 dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short track_index) {
 	/* If the playlist is empty, throw an exception */
-	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, channel_id, BragiException::SOFT);
+	if (IsEmpty()) throw BragiException(DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::SOFT);
 
 	/* Get the index of the track */
 	if (track_index == 0 || track_index > _tracks_size) track_index = _tracks_size - 1;
@@ -54,7 +54,7 @@ dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short
 	Track* next_track = old_track->Next();
 
 	/* If there is no new track */
-	if (next_track == nullptr) throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, channel_id, BragiException::SOFT);
+	if (next_track == nullptr) throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::SOFT);
 
 	/* Delete the old track and replace with the next one */
 	delete old_track;
@@ -66,7 +66,7 @@ dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id, unsigned short
 		if (IsPlayerReady()) next_track->AsyncPlay(_voiceclient, _playback_rate);
 	}
 
-	/* Return the message */
+	/* Return the _message */
 	return next_track->GetMessage(is_playing, channel_id);
 }
 
@@ -77,16 +77,16 @@ std::string Bragi::Join(const dpp::snowflake &user_id, const dpp::snowflake &cha
 
 	/* If the user isn't in a voice channel */
 	if (!user_voice_channel)
-		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, channel_id, BragiException::HARD);
+		throw BragiException(DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, BragiException::HARD);
 
 	/* If the user and a bot already in the same channel */
 	if (IsPlayerReady() && _voiceclient->channel_id == user_voice_channel->id)
-		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, channel_id, BragiException::SOFT);
+		throw BragiException(DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, BragiException::SOFT);
 
 	/* If bot can not connect to the channel or speak there */
 	dpp::permission channel_permission = user_voice_channel->get_user_permissions(&bot->me);
 	if (!channel_permission.can(dpp::p_connect) || !channel_permission.can(dpp::p_speak))
-		throw BragiException(DIC_ERROR_PERMISSION_DENIED, channel_id, BragiException::HARD);
+		throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::HARD);
 
 	/* If we have a track in our playlist, abort it */
 	if (!IsEmpty()) _tracks.Head()->Abort();
@@ -104,7 +104,7 @@ std::string Bragi::Join(const dpp::snowflake &user_id, const dpp::snowflake &cha
 std::string Bragi::Leave(const dpp::snowflake &channel_id) {
 	/* If the bot isn't in a voice channel */
 	if (!_voiceclient)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, channel_id, BragiException::SOFT);
+		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, BragiException::SOFT);
 
 	/* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
 	if (!IsEmpty()) _tracks.Head()->Abort();

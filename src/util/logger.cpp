@@ -19,7 +19,7 @@ void Logger::Log(FILE* stream,
             time_buffer,
             LOG_LEVEL_STR[log_level]);
 
-    /* Print the message */
+    /* Print the _message */
     va_list args;
     va_start(args, format);
     vfprintf(stream, format, args);
