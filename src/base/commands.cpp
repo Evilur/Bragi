@@ -1,4 +1,5 @@
 #include "bragi.h"
+#include "types/base.h"
 #include "master.h"
 #include "client/deezer_client.h"
 #include "exception/bragi_exception.h"
@@ -82,16 +83,23 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
-    /* Reset the playback rate */
-    _playback_rate = 100;
+    /* Get a parameter from the user (if exists) */
+    dpp::command_value playback_rate_param = event.get_parameter("percent");
 
-    /* Get the track speed in percents (if exists) */
-    dpp::command_value speed_percent_par = event.get_parameter("percent");
-    if (speed_percent_par.index() != 0) _playback_rate = std::get<long>(speed_percent_par);
+    /* If there is NO parameters, set playback rate to 100 */
+    s_long playback_rate = playback_rate_param.index() != 0 ?
+                           std::get<s_long>(playback_rate_param) : 100;
+
+    /* Check for overflow */
+    if (playback_rate < 20) throw BragiException(_("PLACEHOLDER"), event.command.channel_id, BragiException::HARD);
+    else if (playback_rate > 250) throw BragiException(_("PLACEHOLDER"), event.command.channel_id, BragiException::HARD);
+
+    /* If all is OK */
+    _playback_rate = playback_rate;
 
     /* Return a message */
     return {
-        std::format(_("**:asterisk: Playback rate: `{}%`**"), _playback_rate)
+        std::format(_("**:asterisk: Playback speed: `{}%`**"), playback_rate)
     };
 }
 

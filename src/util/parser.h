@@ -5,7 +5,7 @@
 
 class Parser final {
 public:
-	static byte ToUInt8(const char* data);
+	static u_byte ToUInt8(const char* data);
 
 	static s_byte ToInt8(const char* data);
 

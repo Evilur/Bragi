@@ -65,7 +65,7 @@ Track* DeezerTrack::Next() const {
 	return DeezerClient::Search(_search.next_query, _search.next);
 }
 
-void DeezerTrack::Play(dpp::discord_voice_client* const voiceclient, const byte speed_percent) {
+void DeezerTrack::Play(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent) {
 	/* Wait for initialization */
 	if (_init_thread->joinable()) _init_thread->join();
 
@@ -73,7 +73,7 @@ void DeezerTrack::Play(dpp::discord_voice_client* const voiceclient, const byte 
 	_http = new HttpClient(_data_url);
 
 	/* Lambda for reading the track data by buffers */
-	auto read_buffer = [this](byte* buffer, unsigned long* buffer_size) {
+	auto read_buffer = [this](u_byte* buffer, unsigned long* buffer_size) {
 		/* Set the chunk size */
 		constexpr int chunk_size = 2048;
 

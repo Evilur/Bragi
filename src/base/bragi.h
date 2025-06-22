@@ -9,7 +9,7 @@
 
 class Bragi final {
 public:
-	enum LoopType : byte { DISABLED, TRACK, PLAYLIST };
+	enum LoopType { DISABLED, TRACK, PLAYLIST };
 
     dpp::message JoinCommand(const dpp::slashcommand_t &event);
     dpp::message LeaveCommand(const dpp::slashcommand_t &event);
@@ -25,12 +25,6 @@ public:
     const dpp::snowflake guild_id;
 
 	explicit Bragi(const dpp::snowflake &guild_id);
-
-	dpp::message PlayCommand(const dpp::snowflake &user_id, const dpp::snowflake &channel_id, Track* track);
-
-	dpp::message SkipCommand(const dpp::snowflake &channel_id, unsigned short num_for_skip);
-
-	dpp::message SpeedCommand(const dpp::snowflake &channel_id, const byte speed_percent);
 
 	dpp::message ListCommand(const dpp::snowflake &channel_id);
 
@@ -52,7 +46,7 @@ private:
 	LinkedList<Track*> _tracks;
 	unsigned short _tracks_size = 0;
 	dpp::discord_voice_client* _voiceclient = nullptr;
-	byte _playback_rate = 100;
+	u_byte _playback_rate = 100;
 
 	inline bool IsPlayerReady();
 

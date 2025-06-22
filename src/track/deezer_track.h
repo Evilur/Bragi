@@ -11,7 +11,7 @@
 
 class DeezerTrack final : public Track {
 public:
-	enum Quality : byte { MP3_128, MP3_320, FLAC };
+	enum Quality : u_byte { MP3_128, MP3_320, FLAC };
 
 	DeezerTrack(const unsigned short track_duration, Quality quality,
 	            const unsigned int track_id, const std::string &track_title, const std::string &track_token,
@@ -59,7 +59,7 @@ private:
 	std::thread* _init_thread = nullptr;
 	HttpClient* _http = nullptr;
 
-	void Play(dpp::discord_voice_client* const voiceclient, const byte speed_percent) override;
+	void Play(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent) override;
 
 	void GetKey(unsigned char* buffer);
 };

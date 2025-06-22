@@ -5,19 +5,20 @@
 class Locale final {
 public:
     static constexpr const char* GetText(const char* text) {
-#define TRANSLATE(TEXT1, TEXT2) else if (strcmp(text, TEXT1) == 0) return TEXT2
+#define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
-        if (strcmp(text, "") == 0) return "";
         /* Speed command */
-        TRANSLATE("**:asterisk: Playback rate: `{}%`**",
-          "**:asterisk: Скорость воспроизведения: `{}%`**");
+        TR("**:asterisk: Playback speed: `{}%`**",
+           "**:asterisk: Скорость воспроизведения: `{}%`**");
 
         /* Ping command */
-        TRANSLATE("Ping",
-          "Задержка");
-        TRANSLATE("{}ms",
-          "{}мс");
-        else return text;
+        TR("Ping",
+           "Задержка");
+        TR("{}ms",
+           "{}мс");
+
+        /* If there is no translation for this text, return the source */
+        return text;
     }
 };
 

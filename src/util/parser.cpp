@@ -2,8 +2,8 @@
 #include "parser.h"
 #include "locale/locale.h"
 
-byte Parser::ToUInt8(const char* data) {
-	byte result = 0;
+u_byte Parser::ToUInt8(const char* data) {
+	u_byte result = 0;
 	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');
 	return result;
 }

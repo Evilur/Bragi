@@ -12,14 +12,14 @@
 template<typename F>
 class FlacSender final : public OpusSender, private FLAC::Decoder::Stream {
 public:
-	FlacSender(dpp::discord_voice_client* const voiceclient, const byte speed_percent, const F* const read_buffer);
+	FlacSender(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent, const F* const read_buffer);
 
 	void Run() override;
 
 private:
 	const F* const _read_buffer;
 
-	FLAC__StreamDecoderReadStatus read_callback(byte* buffer, unsigned long* buffer_size) override;
+	FLAC__StreamDecoderReadStatus read_callback(u_byte* buffer, unsigned long* buffer_size) override;
 
 	FLAC__StreamDecoderWriteStatus write_callback(const FLAC__Frame* frame, const int* const* buffer) override;
 

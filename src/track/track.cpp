@@ -36,7 +36,7 @@ void Track::Abort() {
 	_play_thread = nullptr;
 }
 
-void Track::AsyncPlay(dpp::discord_voice_client* const voiceclient, const byte speed_percent) {
+void Track::AsyncPlay(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent) {
 	/* Join the old play thread */
 	if (_play_thread && _play_thread->joinable()) _play_thread->join();
 
