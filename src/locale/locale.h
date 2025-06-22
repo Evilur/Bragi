@@ -7,6 +7,10 @@ public:
     static constexpr const char* GetText(const char* text) {
 #define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
+        /* Leave command */
+        TR("**:person_walking: Bot has left the voice channel**",
+           "**:person_walking: Бот покинул голосовой канал**");
+
         /* List command */
         TR("**Current playlist:**",
            "**Текущий плейлист:**");

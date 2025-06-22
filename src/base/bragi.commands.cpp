@@ -14,7 +14,17 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     if (user_par.index() != 0) user_id = event.command.get_resolved_user(std::get<dpp::snowflake>(user_par)).id;
 }
 
-dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) { return {"PLACEHOLDER MESSAGE"}; }
+dpp::message Bragi::LeaveCommand() {
+    /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
+    if (!IsEmpty()) _tracks.Head()->Abort();
+
+    /* Disconnect the voice connection */
+    ds_client->disconnect_voice(guild_id);
+    _voiceclient = nullptr;
+
+    /* Return the result */
+    return { _("**:person_walking: Bot has left the voice channel**") };
+}
 
 dpp::message Bragi::ListCommand() {
     if (IsEmpty())

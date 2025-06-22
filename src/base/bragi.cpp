@@ -71,18 +71,6 @@ std::string Bragi::Join(const dpp::snowflake &user_id, const dpp::snowflake &cha
 	return std::format(DIC_JOINED, user_voice_channel->name);
 }
 
-std::string Bragi::Leave(const dpp::snowflake &channel_id) {
-	/* If the bot isn't in a voice channel */
-	if (!_voiceclient)
-		throw BragiException(DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL, BragiException::SOFT);
-
-	/* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
-	if (!IsEmpty()) _tracks.Head()->Abort();
-	ds_client->disconnect_voice(guild_id);
-	_voiceclient = nullptr;
-	return DIC_LEFT;
-}
-
 void Bragi::HandleMarker() {
 	/* Check the loop type */
 	if (_loop_type == TRACK) _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);

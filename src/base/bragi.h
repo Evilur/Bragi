@@ -12,12 +12,19 @@ public:
 	enum LoopType { DISABLED, TRACK, PLAYLIST };
 
     dpp::message JoinCommand(const dpp::slashcommand_t &event);
-    dpp::message LeaveCommand(const dpp::slashcommand_t &event);
+
+    dpp::message LeaveCommand();
+
     dpp::message ListCommand();
+
     dpp::message LoopCommand(const dpp::slashcommand_t &event);
+
     dpp::message NextCommand(const dpp::slashcommand_t &event);
+
     dpp::message PlayCommand(const dpp::slashcommand_t &event);
+
     dpp::message SkipCommand(const dpp::slashcommand_t &event);
+
     dpp::message SpeedCommand(const dpp::slashcommand_t &event);
 
     static dpp::message PingCommand();
@@ -29,8 +36,6 @@ public:
 	dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
 
 	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
-
-	std::string Leave(const dpp::snowflake &channel_id);
 
 	void HandleVoiceStateUpdate(const dpp::snowflake &channel_id);
 

@@ -41,7 +41,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
                 command_name == "loop" ? bragi->LoopCommand(event) :
                 command_name == "join" ? bragi->JoinCommand(event) :
                 command_name == "speed" ? bragi->SpeedCommand(event) :
-                command_name == "leave" ? bragi->LeaveCommand(event) :
+                command_name == "leave" ? bragi->LeaveCommand() :
                 command_name == "ping" ? Bragi::PingCommand() :
                 throw BragiException(_("**Unexpected error**"),
                                      BragiException::HARD);
