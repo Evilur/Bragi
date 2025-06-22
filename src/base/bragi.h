@@ -2,10 +2,10 @@
 
 #include "track/track.h"
 #include "util/linked_list.h"
-#include "util/color.h"
-#include "locale/locale.h"
 
 #include <dpp/dpp.h>
+
+class BragiHashMap;
 
 class Bragi final {
 public:
@@ -58,5 +58,6 @@ public:
 	static Bragi* Get(const dpp::snowflake &guild_id);
 
 private:
-	static inline LinkedList<Bragi*> _players;
+	static BragiHashMap _bragi_map;
+	constexpr u_int _bragi_map_size = 10;
 };

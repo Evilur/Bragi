@@ -5,6 +5,7 @@
 #include "util/color.h"
 #include "types/base.h"
 #include "client/deezer_client.h"
+#include "bragi_hash_map.h"
 
 Bragi::Bragi(const dpp::snowflake &guild_id) : guild_id(guild_id) { }
 
@@ -290,17 +291,25 @@ inline bool Bragi::IsPlayerReady() { return _voiceclient && _voiceclient->is_rea
 
 inline bool Bragi::IsEmpty() const { return !_tracks_size; }
 
+#pragma region Static Members
+
+BragiHashMap Bragi::_bragi_map = BragiHashMap(_bragi_map_size);
+
 Bragi* Bragi::Get(const dpp::snowflake &guild_id) {
-    /* Try to get the guild in the list */
-	for (Bragi* const player: _players)
-		if (player->guild_id == guild_id) return player;
+    /* Try to get the guild in the hash map */
+	Bragi* bragi = _bragi_map.Get(guild_id);
+
+	/* If all is OK, return it */
+	if (bragi) return bragi;
 
 	/* If there is not such an instance, create a new one */
-    Bragi* player = new Bragi(guild_id);
+    bragi = new Bragi(guild_id);
 
-    /* Add it to the list */
-    _players.Push(player);
+    /* Add it to the hash map */
+	_bragi_map.Put(guild_id, bragi);
 
     /* Return a new instance */
-    return player;
+    return bragi;
 }
+
+#pragma endregion
