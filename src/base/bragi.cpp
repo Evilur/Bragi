@@ -6,6 +6,7 @@
 #include "types/base.h"
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
+#include "exception/InvalidArlException.h"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     /* Default user for connection */
@@ -84,8 +85,12 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* Get query from the command parameter */
     std::string query = std::get<std::string>(event.get_parameter("query"));
 
-    /* Search the Deezer track */
-    Track *track = DeezerClient::Search(query);
+    /* Try to search the Deezer track */
+    Track *track = nullptr;
+    try { track = DeezerClient::Search(query); }
+    catch (const InvalidArlException&) {
+        throw BragiException(_("**Invalid ARL token**"), BragiException::HARD);
+    }
 
     /* If there is no such track */
     if (track == nullptr)
@@ -348,8 +353,7 @@ Bragi *Bragi::Get(const dpp::snowflake &guild_id) {
     Bragi *bragi = _bragi_map.Get(guild_id);
 
     /* If all is OK, return it */
-    if (bragi)
-        return bragi;
+    if (bragi) return bragi;
 
     /* If there is not such an instance, create a new one */
     bragi = new Bragi();
