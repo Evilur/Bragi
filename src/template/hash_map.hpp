@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types/base.h"
-#include "util/linked_list.h"
+#include "linked_list.hpp"
 
 /**
  * Simple minimalistic implementation of hash map

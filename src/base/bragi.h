@@ -1,7 +1,7 @@
 #pragma once
 
 #include "track/track.h"
-#include "util/linked_list.h"
+#include "template/linked_list.hpp"
 
 #include <dpp/dpp.h>
 
