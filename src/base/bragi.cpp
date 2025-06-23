@@ -89,7 +89,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     Track *track = nullptr;
     try { track = DeezerClient::Search(query); }
     catch (const InvalidArlException&) {
-        throw BragiException(_("**Invalid ARL token**"), BragiException::HARD);
+        throw BragiException(_("**Invalid Deezer ARL token**"), BragiException::HARD);
     }
 
     /* If there is no such track */

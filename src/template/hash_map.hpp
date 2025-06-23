@@ -6,7 +6,7 @@
 /**
  * Simple minimalistic implementation of hash map
  * @author Evilur <mail@evilur.com>
- * @since v2.0.0-alpha.3
+ * @since v2.0.0
  * @tparam K Key typename
  * @tparam T Element typename
  */

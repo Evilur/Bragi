@@ -7,9 +7,7 @@
 
 int main() {
     /* Create a bot cluster */
-    bot = new dpp::cluster(Properties::BotToken(),
-                           dpp::i_default_intents | dpp::i_message_content,
-                           0, 0, 1, false);
+    bot = new dpp::cluster(Properties::BotToken());
 
     /* Create event handlers */
     bot->on_slashcommand(on_slashcommand);

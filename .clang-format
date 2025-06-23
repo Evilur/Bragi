@@ -10,59 +10,58 @@ AlignConsecutiveAssignments:
     AlignFunctionDeclarations: false
     AlignFunctionPointers: false
     PadOperators: true
-
 AlignConsecutiveBitFields:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
-    AlignFunctionDeclarations: false
+    AlignCompound: true
+    AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignConsecutiveDeclarations:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
+    AlignCompound: true
     AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignConsecutiveMacros:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
-    AlignFunctionDeclarations: false
+    AlignCompound: true
+    AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignConsecutiveShortCaseStatements:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCaseArrows: false
+    AlignCaseArrows: true
     AlignCaseColons: false
 AlignConsecutiveTableGenBreakingDAGArgColons:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
-    AlignFunctionDeclarations: false
+    AlignCompound: true
+    AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignConsecutiveTableGenCondOperatorColons:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
-    AlignFunctionDeclarations: false
+    AlignCompound: true
+    AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignConsecutiveTableGenDefinitionColons:
-    Enabled: false
+    Enabled: true
     AcrossEmptyLines: false
     AcrossComments: false
-    AlignCompound: false
-    AlignFunctionDeclarations: false
+    AlignCompound: true
+    AlignFunctionDeclarations: true
     AlignFunctionPointers: false
     PadOperators: false
 AlignEscapedNewlines: Right
@@ -70,6 +69,7 @@ AlignOperands: Align
 AlignTrailingComments:
     Kind: Always
     OverEmptyLines: 0
+
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
