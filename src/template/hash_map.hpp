@@ -30,7 +30,7 @@ public:
     /**
      * Get the element from the hash map by the key
      * @param key The key to get the element by
-     * @return Element with the similar key
+     * @return Element with the similar key; nullptr if there is no such element
      */
     T Get(K key) const;
 
@@ -70,17 +70,23 @@ HashMap<K, T>::~HashMap() { delete[] _lists; }
 
 template<typename K, typename T>
 void HashMap<K, T>::Put(K key, T element) {
+    /* Calculate the hash */
     u_int hash = GetHash(key);
+
+    /* Put the node to the one of the linked lists */
     _lists[hash].Push({ key, element });
 }
 
 template<typename K, typename T>
 T HashMap<K, T>::Get(K key) const {
+    /* Calculate the hash */
     u_int hash = GetHash(key);
 
+    /* Try to get the node from the linked list */
     for (Node node : _lists[hash])
         if (node.key == key)
             return node.element;
 
+    /* If there is NOT an element in the linked list, return nullptr */
     return nullptr;
 }

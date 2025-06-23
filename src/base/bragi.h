@@ -11,9 +11,9 @@ class Bragi final {
 public:
     dpp::message JoinCommand(const dpp::slashcommand_t &event);
 
-    dpp::message LeaveCommand();
+    dpp::message LeaveCommand(const dpp::slashcommand_t &event);
 
-    dpp::message ListCommand();
+    dpp::message ListCommand() const;
 
     dpp::message LoopCommand(const dpp::slashcommand_t &event);
 
@@ -27,37 +27,36 @@ public:
 
     static dpp::message PingCommand();
 
-    const dpp::snowflake guild_id;
+    dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
 
-	explicit Bragi(const dpp::snowflake &guild_id);
+    std::string Join(const dpp::slashcommand_t &event,
+                     const dpp::snowflake &user_id,
+                     const dpp::snowflake &channel_id);
 
-	dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
+    void HandleVoiceStateUpdate(const dpp::voice_state_update_t &event,
+                                const dpp::snowflake &channel_id);
 
-	std::string Join(const dpp::snowflake &user_id, const dpp::snowflake &channel_id);
+    void HandleReadyState(dpp::discord_voice_client *const voiceconn);
 
-	void HandleVoiceStateUpdate(const dpp::snowflake &channel_id);
-
-	void HandleReadyState(dpp::discord_voice_client* const voiceconn);
-
-	void HandleMarker();
+    void HandleMarker();
 
 private:
     enum LoopType { DISABLED, TRACK, PLAYLIST };
 
-    LinkedList<Track*> _tracks;
-	unsigned short _tracks_size = 0;
-	dpp::discord_voice_client* _voiceclient = nullptr;
+    LinkedList<Track *> _tracks;
+    unsigned short _tracks_size = 0;
+    dpp::discord_voice_client *_voiceclient = nullptr;
     LoopType _loop_type = DISABLED;
-	u_byte _playback_rate = 100;
+    u_byte _playback_rate = 100;
 
-	inline bool IsPlayerReady();
+    inline bool IsPlayerReady();
 
-	inline bool IsEmpty() const;
+    inline bool IsEmpty() const;
 
 public:
-	static Bragi* Get(const dpp::snowflake &guild_id);
+    static Bragi* Get(const dpp::snowflake &guild_id);
 
 private:
-	static BragiHashMap _bragi_map;
-	static constexpr u_int _bragi_map_size = 10;
+    static BragiHashMap _bragi_map;
+    static constexpr u_int BRAGI_MAP_CAPACITY = 10;
 };

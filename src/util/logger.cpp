@@ -1,17 +1,17 @@
 #include "logger.h"
 
-#include <ctime>
 #include <cstdarg>
+#include <ctime>
 
 void Logger::Log(FILE* stream,
-                const LogLevel log_level,
-                const char* format, ...) {
+                 const LogLevel log_level,
+                 const char* format, ...) {
     /* Get current time */
     char time_buffer[20];
-    time_t current_time = time(nullptr);
-    tm* time_info = localtime(&current_time);
-    int offset = strftime(time_buffer, sizeof(time_buffer),
-                          "%Y.%m.%d %H:%M:%S", time_info);
+    const time_t current_time = time(nullptr);
+    const tm* const time_info = localtime(&current_time);
+    strftime(time_buffer, sizeof(time_buffer),
+             "%Y.%m.%d %H:%M:%S", time_info);
 
     /* Print the prefix */
     fprintf(stream, "%s[%s] %s",

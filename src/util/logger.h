@@ -1,5 +1,4 @@
-#ifndef BRAGI_LOGGER_H
-#define BRAGI_LOGGER_H
+#pragma once
 
 #include <cstdio>
 
@@ -48,17 +47,15 @@ public:
     };
 
     static void Log(FILE* stream,
-                    const LogLevel log_level,
+                    LogLevel log_level,
                     const char* format, ...);
 
 private:
 	static constexpr char COLOR_CODE_STR[6][6] = {
-        "\e[37m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m"
+        "\e[32m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m"
     };
 
 	static constexpr char LOG_LEVEL_STR[6][8] = {
         "Trace: ", "Debug: ", "Info:  ", "Warn:  ", "Error: ", "Fatal: "
     };
 };
-
-#endif
