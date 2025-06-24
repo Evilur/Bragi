@@ -1,6 +1,5 @@
 #pragma once
 
-#include "types/base.h"
 #include "linked_list.hpp"
 
 /**

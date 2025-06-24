@@ -20,14 +20,14 @@ public:
 
 	void Abort();
 
-	void AsyncPlay(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent);
+	void AsyncPlay(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent);
 
 	virtual Track* Next() const = 0;
 
 protected:
 	const unsigned short duration;
 
-	virtual void Play(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent) = 0;
+	virtual void Play(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent) = 0;
 
 	void SetOpusSender(OpusSender* sender);
 

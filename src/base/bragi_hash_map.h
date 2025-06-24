@@ -2,7 +2,6 @@
 
 #include "base/bragi.h"
 #include "template/hash_map.hpp"
-#include "types/base.h"
 
 #include <dpp/dpp.h>
 

@@ -1,6 +1,6 @@
 #include "opus_sender.h"
 
-OpusSender::OpusSender(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent) :
+OpusSender::OpusSender(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent) :
 		_voiceclient(voiceclient), _resampler_output_freq(FREQ * 100 / speed_percent) {
 	_encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
 	_resampler = speex_resampler_init(2, RESAMPLER_INPUT_FREQ, _resampler_output_freq, 10, nullptr);

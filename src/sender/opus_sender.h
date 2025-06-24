@@ -9,7 +9,7 @@
 
 class OpusSender {
 public:
-	OpusSender(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent);
+	OpusSender(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent);
 
 	virtual ~OpusSender();
 

@@ -2,8 +2,6 @@
 #define BRAGI_DEEZER_CLIENT_H
 
 #include "track/deezer_track.h"
-#include "util/properties.h"
-#include "types/base.h"
 
 #include <string>
 
@@ -65,9 +63,6 @@ private:
 	static inline unsigned long _session_timestamp = 0;
 	static constexpr unsigned int DELTA_TIME = 600;
 
-	/** Update the deezer session
-	 * @param verbose true if we need to log the user data; false else
-	 */
 	static void UpdateSession();
 };
 

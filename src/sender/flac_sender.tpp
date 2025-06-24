@@ -1,5 +1,5 @@
 template<typename F>
-FlacSender<F>::FlacSender(dpp::discord_voice_client* const voiceclient, const u_byte speed_percent, const F* const read_buffer)  :
+FlacSender<F>::FlacSender(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent, const F* const read_buffer)  :
 		OpusSender(voiceclient, speed_percent), FLAC::Decoder::Stream(), _read_buffer(read_buffer) {
 	/* Init the flac decoder */
 	this->init();
@@ -14,7 +14,7 @@ void FlacSender<F>::Run() {
 }
 
 template<typename F>
-FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(u_byte* buffer, unsigned long* buffer_size) {
+FLAC__StreamDecoderReadStatus FlacSender<F>::read_callback(unsigned char* buffer, unsigned long* buffer_size) {
 	if (!IsAborted() && (*_read_buffer)(buffer, buffer_size)) return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
 	else {
 		*buffer_size = 0;

@@ -2,13 +2,13 @@
 #include "parser.h"
 #include "locale/locale.h"
 
-u_byte Parser::ToUInt8(const char* data) {
-	u_byte result = 0;
+unsigned char Parser::ToUInt8(const char* data) {
+	unsigned char result = 0;
 	while (*data >= '0' && *data <= '9') result = result * 10 + (*data++ - '0');
 	return result;
 }
 
-s_byte Parser::ToInt8(const char* data) {
+signed char Parser::ToInt8(const char* data) {
 	if (data[0] != '-') return ToUInt8(data);
 	else return -ToUInt8(data + 1);
 }

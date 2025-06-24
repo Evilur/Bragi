@@ -1,9 +1,7 @@
-#include "master.h"
 #include "bragi.h"
 #include "locale/locale.h"
 #include "exception/bragi_exception.h"
 #include "util/color.h"
-#include "types/base.h"
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
 #include "exception/InvalidArlException.h"
@@ -17,6 +15,8 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     if (user_par.index() != 0)
         user_id = event.command.get_resolved_user(
             std::get<dpp::snowflake>(user_par)).id;
+
+    return { Join(event, user_id, event.command.channel_id) };
 }
 
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
@@ -79,7 +79,7 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
 
 dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     /* Get number of tracks for skip (if exists) */
-    s_long track_index = 0;
+    signed long track_index = 0;
     if (const dpp::command_value track_num_par = event.get_parameter("number");
         track_num_par.index() != 0)
             track_index = std::get<long>(track_num_par);
@@ -209,8 +209,8 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     dpp::command_value playback_rate_param = event.get_parameter("percent");
 
     /* If there is NO parameters, set playback rate to 100 (else use param) */
-    s_long playback_rate = playback_rate_param.index() != 0
-                               ? std::get<s_long>(playback_rate_param)
+    signed long playback_rate = playback_rate_param.index() != 0
+                               ? std::get<signed long>(playback_rate_param)
                                : 100;
 
     /* Check for overflow */

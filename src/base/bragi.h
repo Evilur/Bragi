@@ -45,7 +45,7 @@ private:
     unsigned short _tracks_size = 0;
     dpp::discord_voice_client *_voiceclient = nullptr;
     LoopType _loop_type = DISABLED;
-    u_byte _playback_rate = 100;
+    unsigned char _playback_rate = 100;
 
     inline bool IsPlayerReady();
 

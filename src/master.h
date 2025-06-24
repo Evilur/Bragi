@@ -1,8 +1,6 @@
 #ifndef BRAGI_MASTER_H
 #define BRAGI_MASTER_H
 
-#include "types/base.h"
-
 #include <dpp/dpp.h>
 
 void on_slashcommand(const dpp::slashcommand_t &event);
