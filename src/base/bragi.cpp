@@ -78,7 +78,49 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
-    return {"PLACEHOLDER MESSAGE"};
+    /* Get number of tracks for skip (if exists) */
+    s_long track_index = 0;
+    if (const dpp::command_value track_num_par = event.get_parameter("number");
+        track_num_par.index() != 0)
+            track_index = std::get<long>(track_num_par);
+
+    /* If the playlist is empty, throw an exception */
+    if (IsEmpty())
+        throw BragiException(
+            DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::SOFT);
+
+    /* Get the index of the track */
+    if (track_index == 0 || track_index > _tracks_size)
+        track_index = _tracks_size - 1;
+    else
+        track_index--;
+
+    /* If we need to replace the current playing track, abort it */
+    const bool is_playing = !track_index;
+    if (is_playing)
+        _tracks.Head()->Abort();
+
+    /* Get the next track pointer */
+    Track * &old_track = _tracks[track_index];
+    Track *next_track = old_track->Next();
+
+    /* If there is no new track */
+    if (next_track == nullptr)
+        throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::SOFT);
+
+    /* Delete the old track and replace with the next one */
+    delete old_track;
+    old_track = next_track;
+
+    /* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
+    if (is_playing) {
+        _voiceclient->stop_audio();
+        if (IsPlayerReady())
+            next_track->AsyncPlay(_voiceclient, _playback_rate);
+    }
+
+    /* Return the _message */
+    return next_track->GetMessage(is_playing, event.command.channel_id);
 }
 
 dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
@@ -197,47 +239,6 @@ dpp::message Bragi::PingCommand() {
            .set_color(Color::GREEN)
            .set_title(_("Ping"))
            .set_description(std::format(_("{}ms"), ping));
-}
-
-dpp::message Bragi::NextCommand(const dpp::snowflake &channel_id,
-                                unsigned short track_index) {
-    /* If the playlist is empty, throw an exception */
-    if (IsEmpty())
-        throw BragiException(
-            DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::SOFT);
-
-    /* Get the index of the track */
-    if (track_index == 0 || track_index > _tracks_size)
-        track_index = _tracks_size - 1;
-    else
-        track_index--;
-
-    /* If we need to replace the current playing track, abort it */
-    bool is_playing = !track_index;
-    if (is_playing)
-        _tracks.Head()->Abort();
-
-    /* Get the next track pointer */
-    Track * &old_track = _tracks[track_index];
-    Track *next_track = old_track->Next();
-
-    /* If there is no new track */
-    if (next_track == nullptr)
-        throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::SOFT);
-
-    /* Delete the old track and replace with the next one */
-    delete old_track;
-    old_track = next_track;
-
-    /* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
-    if (is_playing) {
-        _voiceclient->stop_audio();
-        if (IsPlayerReady())
-            next_track->AsyncPlay(_voiceclient, _playback_rate);
-    }
-
-    /* Return the _message */
-    return next_track->GetMessage(is_playing, channel_id);
 }
 
 std::string Bragi::Join(const dpp::slashcommand_t &event,

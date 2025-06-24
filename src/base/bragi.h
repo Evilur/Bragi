@@ -27,8 +27,6 @@ public:
 
     static dpp::message PingCommand();
 
-    dpp::message NextCommand(const dpp::snowflake &channel_id, unsigned short track_index);
-
     std::string Join(const dpp::slashcommand_t &event,
                      const dpp::snowflake &user_id,
                      const dpp::snowflake &channel_id);
