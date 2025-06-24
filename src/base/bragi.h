@@ -31,12 +31,11 @@ public:
                      const dpp::snowflake &user_id,
                      const dpp::snowflake &channel_id);
 
-    void HandleVoiceStateUpdate(const dpp::voice_state_update_t &event,
-                                const dpp::snowflake &channel_id);
+    void OnVoiceReady(const dpp::voice_ready_t& event);
 
-    void HandleReadyState(dpp::discord_voice_client *const voiceconn);
+    void OnVoiceStateUpdate(const dpp::voice_state_update_t& event);
 
-    void HandleMarker();
+    void OnMarker();
 
 private:
     enum LoopType { DISABLED, TRACK, PLAYLIST };

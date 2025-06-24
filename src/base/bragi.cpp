@@ -280,7 +280,42 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
     return std::format(DIC_JOINED, user_voice_channel->name);
 }
 
-void Bragi::HandleMarker() {
+void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
+    /* Update the voice */
+    _voiceclient = event.voice_client;
+
+    /* Set the audio type to store data in the buffer before sending */
+    _voiceclient->set_send_audio_type(
+        dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
+
+    /* If we need to play the first track, play it */
+    if (!IsEmpty())
+        _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
+}
+
+void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
+    /* If the voice client isn't initialized, exit the method */
+    if (!_voiceclient)
+        return;
+
+    /* If the voice channel doesn't change, exit the method */
+    if (_voiceclient->channel_id == event.state.channel_id)
+        return;
+
+    /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
+    if (!IsEmpty())
+        _tracks.Head()->Abort();
+
+    /* Reset the old voice connection */
+    _voiceclient->stop_audio();
+    _voiceclient = nullptr;
+
+    /* If the bot reconnect to the other voice channelm connect to the new voice channel */
+    if (event.state.channel_id)
+        event.from()->connect_voice(event.state.guild_id, event.state.channel_id);
+}
+
+void Bragi::OnMarker() {
     /* Check the loop type */
     if (_loop_type == TRACK)
         _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
@@ -301,42 +336,6 @@ void Bragi::HandleMarker() {
         if (!IsEmpty())
             _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
     }
-}
-
-void Bragi::HandleVoiceStateUpdate(const dpp::voice_state_update_t &event,
-                                   const dpp::snowflake &channel_id) {
-    /* If the voice client isn't initialized, exit the method */
-    if (!_voiceclient)
-        return;
-
-    /* If the voice channel doesn't change, exit the method */
-    if (_voiceclient->channel_id == channel_id)
-        return;
-
-    /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
-    if (!IsEmpty())
-        _tracks.Head()->Abort();
-
-    /* Reset the old voice connection */
-    _voiceclient->stop_audio();
-    _voiceclient = nullptr;
-
-    /* If the bot reconnect to the other voice channelm connect to the new voice channel */
-    if (channel_id)
-        event.from()->connect_voice(event.state.guild_id, channel_id);
-}
-
-void Bragi::HandleReadyState(dpp::discord_voice_client *const voiceclient) {
-    /* Update the voice */
-    _voiceclient = voiceclient;
-
-    /* Set the audio type to store data in the buffer before sending */
-    _voiceclient->set_send_audio_type(
-        dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
-
-    /* If we need to play the first track, play it */
-    if (!IsEmpty())
-        _tracks.Head()->AsyncPlay(_voiceclient, _playback_rate);
 }
 
 inline bool Bragi::IsPlayerReady() {

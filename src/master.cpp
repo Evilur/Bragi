@@ -56,16 +56,15 @@ void on_voice_state_update(const dpp::voice_state_update_t& event) {
     if (event.state.user_id != event.owner->me.id) return;
 
     /* Handle the voice state update */
-    Bragi::Get(event.state.guild_id)->HandleVoiceStateUpdate(event,
-                                                             event.state.channel_id);
+    Bragi::Get(event.state.guild_id)->OnVoiceStateUpdate(event);
 }
 
 void on_voice_ready(const dpp::voice_ready_t& event) {
-    Bragi::Get(event.voice_client->server_id)->HandleReadyState(event.voice_client);
+    Bragi::Get(event.voice_client->server_id)->OnVoiceReady(event);
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t& event) {
-    Bragi::Get(event.voice_client->server_id)->HandleMarker();
+    Bragi::Get(event.voice_client->server_id)->OnMarker();
 }
 
 void on_ready(const dpp::ready_t &event) {
