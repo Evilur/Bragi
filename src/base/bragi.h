@@ -9,23 +9,23 @@ class BragiHashMap;
 
 class Bragi final {
 public:
-    dpp::message JoinCommand(const dpp::slashcommand_t &event);
+    dpp::message JoinCommand(const dpp::slashcommand_t& event);
 
-    dpp::message LeaveCommand(const dpp::slashcommand_t &event);
+    dpp::message LeaveCommand(const dpp::slashcommand_t& event);
 
     dpp::message ListCommand() const;
 
-    dpp::message LoopCommand(const dpp::slashcommand_t &event);
+    dpp::message LoopCommand(const dpp::slashcommand_t& event);
 
-    dpp::message NextCommand(const dpp::slashcommand_t &event);
+    dpp::message NextCommand(const dpp::slashcommand_t& event);
 
-    dpp::message PlayCommand(const dpp::slashcommand_t &event);
+    dpp::message PlayCommand(const dpp::slashcommand_t& event);
 
-    dpp::message SkipCommand(const dpp::slashcommand_t &event);
+    dpp::message SkipCommand(const dpp::slashcommand_t& event);
 
-    dpp::message SpeedCommand(const dpp::slashcommand_t &event);
+    dpp::message SpeedCommand(const dpp::slashcommand_t& event);
 
-    static dpp::message PingCommand();
+    static dpp::message PingCommand(const dpp::slashcommand_t& event);
 
     std::string Join(const dpp::slashcommand_t &event,
                      const dpp::snowflake &user_id,

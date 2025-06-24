@@ -7,19 +7,18 @@
 
 int main() {
     /* Create a bot cluster */
-    bot = new dpp::cluster(Properties::BotToken());
+    dpp::cluster bot = dpp::cluster(Properties::BotToken());
 
     /* Create event handlers */
-    bot->on_slashcommand(on_slashcommand);
-    bot->on_voice_state_update(on_voice_state_update);
-    bot->on_voice_ready(on_voice_ready);
-    bot->on_voice_track_marker(on_voice_track_marker);
-    bot->on_ready(on_ready);
+    bot.on_slashcommand(on_slashcommand);
+    bot.on_voice_state_update(on_voice_state_update);
+    bot.on_voice_ready(on_voice_ready);
+    bot.on_voice_track_marker(on_voice_track_marker);
+    bot.on_ready(on_ready);
 
     /* Start the bot */
     INFO_LOG("Starting the bot");
-    bot->start(dpp::st_wait);
-    return 0;
+    bot.start(dpp::st_wait);
 }
 
 void on_slashcommand(const dpp::slashcommand_t& event) {
@@ -40,7 +39,7 @@ void on_slashcommand(const dpp::slashcommand_t& event) {
                 command_name == "join" ? bragi->JoinCommand(event) :
                 command_name == "speed" ? bragi->SpeedCommand(event) :
                 command_name == "leave" ? bragi->LeaveCommand(event) :
-                command_name == "ping" ? Bragi::PingCommand() :
+                command_name == "ping" ? Bragi::PingCommand(event) :
                 throw BragiException(_("**Unexpected error**"),
                                      BragiException::HARD);
         event.reply(message);
@@ -54,9 +53,9 @@ void on_slashcommand(const dpp::slashcommand_t& event) {
 
 void on_voice_state_update(const dpp::voice_state_update_t& event) {
     /* If there isn't the bot, exit the function */
-    if (event.state.user_id != bot->me.id) return;
+    if (event.state.user_id != event.owner->me.id) return;
 
-    /* Handle the voice state udpate */
+    /* Handle the voice state update */
     Bragi::Get(event.state.guild_id)->HandleVoiceStateUpdate(event,
                                                              event.state.channel_id);
 }
@@ -70,8 +69,7 @@ void on_voice_track_marker(const dpp::voice_track_marker_t& event) {
 }
 
 void on_ready(const dpp::ready_t &event) {
-    /* Init the discord client */
-    ds_client = event.from();
+    dpp::cluster* bot = event.owner;
 
     /* Add slash commands */
     bot->global_command_create(

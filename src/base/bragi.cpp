@@ -25,7 +25,7 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
         _tracks.Head()->Abort();
 
     /* Disconnect the voice connection */
-    ds_client->disconnect_voice(event.command.guild_id);
+    event.from()->disconnect_voice(event.command.guild_id);
     _voiceclient = nullptr;
 
     /* Return the result */
@@ -230,9 +230,9 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     };
 }
 
-dpp::message Bragi::PingCommand() {
+dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
     /* Get the ping */
-    uint ping = (uint)(bot->rest_ping * 1000.0);
+    unsigned int ping = (unsigned int)(event.owner->rest_ping * 1000.0);
 
     /* Return the result */
     return dpp::embed()
@@ -261,7 +261,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 
     /* If bot can not connect to the channel or speak there */
     dpp::permission channel_permission = user_voice_channel->
-        get_user_permissions(&bot->me);
+        get_user_permissions(&event.owner->me);
     if (!channel_permission.can(dpp::p_connect) || !channel_permission.can(
             dpp::p_speak))
         throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::HARD);
@@ -271,7 +271,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
         _tracks.Head()->Abort();
 
     /* Connect to the new channel */
-    ds_client->connect_voice(event.command.guild_id, user_voice_channel->id);
+    event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
 
     /* Reset the old voice connection */
     _voiceclient = nullptr;
@@ -323,7 +323,7 @@ void Bragi::HandleVoiceStateUpdate(const dpp::voice_state_update_t &event,
 
     /* If the bot reconnect to the other voice channelm connect to the new voice channel */
     if (channel_id)
-        ds_client->connect_voice(event.state.guild_id, channel_id);
+        event.from()->connect_voice(event.state.guild_id, channel_id);
 }
 
 void Bragi::HandleReadyState(dpp::discord_voice_client *const voiceclient) {
