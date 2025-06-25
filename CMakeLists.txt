@@ -8,4 +8,4 @@ FILE(GLOB_RECURSE SOURCES "src/*.cpp")
 
 ADD_EXECUTABLE(Bragi ${SOURCES})
 
-TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp)
+TARGET_LINK_LIBRARIES(Bragi opus opusenc speexdsp crypto ssl FLAC++ dpp avcodec avformat avutil swresample swscale)
