@@ -3,37 +3,47 @@
 
 #include <dpp/dpp.h>
 #include <string>
-#include "master.h"
-#include "sender/opus_sender.h"
+#include <opus/opus.h>
+
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+}
 
 class Track {
 public:
-	Track(const unsigned short &duration);
+    virtual ~Track();
 
-	virtual ~Track();
+    virtual dpp::message GetMessage(const bool &is_playing_now,
+                                    const dpp::snowflake &channel_id) const = 0;
 
-	const unsigned short &GetDuration() const;
+    virtual std::string GetTrackData() const = 0;
 
-	virtual dpp::message GetMessage(const bool &is_playing_now, const dpp::snowflake &channel_id) const = 0;
+    void Abort();
 
-	virtual std::string GetTrackData() const = 0;
+    void Play(dpp::discord_voice_client* voice_client,
+              unsigned char playback_rate);
 
-	void Abort();
-
-	void AsyncPlay(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent);
-
-	virtual Track* Next() const = 0;
+    virtual Track *Next() const = 0;
 
 protected:
-	const unsigned short duration;
+    using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
 
-	virtual void Play(dpp::discord_voice_client* const voiceclient, const unsigned char speed_percent) = 0;
-
-	void SetOpusSender(OpusSender* sender);
+    virtual ffmpeg_read_callback ReadPCMCallback() = 0;
 
 private:
-	std::thread* _play_thread = nullptr;
-	OpusSender* _opus_sender = nullptr;
+    static constexpr int FREQ = 48000;
+    static constexpr int FRAME_SIZE = 2880;
+    static constexpr int CHANNELS = 2;
+    static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS;
+    static constexpr int OPUS_CHUNK_SIZE = 1024;
+    static constexpr int RESAMPLER_INPUT_FREQ = 44100;
+
+    short _pcm_buffer[PCM_CHUNK_SIZE] = {};
+    char* _pcm_buffer_ptr = (char*)_pcm_buffer;
+    const char* const _pcm_buffer_end = (char*)_pcm_buffer + PCM_CHUNK_SIZE * 2;
+    OpusEncoder* _encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
 };
 
 #endif
