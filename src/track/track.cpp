@@ -1,8 +1,5 @@
 #include "track.h"
 
-// Размер внутреннего буфера AVIO
-static constexpr int IO_BUFFER_SIZE = 1024;
-
 Track::~Track() { opus_encoder_destroy(_encoder); }
 
 void Track::Abort() {
@@ -10,6 +7,9 @@ void Track::Abort() {
 
 void Track::Play(dpp::discord_voice_client* const voice_client,
                  const unsigned char playback_rate) {
+    // Размер внутреннего буфера AVIO
+    static constexpr int IO_BUFFER_SIZE = 10240;
+
     // 1) Подготовим AVFormatContext с нашим AVIOContext
     AVFormatContext* fmt_ctx = avformat_alloc_context();
     if (!fmt_ctx) throw -1;
@@ -20,7 +20,7 @@ void Track::Play(dpp::discord_voice_client* const voice_client,
         avio_buffer, IO_BUFFER_SIZE,
         0,                  // флаг: 0 = только чтение
         this,
-        ReadPCMCallback(),
+        GetReadAudioCallback(),
         nullptr,
         nullptr
     );

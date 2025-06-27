@@ -8,9 +8,6 @@
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
 DeezerTrack::DeezerTrack(const unsigned short track_duration, Quality quality,
                          const unsigned int track_id,
                          const std::string &track_title,
@@ -51,9 +48,21 @@ DeezerTrack::~DeezerTrack() {
     _http = nullptr;
 }
 
+void DeezerTrack::Play(dpp::discord_voice_client *voice_client,
+                       unsigned char playback_rate) {
+    /* Wait for initialization */
+    if (_init_thread->joinable())
+        _init_thread->join();
+
+    /* Create a new http client */
+    _http = new HttpClient(_data_url);
+
+    Track::Play(voice_client, playback_rate);
+}
+
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now,
                                      const dpp::snowflake &channel_id) const {
-    std::string msg_body = '\n' + "14м88с";
+    std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(1488));
 
     if (is_playing_now)
         msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _track.title));
@@ -112,17 +121,33 @@ void DeezerTrack::GetKey(unsigned char *buffer) {
 }
 
 
-static int GetPCMData(void *opaque_context, unsigned char *buffer, int buffer_size) {
-    static std::ifstream input("/home/evilur/Downloads/fuck.flac");
-    const Track* ctx = (Track*)(opaque_context);
-    input.read(reinterpret_cast<char*>(buffer), buffer_size);
-    const int bytes_read = static_cast<int>(input.gcount());
+int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
+                                 int buffer_size) {
+    /* Get context */
+    const DeezerTrack *const context = (DeezerTrack *)opaque_context;
 
-    if (bytes_read == 0) return AVERROR_EOF;
-    return bytes_read;
-}
-Track::ffmpeg_read_callback DeezerTrack::ReadPCMCallback() {
-return GetPCMData;
+    /* Set the chunk size */
+    constexpr int chunk_size = 2048;
+
+    /* If http stream has ended, or we have aborted the playback */
+    if (!context->_http->CanRead()) { return AVERROR_EOF; }
+
+    /* Read 3 raw chunks */
+    context->_http->Read((char *)buffer, chunk_size * 3);
+
+    /* Set the buffer size according to the recieved data size */
+    buffer_size = context->_http->PrevCount();
+
+    /* Set the init vectors */
+    unsigned char ivec[] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7};
+
+    /* Decrypt the first chunk */
+    if (buffer_size >= chunk_size)
+        BF_cbc_encrypt(buffer, buffer, chunk_size, &context->_bf_key, ivec,
+                       BF_DECRYPT);
+    return buffer_size;
 }
 
-#pragma GCC diagnostic pop
+Track::ffmpeg_read_callback DeezerTrack::GetReadAudioCallback() {
+    return ReadDeezerAudio;
+}

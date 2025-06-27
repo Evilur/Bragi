@@ -23,7 +23,10 @@ public:
                 const unsigned short search_next,
                 const std::string &search_query);
 
-    ~DeezerTrack();
+    ~DeezerTrack() override;
+
+    void Play(dpp::discord_voice_client *voice_client,
+              unsigned char playback_rate) override;
 
     dpp::message GetMessage(const bool &is_playing_now,
                             const dpp::snowflake &channel_id) const override;
@@ -66,7 +69,10 @@ private:
 
     void GetKey(unsigned char *buffer);
 
-    ffmpeg_read_callback ReadPCMCallback() override;
+    ffmpeg_read_callback GetReadAudioCallback() override;
+
+    static int ReadDeezerAudio(void *opaque_context,
+                          unsigned char *buffer, int buffer_size);
 };
 
 #endif

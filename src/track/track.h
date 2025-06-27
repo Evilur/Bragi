@@ -22,15 +22,15 @@ public:
 
     void Abort();
 
-    void Play(dpp::discord_voice_client* voice_client,
-              unsigned char playback_rate);
+   virtual void Play(dpp::discord_voice_client* voice_client,
+                     unsigned char playback_rate);
 
     virtual Track *Next() const = 0;
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
 
-    virtual ffmpeg_read_callback ReadPCMCallback() = 0;
+    virtual ffmpeg_read_callback GetReadAudioCallback() = 0;
 
 private:
     static constexpr int FREQ = 48000;
