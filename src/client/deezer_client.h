@@ -10,10 +10,11 @@ public:
 	static DeezerTrack* Search(const std::string &query,
                                uint start = 0);
 
-	static std::string GetTrackUrl(const std::string &token,
-                                   DeezerTrack::Quality quality);
+	static std::string GetTrackUrl(const std::string &token);
 
 private:
+    enum TrackQuality { MP3_128, MP3_320, FLAC };
+
     static constexpr char TRACK_QUALITY_STR[][8] = {
         "MP3_128", "MP3_320", "FLAC"
     };

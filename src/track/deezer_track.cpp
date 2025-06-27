@@ -8,7 +8,7 @@
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
 
-DeezerTrack::DeezerTrack(const unsigned short track_duration, Quality quality,
+DeezerTrack::DeezerTrack(const unsigned short track_duration,
                          const unsigned int track_id,
                          const std::string &track_title,
                          const std::string &track_token,
@@ -21,15 +21,14 @@ DeezerTrack::DeezerTrack(const unsigned short track_duration, Quality quality,
                          const unsigned short search_total,
                          const unsigned short search_next,
                          const std::string &search_query) :
-    _quality(quality),
     _track(track_id, track_title, track_token),
     _album(album_id, album_title, album_picture_id),
     _artist(artist_id, artist_name, artist_picture_id),
     _search(search_total, search_next, search_query) {
     /* Get the encypted data url in the new thread */
-    _init_thread = new std::thread([this]() {
+    _init_thread = new std::thread([this] {
         /* Set the url of the encrypted track data */
-        _data_url = DeezerClient::GetTrackUrl(_track.token, _quality);
+        _data_url = DeezerClient::GetTrackUrl(_track.token);
 
         /* Set the blowfish cipher key */
         unsigned char key_buffer[MD5_DIGEST_LENGTH];
@@ -121,6 +120,8 @@ void DeezerTrack::GetKey(unsigned char *buffer) {
 }
 
 
+int DeezerTrack::GetAudioBufferSize() { return 3 * DEEZER_AUDIO_CHUNK_SIZE; }
+
 int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
                                  int buffer_size) {
     /* Get context */
@@ -148,6 +149,6 @@ int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
     return buffer_size;
 }
 
-Track::ffmpeg_read_callback DeezerTrack::GetReadAudioCallback() {
+constexpr Track::ffmpeg_read_callback DeezerTrack::GetReadAudioCallback() {
     return ReadDeezerAudio;
 }

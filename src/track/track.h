@@ -30,20 +30,21 @@ public:
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
 
-    virtual ffmpeg_read_callback GetReadAudioCallback() = 0;
-
 private:
     static constexpr int FREQ = 48000;
     static constexpr int FRAME_SIZE = 2880;
     static constexpr int CHANNELS = 2;
     static constexpr int PCM_CHUNK_SIZE = FRAME_SIZE * CHANNELS;
     static constexpr int OPUS_CHUNK_SIZE = 1024;
-    static constexpr int RESAMPLER_INPUT_FREQ = 44100;
 
     short _pcm_buffer[PCM_CHUNK_SIZE] = {};
     char* _pcm_buffer_ptr = (char*)_pcm_buffer;
     const char* const _pcm_buffer_end = (char*)_pcm_buffer + PCM_CHUNK_SIZE * 2;
     OpusEncoder* _encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
+
+    virtual constexpr ffmpeg_read_callback GetReadAudioCallback() = 0;
+
+    virtual constexpr int GetAudioBufferSize() = 0;
 };
 
 #endif

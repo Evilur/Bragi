@@ -10,9 +10,7 @@
 
 class DeezerTrack final : public Track {
 public:
-    enum Quality { MP3_128, MP3_320, FLAC };
-
-    DeezerTrack(const unsigned short track_duration, Quality quality,
+    DeezerTrack(const unsigned short track_duration,
                 const unsigned int track_id, const std::string &track_title,
                 const std::string &track_token,
                 const unsigned int album_id, const std::string &album_title,
@@ -36,9 +34,6 @@ public:
     Track *Next() const override;
 
 private:
-    const Quality _quality;
-    std::string _data_url;
-
     const struct {
         const unsigned int id;
         const std::string title;
@@ -64,12 +59,17 @@ private:
     } _search;
 
     BF_KEY _bf_key;
+    std::string _data_url;
     std::thread *_init_thread = nullptr;
     HttpClient *_http = nullptr;
 
+    static constexpr int DEEZER_AUDIO_CHUNK_SIZE = 2048;
+
     void GetKey(unsigned char *buffer);
 
-    ffmpeg_read_callback GetReadAudioCallback() override;
+    constexpr ffmpeg_read_callback GetReadAudioCallback() override;
+
+    int GetAudioBufferSize() override;
 
     static int ReadDeezerAudio(void *opaque_context,
                           unsigned char *buffer, int buffer_size);

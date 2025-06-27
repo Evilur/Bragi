@@ -5,8 +5,6 @@
 #include "util/logger.h"
 #include "util/properties.h"
 
-#include <pstl/glue_execution_defs.h>
-
 int main() {
     /* Create a bot cluster */
     dpp::cluster bot = dpp::cluster(Properties::BotToken());

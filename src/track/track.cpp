@@ -7,17 +7,14 @@ void Track::Abort() {
 
 void Track::Play(dpp::discord_voice_client* const voice_client,
                  const unsigned char playback_rate) {
-    // Размер внутреннего буфера AVIO
-    static constexpr int IO_BUFFER_SIZE = 10240;
-
     // 1) Подготовим AVFormatContext с нашим AVIOContext
     AVFormatContext* fmt_ctx = avformat_alloc_context();
     if (!fmt_ctx) throw -1;
 
     // 1.1) выделяем буфер для AVIO
-    uint8_t* avio_buffer = static_cast<uint8_t*>(av_malloc(IO_BUFFER_SIZE));
+    uint8_t* avio_buffer = static_cast<uint8_t*>(av_malloc(GetAudioBufferSize()));
     AVIOContext* avio_ctx = avio_alloc_context(
-        avio_buffer, IO_BUFFER_SIZE,
+        avio_buffer, GetAudioBufferSize(),
         0,                  // флаг: 0 = только чтение
         this,
         GetReadAudioCallback(),
@@ -83,6 +80,9 @@ void Track::Play(dpp::discord_voice_client* const voice_client,
         }
         av_packet_unref(pkt);
     }
+
+    /* Send EOF marker */
+    voice_client->insert_marker();
 
     // 5) cleanup
     av_frame_free(&frame);
