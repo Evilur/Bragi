@@ -34,25 +34,30 @@ public:
     Track *Next() const override;
 
 private:
-    const struct {
+    const class {
+    public:
         const unsigned int id;
+        const unsigned int duration;
         const std::string title;
         const std::string token;
     } _track;
 
-    const struct {
+    const class {
+    public:
         const unsigned int id;
         const std::string title;
         const std::string picture_id;
     } _album;
 
-    const struct {
+    const class {
+    public:
         const unsigned int id;
         const std::string name;
         const std::string picture_id;
     } _artist;
 
-    struct {
+    const class {
+    public:
         const unsigned short total;
         const unsigned short next;
         const std::string next_query;

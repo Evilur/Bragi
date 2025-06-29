@@ -21,7 +21,7 @@ DeezerTrack::DeezerTrack(const unsigned short track_duration,
                          const unsigned short search_total,
                          const unsigned short search_next,
                          const std::string &search_query) :
-    _track(track_id, track_title, track_token),
+    _track(track_id, track_duration, track_title, track_token),
     _album(album_id, album_title, album_picture_id),
     _artist(artist_id, artist_name, artist_picture_id),
     _search(search_total, search_next, search_query) {
@@ -61,7 +61,7 @@ void DeezerTrack::Play(dpp::discord_voice_client *voice_client,
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now,
                                      const dpp::snowflake &channel_id) const {
-    std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(1488));
+    std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_track.duration));
 
     if (is_playing_now)
         msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _track.title));
