@@ -9,6 +9,12 @@ class BragiHashMap;
 
 class Bragi final {
 public:
+    class Player {
+    public:
+        dpp::discord_voice_client *voice_client = nullptr;
+        unsigned char playback_rate = 100;
+    };
+
     dpp::message JoinCommand(const dpp::slashcommand_t& event);
 
     dpp::message LeaveCommand(const dpp::slashcommand_t& event);
@@ -42,9 +48,8 @@ private:
 
     LinkedList<Track *> _tracks;
     unsigned short _tracks_size = 0;
-    dpp::discord_voice_client *_voiceclient = nullptr;
     LoopType _loop_type = DISABLED;
-    unsigned char _playback_rate = 100;
+    Player _player = { nullptr, 100 };
 
     inline bool IsPlayerReady();
 

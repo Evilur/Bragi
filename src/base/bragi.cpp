@@ -26,7 +26,7 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
 
     /* Disconnect the voice connection */
     event.from()->disconnect_voice(event.command.guild_id);
-    _voiceclient = nullptr;
+    _player.voice_client = nullptr;
 
     /* Return the result */
     return {_("**:person_walking: Bot has left the voice channel**")};
@@ -114,9 +114,9 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
 
     /* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
     if (is_playing) {
-        _voiceclient->stop_audio();
+        _player.voice_client->stop_audio();
         if (IsPlayerReady())
-            next_track->Play(_voiceclient, _playback_rate);
+            next_track->Play(_player.voice_client, _player.playback_rate);
     }
 
     /* Return the _message */
@@ -153,7 +153,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks_size++;
 
         if (need_to_play_first_track)
-            track->Play(_voiceclient, _playback_rate);
+            track->Play(_player.voice_client, _player.playback_rate);
         //Play the current track
         return result_msg; //Return the track _message
     }
@@ -187,7 +187,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
     /* Stop the audio and clear the packet queue */
     _tracks.Head()->Abort();
     if (IsPlayerReady())
-        _voiceclient->stop_audio();
+        _player.voice_client->stop_audio();
 
     /* Get the current track number for skip */
     if (num_for_skip > _tracks_size)
@@ -199,7 +199,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
 
     /* If the playlist isn't empty, play the next track */
     if (!IsEmpty() && IsPlayerReady())
-        _tracks.Head()->Play(_voiceclient, _playback_rate);
+        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
 
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
@@ -222,7 +222,7 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
                              BragiException::HARD);
 
     /* If all is OK */
-    _playback_rate = playback_rate;
+    _player.playback_rate = playback_rate;
 
     /* Return a _message */
     return {
@@ -255,7 +255,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
             DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, BragiException::HARD);
 
     /* If the user and a bot already in the same channel */
-    if (IsPlayerReady() && _voiceclient->channel_id == user_voice_channel->id)
+    if (IsPlayerReady() && _player.voice_client->channel_id == user_voice_channel->id)
         throw BragiException(
             DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, BragiException::SOFT);
 
@@ -274,7 +274,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
     event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
 
     /* Reset the old voice connection */
-    _voiceclient = nullptr;
+    _player.voice_client = nullptr;
 
     /* Return the result to the channel */
     return std::format(DIC_JOINED, user_voice_channel->name);
@@ -282,24 +282,24 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Update the voice */
-    _voiceclient = event.voice_client;
+    _player.voice_client = event.voice_client;
 
     /* Set the audio type to store data in the buffer before sending */
-    _voiceclient->set_send_audio_type(
+    _player.voice_client->set_send_audio_type(
         dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
     /* If we need to play the first track, play it */
     if (!IsEmpty())
-        _tracks.Head()->Play(_voiceclient, _playback_rate);
+        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     /* If the voice client isn't initialized, exit the method */
-    if (!_voiceclient)
+    if (!_player.voice_client)
         return;
 
     /* If the voice channel doesn't change, exit the method */
-    if (_voiceclient->channel_id == event.state.channel_id)
+    if (_player.voice_client->channel_id == event.state.channel_id)
         return;
 
     /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
@@ -307,8 +307,8 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
         _tracks.Head()->Abort();
 
     /* Reset the old voice connection */
-    _voiceclient->stop_audio();
-    _voiceclient = nullptr;
+    _player.voice_client->stop_audio();
+    _player.voice_client = nullptr;
 
     /* If the bot reconnect to the other voice channelm connect to the new voice channel */
     if (event.state.channel_id)
@@ -318,7 +318,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 void Bragi::OnMarker() {
     /* Check the loop type */
     if (_loop_type == TRACK)
-        _tracks.Head()->Play(_voiceclient, _playback_rate);
+        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
     else if (_loop_type == PLAYLIST) {
         /* Move the first track to the end of the playlist */
         Track *track = _tracks.Head();
@@ -326,7 +326,7 @@ void Bragi::OnMarker() {
         _tracks.Push(track);
 
         /* Play the next track */
-        _tracks.Head()->Play(_voiceclient, _playback_rate);
+        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
     } else {
         /* Remove the first track in the list */
         _tracks.PopFront([](Track *track) { delete track; });
@@ -334,12 +334,12 @@ void Bragi::OnMarker() {
 
         /* If the playlist isn't empty, play the next track */
         if (!IsEmpty())
-            _tracks.Head()->Play(_voiceclient, _playback_rate);
+            _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
     }
 }
 
 inline bool Bragi::IsPlayerReady() {
-    return _voiceclient && _voiceclient->is_ready();
+    return _player.voice_client && _player.voice_client->is_ready();
 }
 
 inline bool Bragi::IsEmpty() const { return !_tracks_size; }

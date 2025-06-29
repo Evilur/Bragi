@@ -125,26 +125,26 @@ int DeezerTrack::GetAudioBufferSize() { return 3 * DEEZER_AUDIO_CHUNK_SIZE; }
 int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
                                  int buffer_size) {
     /* Get context */
-    const DeezerTrack *const context = (DeezerTrack *)opaque_context;
+    const DeezerTrack *const track_ctx = (DeezerTrack *)opaque_context;
 
     /* Set the chunk size */
     constexpr int chunk_size = 2048;
 
     /* If http stream has ended, or we have aborted the playback */
-    if (!context->_http->CanRead()) { return AVERROR_EOF; }
+    if (!track_ctx->_http->CanRead()) { return AVERROR_EOF; }
 
     /* Read 3 raw chunks */
-    context->_http->Read((char *)buffer, chunk_size * 3);
+    track_ctx->_http->Read((char *)buffer, chunk_size * 3);
 
     /* Set the buffer size according to the recieved data size */
-    buffer_size = context->_http->PrevCount();
+    buffer_size = track_ctx->_http->PrevCount();
 
     /* Set the init vectors */
     unsigned char ivec[] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7};
 
     /* Decrypt the first chunk */
     if (buffer_size >= chunk_size)
-        BF_cbc_encrypt(buffer, buffer, chunk_size, &context->_bf_key, ivec,
+        BF_cbc_encrypt(buffer, buffer, chunk_size, &track_ctx->_bf_key, ivec,
                        BF_DECRYPT);
     return buffer_size;
 }

@@ -8,10 +8,10 @@ void Track::Abort() {
 void Track::Play(dpp::discord_voice_client *const voice_client,
                  const unsigned char playback_rate) {
     /* Allocate the format context */
-    AVFormatContext *format_context = avformat_alloc_context();
+    AVFormatContext *format_ctx = avformat_alloc_context();
 
     /* Allocate the avio context */
-    AVIOContext *avio_context =
+    AVIOContext *avio_ctx =
         avio_alloc_context((unsigned char *)av_malloc(GetAudioBufferSize()),
                            GetAudioBufferSize(),
                            0,
@@ -21,28 +21,28 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
                            nullptr);
 
     /* Set avio context to the format context */
-    format_context->pb = avio_context;
+    format_ctx->pb = avio_ctx;
 
     // 1.2) Открываем формат (FFmpeg сам «угадает» контейнер/кодек по заголовкам из потока)
-    if (avformat_open_input(&format_context, nullptr, nullptr, nullptr) < 0) {
+    if (avformat_open_input(&format_ctx, nullptr, nullptr, nullptr) < 0) {
         std::cerr << "Не удалось открыть входной поток\n";
         throw -1;
     }
-    if (avformat_find_stream_info(format_context, nullptr) < 0) {
+    if (avformat_find_stream_info(format_ctx, nullptr) < 0) {
         std::cerr << "Не удалось найти информацию о потоках\n";
         throw -1;
     }
 
     // 2) Ищем аудиопоток и инициализируем декодер
     const AVCodec *codec = nullptr;
-    int stream_index = av_find_best_stream(format_context, AVMEDIA_TYPE_AUDIO,
+    int stream_index = av_find_best_stream(format_ctx, AVMEDIA_TYPE_AUDIO,
                                            -1, -1,
                                            &codec, 0);
     if (stream_index < 0) {
         std::cerr << "Аудиопоток не найден\n";
         throw -1;
     }
-    AVStream *audio_st = format_context->streams[stream_index];
+    AVStream *audio_st = format_ctx->streams[stream_index];
     AVCodecContext *cctx = avcodec_alloc_context3(codec);
     avcodec_parameters_to_context(cctx, audio_st->codecpar);
     if (avcodec_open2(cctx, codec, nullptr) < 0) {
@@ -54,7 +54,7 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
     AVPacket *pkt = av_packet_alloc();
     AVFrame *frame = av_frame_alloc();
 
-    while (av_read_frame(format_context, pkt) >= 0) {
+    while (av_read_frame(format_ctx, pkt) >= 0) {
         if (pkt->stream_index == stream_index) {
             if (avcodec_send_packet(cctx, pkt) == 0) {
                 while (avcodec_receive_frame(cctx, frame) == 0) {
@@ -90,10 +90,10 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
     voice_client->insert_marker();
 
     /* Free the memory */
-    av_free(avio_context->buffer);
-    avio_context_free(&avio_context);
-    avformat_close_input(&format_context);
-    avformat_free_context(format_context);
+    av_free(avio_ctx->buffer);
+    avio_context_free(&avio_ctx);
+    avformat_close_input(&format_ctx);
+    avformat_free_context(format_ctx);
 
     // 5) cleanup
     av_frame_free(&frame);
