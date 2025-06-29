@@ -1,11 +1,11 @@
 #pragma once
 
-#include "track/track.h"
 #include "template/linked_list.hpp"
 
 #include <dpp/dpp.h>
 
 class BragiHashMap;
+class Track;
 
 class Bragi final {
 public:

@@ -116,7 +116,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     if (is_playing) {
         _player.voice_client->stop_audio();
         if (IsPlayerReady())
-            next_track->Play(_player.voice_client, _player.playback_rate);
+            next_track->Play(_player);
     }
 
     /* Return the _message */
@@ -152,9 +152,9 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks.Push(track);
         _tracks_size++;
 
+        /* Async play the current track */
         if (need_to_play_first_track)
-            track->Play(_player.voice_client, _player.playback_rate);
-        //Play the current track
+            track->AsyncPlay(_player);
         return result_msg; //Return the track _message
     }
 
@@ -199,7 +199,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
 
     /* If the playlist isn't empty, play the next track */
     if (!IsEmpty() && IsPlayerReady())
-        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
+        _tracks.Head()->Play(_player);
 
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
@@ -290,7 +290,7 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
 
     /* If we need to play the first track, play it */
     if (!IsEmpty())
-        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
+        _tracks.Head()->Play(_player);
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
@@ -318,7 +318,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 void Bragi::OnMarker() {
     /* Check the loop type */
     if (_loop_type == TRACK)
-        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
+        _tracks.Head()->Play(_player);
     else if (_loop_type == PLAYLIST) {
         /* Move the first track to the end of the playlist */
         Track *track = _tracks.Head();
@@ -326,7 +326,7 @@ void Bragi::OnMarker() {
         _tracks.Push(track);
 
         /* Play the next track */
-        _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
+        _tracks.Head()->Play(_player);
     } else {
         /* Remove the first track in the list */
         _tracks.PopFront([](Track *track) { delete track; });
@@ -334,7 +334,7 @@ void Bragi::OnMarker() {
 
         /* If the playlist isn't empty, play the next track */
         if (!IsEmpty())
-            _tracks.Head()->Play(_player.voice_client, _player.playback_rate);
+            _tracks.Head()->Play(_player);
     }
 }
 
