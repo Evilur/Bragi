@@ -5,8 +5,7 @@ Track::~Track() { opus_encoder_destroy(_encoder); }
 void Track::Abort() {
 }
 
-void Track::Play(dpp::discord_voice_client *const voice_client,
-                 const unsigned char playback_rate) {
+void Track::Play(Bragi::Player& player) {
     /* Allocate the format context */
     AVFormatContext *format_ctx = avformat_alloc_context();
 
@@ -78,7 +77,7 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
                         const int len = opus_encode(
                             _encoder, _pcm_buffer, FRAME_SIZE, opus_buffer,
                             OPUS_CHUNK_SIZE);
-                        voice_client->send_audio_opus(opus_buffer, len, 60);
+                        player.voice_client->send_audio_opus(opus_buffer, len, 60);
                     }
                 }
             }
@@ -87,7 +86,7 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
     }
 
     /* Send EOF marker */
-    voice_client->insert_marker();
+    player.voice_client->insert_marker();
 
     /* Free the memory */
     av_free(avio_ctx->buffer);
@@ -99,4 +98,10 @@ void Track::Play(dpp::discord_voice_client *const voice_client,
     av_frame_free(&frame);
     av_packet_free(&pkt);
     avcodec_free_context(&cctx);
+}
+
+void Track::AsyncPlay(Bragi::Player& player) {
+    std::thread([this, &player] {
+        this->Play(player);
+    }).detach();
 }

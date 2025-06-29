@@ -47,8 +47,7 @@ DeezerTrack::~DeezerTrack() {
     _http = nullptr;
 }
 
-void DeezerTrack::Play(dpp::discord_voice_client *voice_client,
-                       unsigned char playback_rate) {
+void DeezerTrack::Play(Bragi::Player& player) {
     /* Wait for initialization */
     if (_init_thread->joinable())
         _init_thread->join();
@@ -56,7 +55,7 @@ void DeezerTrack::Play(dpp::discord_voice_client *voice_client,
     /* Create a new http client */
     _http = new HttpClient(_data_url);
 
-    Track::Play(voice_client, playback_rate);
+    Track::Play(player);
 }
 
 dpp::message DeezerTrack::GetMessage(const bool &is_playing_now,

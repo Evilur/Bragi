@@ -1,6 +1,8 @@
 #ifndef BRAGI_TRACK_H
 #define BRAGI_TRACK_H
 
+#include "base/bragi.h"
+
 #include <dpp/dpp.h>
 #include <string>
 #include <opus/opus.h>
@@ -22,8 +24,9 @@ public:
 
     void Abort();
 
-   virtual void Play(dpp::discord_voice_client* voice_client,
-                     unsigned char playback_rate);
+    virtual void Play(Bragi::Player& player);
+
+    void AsyncPlay(Bragi::Player& player);
 
     virtual Track *Next() const = 0;
 

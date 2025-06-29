@@ -23,8 +23,7 @@ public:
 
     ~DeezerTrack() override;
 
-    void Play(dpp::discord_voice_client *voice_client,
-              unsigned char playback_rate) override;
+    void Play(Bragi::Player& player) override;
 
     dpp::message GetMessage(const bool &is_playing_now,
                             const dpp::snowflake &channel_id) const override;
