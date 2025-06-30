@@ -1,6 +1,6 @@
 #include "track.h"
 
-#include "util/logger.h"
+#include "util/logger.hpp"
 
 Track::~Track() {
     /* Destroy the opus encoder */

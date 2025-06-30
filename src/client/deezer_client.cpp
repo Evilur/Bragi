@@ -4,7 +4,7 @@
 #include "web/http_client.h"
 #include "util/properties.h"
 #include "util/json.h"
-#include "util/logger.h"
+#include "util/logger.hpp"
 #include "track/deezer_track.h"
 #include "web/https_client.h"
 #include "util/parser.h"

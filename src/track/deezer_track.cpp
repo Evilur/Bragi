@@ -1,7 +1,7 @@
 #include "deezer_track.h"
 #include "util/parser.h"
 #include "util/color.h"
-#include "util/logger.h"
+#include "util/logger.hpp"
 #include "client/deezer_client.h"
 #include "master.h"
 

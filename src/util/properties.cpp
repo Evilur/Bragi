@@ -1,5 +1,5 @@
 #include "properties.h"
-#include "util/logger.h"
+#include "util/logger.hpp"
 
 #include <cstdlib>
 

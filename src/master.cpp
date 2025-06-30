@@ -2,7 +2,7 @@
 #include "base/bragi.h"
 #include "exception/bragi_exception.h"
 #include "locale/locale.h"
-#include "util/logger.h"
+#include "util/logger.hpp"
 #include "util/properties.h"
 
 int main() {

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdarg>
 #include <cstdio>
+#include <ctime>
 
 #define LOG_LEVEL 0
 
@@ -46,16 +48,43 @@ public:
         TRACE, DEBUG, INFO, WARN, ERROR, FATAL
     };
 
+    template <typename... Args>
     static void Log(FILE* stream,
                     LogLevel log_level,
-                    const char* format, ...);
+                    const char* format,
+                    Args... args);
 
 private:
-	static constexpr char COLOR_CODE_STR[6][6] = {
-        "\e[32m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m"
+    static constexpr char COLOR_CODE_STR[6][6] = {
+        "\e[0m", "\e[35m", "\e[34m", "\e[33m", "\e[31m", "\e[31m"
     };
 
-	static constexpr char LOG_LEVEL_STR[6][8] = {
+    static constexpr char LOG_LEVEL_STR[6][8] = {
         "Trace: ", "Debug: ", "Info:  ", "Warn:  ", "Error: ", "Fatal: "
     };
 };
+
+template <typename... Args>
+void Logger::Log(FILE* stream,
+                 const LogLevel log_level,
+                 const char* format,
+                 Args... args) {
+    /* Get current time */
+    char time_buffer[20];
+    const time_t current_time = time(nullptr);
+    const tm* const time_info = localtime(&current_time);
+    strftime(time_buffer, sizeof(time_buffer),
+             "%Y.%m.%d %H:%M:%S", time_info);
+
+    /* Print the prefix */
+    fprintf(stream, "%s[%s] %s",
+            COLOR_CODE_STR[log_level],
+            time_buffer,
+            LOG_LEVEL_STR[log_level]);
+
+    /* Print the message */
+    fprintf(stream, format, args...);
+
+    /* Print a new line char */
+    fputc('\n', stream);
+}
