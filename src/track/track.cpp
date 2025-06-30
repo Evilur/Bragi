@@ -2,9 +2,6 @@
 
 Track::~Track() { opus_encoder_destroy(_encoder); }
 
-void Track::Abort() {
-}
-
 void Track::Play(Bragi::Player& player) {
     /* Allocate the format context */
     AVFormatContext *format_ctx = avformat_alloc_context();
@@ -66,6 +63,8 @@ void Track::Play(Bragi::Player& player) {
                         1
                         );
 
+                    if (_is_aborted) goto free_memory;
+
                     for (int i = 0; i < data_size; i++) {
                         *_pcm_buffer_ptr++ = frame->data[0][i];
 
@@ -89,6 +88,7 @@ void Track::Play(Bragi::Player& player) {
     player.voice_client->insert_marker();
 
     /* Free the memory */
+    free_memory:
     av_free(avio_ctx->buffer);
     avio_context_free(&avio_ctx);
     avformat_close_input(&format_ctx);
@@ -105,3 +105,5 @@ void Track::AsyncPlay(Bragi::Player& player) {
         this->Play(player);
     }).detach();
 }
+
+void Track::Abort() { _is_aborted = true; }

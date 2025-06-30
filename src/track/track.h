@@ -22,13 +22,13 @@ public:
 
     virtual std::string GetTrackData() const = 0;
 
-    void Abort();
+    virtual Track *Next() const = 0;
 
     virtual void Play(Bragi::Player& player);
 
     void AsyncPlay(Bragi::Player& player);
 
-    virtual Track *Next() const = 0;
+    void Abort();
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
@@ -44,6 +44,8 @@ private:
     char* _pcm_buffer_ptr = (char*)_pcm_buffer;
     const char* const _pcm_buffer_end = (char*)_pcm_buffer + PCM_CHUNK_SIZE * 2;
     OpusEncoder* _encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
+
+    bool _is_aborted = false;
 
     virtual constexpr ffmpeg_read_callback GetReadAudioCallback() = 0;
 
