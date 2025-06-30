@@ -153,8 +153,9 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
         _tracks_size++;
 
         /* Async play the current track */
-        if (need_to_play_first_track)
-            track->AsyncPlay(_player);
+        if (need_to_play_first_track) std::thread([this, track] {
+                track->Play(_player);
+            }).detach();
         return result_msg; //Return the track _message
     }
 

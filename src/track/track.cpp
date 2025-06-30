@@ -110,16 +110,4 @@ free_memory:
     avcodec_free_context(&cctx);
 }
 
-void Track::AsyncPlay(Bragi::Player& player) {
-    /* Abort the old playing and join the old play thread */
-    Abort();
-    if (_play_thread.joinable()) _play_thread.join();
-
-    /* Create a new play thread */
-    _play_thread = std::thread([this, &player] {
-        _is_aborted = false;
-        Play(player);
-    });
-}
-
 inline void Track::Abort() { _is_aborted = true; }

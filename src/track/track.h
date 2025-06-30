@@ -26,8 +26,6 @@ public:
 
     virtual void Play(Bragi::Player& player);
 
-    void AsyncPlay(Bragi::Player& player);
-
     inline void Abort();
 
 protected:
