@@ -1,14 +1,23 @@
 #include "track.h"
 
-Track::~Track() { opus_encoder_destroy(_encoder); }
+#include "util/logger.h"
+
+Track::~Track() {
+    /* Destroy the opus encoder */
+    opus_encoder_destroy(_encoder);
+
+    /* Abort the playing and join the play thread */
+    Abort();
+    if (_play_thread.joinable()) _play_thread.join();
+}
 
 void Track::Play(Bragi::Player& player) {
     /* Allocate the format context */
-    AVFormatContext *format_ctx = avformat_alloc_context();
+    AVFormatContext* format_ctx = avformat_alloc_context();
 
     /* Allocate the avio context */
-    AVIOContext *avio_ctx =
-        avio_alloc_context((unsigned char *)av_malloc(GetAudioBufferSize()),
+    AVIOContext* avio_ctx =
+        avio_alloc_context((unsigned char*)av_malloc(GetAudioBufferSize()),
                            GetAudioBufferSize(),
                            0,
                            this,
@@ -30,7 +39,7 @@ void Track::Play(Bragi::Player& player) {
     }
 
     // 2) Ищем аудиопоток и инициализируем декодер
-    const AVCodec *codec = nullptr;
+    const AVCodec* codec = nullptr;
     int stream_index = av_find_best_stream(format_ctx, AVMEDIA_TYPE_AUDIO,
                                            -1, -1,
                                            &codec, 0);
@@ -38,8 +47,8 @@ void Track::Play(Bragi::Player& player) {
         std::cerr << "Аудиопоток не найден\n";
         throw -1;
     }
-    AVStream *audio_st = format_ctx->streams[stream_index];
-    AVCodecContext *cctx = avcodec_alloc_context3(codec);
+    AVStream* audio_st = format_ctx->streams[stream_index];
+    AVCodecContext* cctx = avcodec_alloc_context3(codec);
     avcodec_parameters_to_context(cctx, audio_st->codecpar);
     if (avcodec_open2(cctx, codec, nullptr) < 0) {
         std::cerr << "Не удалось открыть декодер\n";
@@ -47,8 +56,8 @@ void Track::Play(Bragi::Player& player) {
     }
 
     // 3) Бьем пакеты, декодируем, и сбрасываем raw PCM в out_pcm
-    AVPacket *pkt = av_packet_alloc();
-    AVFrame *frame = av_frame_alloc();
+    AVPacket* pkt = av_packet_alloc();
+    AVFrame* frame = av_frame_alloc();
 
     while (av_read_frame(format_ctx, pkt) >= 0) {
         if (pkt->stream_index == stream_index) {
@@ -70,13 +79,14 @@ void Track::Play(Bragi::Player& player) {
 
                         if (_pcm_buffer_ptr < _pcm_buffer_end)
                             continue;
-                        _pcm_buffer_ptr = (char *)_pcm_buffer;
+                        _pcm_buffer_ptr = (char*)_pcm_buffer;
 
                         unsigned char opus_buffer[OPUS_CHUNK_SIZE];
                         const int len = opus_encode(
                             _encoder, _pcm_buffer, FRAME_SIZE, opus_buffer,
                             OPUS_CHUNK_SIZE);
-                        player.voice_client->send_audio_opus(opus_buffer, len, 60);
+                        player.voice_client->send_audio_opus(
+                            opus_buffer, len, 60);
                     }
                 }
             }
@@ -88,7 +98,7 @@ void Track::Play(Bragi::Player& player) {
     player.voice_client->insert_marker();
 
     /* Free the memory */
-    free_memory:
+free_memory:
     av_free(avio_ctx->buffer);
     avio_context_free(&avio_ctx);
     avformat_close_input(&format_ctx);
@@ -101,9 +111,15 @@ void Track::Play(Bragi::Player& player) {
 }
 
 void Track::AsyncPlay(Bragi::Player& player) {
-    std::thread([this, &player] {
-        this->Play(player);
-    }).detach();
+    /* Abort the old playing and join the old play thread */
+    Abort();
+    if (_play_thread.joinable()) _play_thread.join();
+
+    /* Create a new play thread */
+    _play_thread = std::thread([this, &player] {
+        _is_aborted = false;
+        Play(player);
+    });
 }
 
-void Track::Abort() { _is_aborted = true; }
+inline void Track::Abort() { _is_aborted = true; }

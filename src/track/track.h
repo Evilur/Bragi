@@ -28,7 +28,7 @@ public:
 
     void AsyncPlay(Bragi::Player& player);
 
-    void Abort();
+    inline void Abort();
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
@@ -46,6 +46,7 @@ private:
     OpusEncoder* _encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
 
     bool _is_aborted = false;
+    std::thread _play_thread;
 
     virtual constexpr ffmpeg_read_callback GetReadAudioCallback() = 0;
 
