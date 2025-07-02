@@ -12,6 +12,9 @@ Track::~Track() {
 }
 
 void Track::Play(Bragi::Player& player) {
+    /* Reset abort state */
+    _is_aborted = false;
+
     /* Allocate the format context */
     AVFormatContext* format_ctx = avformat_alloc_context();
 

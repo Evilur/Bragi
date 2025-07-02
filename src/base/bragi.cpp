@@ -5,6 +5,7 @@
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
 #include "exception/InvalidArlException.h"
+#include "util/logger.hpp"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     /* Default user for connection */
@@ -317,8 +318,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 
 void Bragi::OnMarker() {
     /* Check the loop type */
-    if (_loop_type == TRACK)
-        Play();
+    if (_loop_type == TRACK) Play();
     else if (_loop_type == PLAYLIST) {
         /* Move the first track to the end of the playlist */
         Track *track = _tracks.Head();
@@ -339,13 +339,20 @@ void Bragi::OnMarker() {
 }
 
 void Bragi::Play() {
+    /* Join the old thread */
+    if (_play_thread.joinable()) _play_thread.join();
+
+    /* Play the track in the new thread */
     _play_thread = std::thread([this] {
         _tracks.Head()->Play(_player);
     });
 }
 
 void Bragi::AbortPlaying() {
+    /* Abort the track */
     _tracks.Head()->Abort();
+
+    /* Wait play thread */
     if (_play_thread.joinable()) _play_thread.join();
 }
 
