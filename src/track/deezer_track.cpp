@@ -80,6 +80,17 @@ Track* DeezerTrack::Next() const {
     return DeezerClient::Search(_search.next_query, _search.next);
 }
 
+void DeezerTrack::Play(Bragi::Player& player) {
+    /* Wait for initialization */
+    if (_init_thread.joinable())
+        _init_thread.join();
+
+    /* Create a new http client */
+    _http = new HttpClient(_data_url);
+
+    Track::Play(player);
+}
+
 void DeezerTrack::GetKey(unsigned char* buffer) {
     /* The salt for getting the key for track decrypting */
     constexpr unsigned char salt[] = "g4el58wc0zvf9na1";
@@ -103,17 +114,6 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
     //Get the second half of the hash
     for (char i = 0; i < MD5_DIGEST_LENGTH; i++)
         buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
-}
-
-void DeezerTrack::Play(Bragi::Player& player) {
-    /* Wait for initialization */
-    if (_init_thread.joinable())
-        _init_thread.join();
-
-    /* Create a new http client */
-    _http = new HttpClient(_data_url);
-
-    Track::Play(player);
 }
 
 int DeezerTrack::ReadDeezerAudio(void* opaque_context, unsigned char* buffer,

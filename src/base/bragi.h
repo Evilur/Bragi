@@ -50,8 +50,13 @@ private:
     unsigned short _tracks_size = 0;
     LoopType _loop_type = DISABLED;
     Player _player = { nullptr, 100 };
+    std::thread _play_thread;
 
-    inline bool IsPlayerReady();
+    inline void Play();
+
+    inline void AbortPlaying();
+
+    inline bool IsPlayerReady() const;
 
     inline bool IsEmpty() const;
 

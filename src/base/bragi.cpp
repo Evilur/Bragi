@@ -22,7 +22,7 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
     /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
     if (!IsEmpty())
-        _tracks.Head()->Abort();
+        AbortPlaying();
 
     /* Disconnect the voice connection */
     event.from()->disconnect_voice(event.command.guild_id);
@@ -98,7 +98,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     /* If we need to replace the current playing track, abort it */
     const bool is_playing = !track_index;
     if (is_playing)
-        _tracks.Head()->Abort();
+        AbortPlaying();
 
     /* Get the next track pointer */
     Track * &old_track = _tracks[track_index];
@@ -116,7 +116,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     if (is_playing) {
         _player.voice_client->stop_audio();
         if (IsPlayerReady())
-            next_track->AsyncPlay(_player);
+            Play();
     }
 
     /* Return the _message */
@@ -154,7 +154,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
 
         /* Async play the current track */
         if (need_to_play_first_track) std::thread([this, track] {
-                track->AsyncPlay(_player);
+                Play();
             }).detach();
         return result_msg; //Return the track _message
     }
@@ -186,7 +186,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
         throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, BragiException::SOFT);
 
     /* Stop the audio and clear the packet queue */
-    _tracks.Head()->Abort();
+    AbortPlaying();
     if (IsPlayerReady())
         _player.voice_client->stop_audio();
 
@@ -200,7 +200,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
 
     /* If the playlist isn't empty, play the next track */
     if (!IsEmpty() && IsPlayerReady())
-        _tracks.Head()->AsyncPlay(_player);
+        Play();
 
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
 }
@@ -269,7 +269,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 
     /* If we have a track in our playlist, abort it */
     if (!IsEmpty())
-        _tracks.Head()->Abort();
+        AbortPlaying();
 
     /* Connect to the new channel */
     event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
@@ -290,8 +290,7 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
         dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
     /* If we need to play the first track, play it */
-    if (!IsEmpty())
-        _tracks.Head()->AsyncPlay(_player);
+    if (!IsEmpty()) Play();
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
@@ -305,7 +304,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 
     /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
     if (!IsEmpty())
-        _tracks.Head()->Abort();
+        AbortPlaying();
 
     /* Reset the old voice connection */
     _player.voice_client->stop_audio();
@@ -319,7 +318,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 void Bragi::OnMarker() {
     /* Check the loop type */
     if (_loop_type == TRACK)
-        _tracks.Head()->AsyncPlay(_player);
+        Play();
     else if (_loop_type == PLAYLIST) {
         /* Move the first track to the end of the playlist */
         Track *track = _tracks.Head();
@@ -327,7 +326,7 @@ void Bragi::OnMarker() {
         _tracks.Push(track);
 
         /* Play the next track */
-        _tracks.Head()->AsyncPlay(_player);
+        Play();
     } else {
         /* Remove the first track in the list */
         _tracks.PopFront([](Track *track) { delete track; });
@@ -335,11 +334,23 @@ void Bragi::OnMarker() {
 
         /* If the playlist isn't empty, play the next track */
         if (!IsEmpty())
-            _tracks.Head()->AsyncPlay(_player);
+            Play();
     }
 }
 
-inline bool Bragi::IsPlayerReady() {
+void Bragi::Play() {
+    _play_thread = std::thread([this] {
+        _tracks.Head()->Play(_player);
+    });
+}
+
+void Bragi::AbortPlaying() {
+    _tracks.Head()->Abort();
+    if (_play_thread.joinable()) _play_thread.join();
+}
+
+
+inline bool Bragi::IsPlayerReady() const {
     return _player.voice_client && _player.voice_client->is_ready();
 }
 

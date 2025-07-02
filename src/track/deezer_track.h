@@ -29,6 +29,8 @@ public:
 
     Track *Next() const override;
 
+    void Play(Bragi::Player& player) override;
+
 private:
     const class {
     public:
@@ -67,8 +69,6 @@ private:
     static constexpr int DEEZER_AUDIO_CHUNK_SIZE = 2048;
 
     void GetKey(unsigned char *buffer);
-
-    void Play(Bragi::Player& player) override;
 
     constexpr ffmpeg_read_callback GetReadAudioCallback() const override;
 

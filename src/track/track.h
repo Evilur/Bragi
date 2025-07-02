@@ -24,14 +24,12 @@ public:
 
     virtual Track *Next() const = 0;
 
-    void AsyncPlay(Bragi::Player& player);
+    virtual void Play(Bragi::Player& player);
 
     inline void Abort();
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
-
-    virtual void Play(Bragi::Player& player);
 
     virtual constexpr ffmpeg_read_callback GetReadAudioCallback() const = 0;
 
