@@ -11,6 +11,12 @@ Track::~Track() {
     if (_play_thread.joinable()) _play_thread.join();
 }
 
+void Track::AsyncPlay(Bragi::Player& player) {
+    _play_thread = std::thread([this, &player] { Play(player); });
+}
+
+inline void Track::Abort() { _is_aborted = true; }
+
 void Track::Play(Bragi::Player& player) {
     /* Allocate the format context */
     AVFormatContext* format_ctx = avformat_alloc_context();
@@ -109,5 +115,3 @@ free_memory:
     av_packet_free(&pkt);
     avcodec_free_context(&cctx);
 }
-
-inline void Track::Abort() { _is_aborted = true; }

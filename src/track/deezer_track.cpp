@@ -10,23 +10,22 @@
 
 DeezerTrack::DeezerTrack(const unsigned short track_duration,
                          const unsigned int track_id,
-                         const std::string &track_title,
-                         const std::string &track_token,
+                         const std::string& track_title,
+                         const std::string& track_token,
                          const unsigned int album_id,
-                         const std::string &album_title,
-                         const std::string &album_picture_id,
+                         const std::string& album_title,
+                         const std::string& album_picture_id,
                          const unsigned int artist_id,
-                         const std::string &artist_name,
-                         const std::string &artist_picture_id,
+                         const std::string& artist_name,
+                         const std::string& artist_picture_id,
                          const unsigned short search_total,
                          const unsigned short search_next,
-                         const std::string &search_query) :
+                         const std::string& search_query) :
     _track(track_id, track_duration, track_title, track_token),
     _album(album_id, album_title, album_picture_id),
     _artist(artist_id, artist_name, artist_picture_id),
-    _search(search_total, search_next, search_query) {
-    /* Get the encypted data url in the new thread */
-    _init_thread = new std::thread([this] {
+    _search(search_total, search_next, search_query),
+    _init_thread([this] {
         /* Set the url of the encrypted track data */
         _data_url = DeezerClient::GetTrackUrl(_track.token);
 
@@ -34,33 +33,21 @@ DeezerTrack::DeezerTrack(const unsigned short track_duration,
         unsigned char key_buffer[MD5_DIGEST_LENGTH];
         GetKey(key_buffer);
         BF_set_key(&_bf_key, MD5_DIGEST_LENGTH, key_buffer);
-    });
-}
+    }) { }
 
 DeezerTrack::~DeezerTrack() {
-    if (_init_thread->joinable())
-        _init_thread->join();
-    delete _init_thread;
-    _init_thread = nullptr;
+    if (_init_thread.joinable())
+        _init_thread.join();
 
     delete _http;
     _http = nullptr;
 }
 
-void DeezerTrack::Play(Bragi::Player& player) {
-    /* Wait for initialization */
-    if (_init_thread->joinable())
-        _init_thread->join();
-
-    /* Create a new http client */
-    _http = new HttpClient(_data_url);
-
-    Track::Play(player);
-}
-
-dpp::message DeezerTrack::GetMessage(const bool &is_playing_now,
-                                     const dpp::snowflake &channel_id) const {
-    std::string msg_body = '\n' + std::format(DIC_TRACK_DURATION, Parser::Time(_track.duration));
+dpp::message DeezerTrack::GetMessage(const bool& is_playing_now,
+                                     const dpp::snowflake& channel_id) const {
+    std::string msg_body = '\n' + std::format(
+                               DIC_TRACK_DURATION,
+                               Parser::Time(_track.duration));
 
     if (is_playing_now)
         msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _track.title));
@@ -87,20 +74,20 @@ std::string DeezerTrack::GetTrackData() const {
         DIC_SLASH_LIST_FULL_TRACK_DATA, _track.title, _artist.name);
 }
 
-Track *DeezerTrack::Next() const {
+Track* DeezerTrack::Next() const {
     if (_search.next >= _search.total)
         return nullptr; //TODO: Check this
     return DeezerClient::Search(_search.next_query, _search.next);
 }
 
-void DeezerTrack::GetKey(unsigned char *buffer) {
+void DeezerTrack::GetKey(unsigned char* buffer) {
     /* The salt for getting the key for track decrypting */
     constexpr unsigned char salt[] = "g4el58wc0zvf9na1";
 
     /* Get the md5 hash sum of the track id */
     const std::string id_str = std::to_string(_track.id);
     unsigned char md5_digest[MD5_DIGEST_LENGTH];
-    MD5((unsigned char *)id_str.c_str(), id_str.size(), md5_digest);
+    MD5((unsigned char*)id_str.c_str(), id_str.size(), md5_digest);
     unsigned char md5_sum[MD5_DIGEST_LENGTH * 2];
     constexpr unsigned char alph[] = "0123456789abcdef";
     for (char i = 0; i < MD5_DIGEST_LENGTH; i++) {
@@ -110,21 +97,29 @@ void DeezerTrack::GetKey(unsigned char *buffer) {
     }
 
     /* Build the key */
-    const unsigned char *md5_sum_fst_half = md5_sum;
+    const unsigned char* md5_sum_fst_half = md5_sum;
     //Get the first half of the hash
-    const unsigned char *md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;
+    const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;
     //Get the second half of the hash
     for (char i = 0; i < MD5_DIGEST_LENGTH; i++)
         buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
 }
 
+void DeezerTrack::Play(Bragi::Player& player) {
+    /* Wait for initialization */
+    if (_init_thread.joinable())
+        _init_thread.join();
 
-int DeezerTrack::GetAudioBufferSize() { return 3 * DEEZER_AUDIO_CHUNK_SIZE; }
+    /* Create a new http client */
+    _http = new HttpClient(_data_url);
 
-int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
+    Track::Play(player);
+}
+
+int DeezerTrack::ReadDeezerAudio(void* opaque_context, unsigned char* buffer,
                                  int buffer_size) {
     /* Get context */
-    const DeezerTrack *const track_ctx = (DeezerTrack *)opaque_context;
+    const DeezerTrack* const track_ctx = (DeezerTrack*)opaque_context;
 
     /* Set the chunk size */
     constexpr int chunk_size = 2048;
@@ -133,7 +128,7 @@ int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
     if (!track_ctx->_http->CanRead()) { return AVERROR_EOF; }
 
     /* Read 3 raw chunks */
-    track_ctx->_http->Read((char *)buffer, chunk_size * 3);
+    track_ctx->_http->Read((char*)buffer, chunk_size * 3);
 
     /* Set the buffer size according to the recieved data size */
     buffer_size = track_ctx->_http->PrevCount();
@@ -148,6 +143,10 @@ int DeezerTrack::ReadDeezerAudio(void *opaque_context, unsigned char *buffer,
     return buffer_size;
 }
 
-constexpr Track::ffmpeg_read_callback DeezerTrack::GetReadAudioCallback() {
+constexpr Track::ffmpeg_read_callback DeezerTrack::GetReadAudioCallback() const {
     return ReadDeezerAudio;
+}
+
+constexpr int DeezerTrack::GetAudioBufferSize() const {
+    return 3 * DEEZER_AUDIO_CHUNK_SIZE;
 }

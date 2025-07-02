@@ -24,12 +24,18 @@ public:
 
     virtual Track *Next() const = 0;
 
-    virtual void Play(Bragi::Player& player);
+    void AsyncPlay(Bragi::Player& player);
 
     inline void Abort();
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
+
+    virtual void Play(Bragi::Player& player);
+
+    virtual constexpr ffmpeg_read_callback GetReadAudioCallback() const = 0;
+
+    virtual constexpr int GetAudioBufferSize() const = 0;
 
 private:
     static constexpr int FREQ = 48000;
@@ -40,15 +46,11 @@ private:
 
     short _pcm_buffer[PCM_CHUNK_SIZE] = {};
     char* _pcm_buffer_ptr = (char*)_pcm_buffer;
-    const char* const _pcm_buffer_end = (char*)_pcm_buffer + PCM_CHUNK_SIZE * 2;
+    const char* const _pcm_buffer_end = (char*)_pcm_buffer + PCM_CHUNK_SIZE * sizeof(short);
     OpusEncoder* _encoder = opus_encoder_create(FREQ, CHANNELS, OPUS_APPLICATION_AUDIO, nullptr);
 
     bool _is_aborted = false;
     std::thread _play_thread;
-
-    virtual constexpr ffmpeg_read_callback GetReadAudioCallback() = 0;
-
-    virtual constexpr int GetAudioBufferSize() = 0;
 };
 
 #endif

@@ -1,5 +1,4 @@
-#ifndef BRAGI_DEEZER_TRACK_H
-#define BRAGI_DEEZER_TRACK_H
+#pragma once
 
 #include "track.h"
 #include "locale/locale.h"
@@ -22,8 +21,6 @@ public:
                 const std::string &search_query);
 
     ~DeezerTrack() override;
-
-    void Play(Bragi::Player& player) override;
 
     dpp::message GetMessage(const bool &is_playing_now,
                             const dpp::snowflake &channel_id) const override;
@@ -64,19 +61,19 @@ private:
 
     BF_KEY _bf_key;
     std::string _data_url;
-    std::thread *_init_thread = nullptr;
+    std::thread _init_thread;
     HttpClient *_http = nullptr;
 
     static constexpr int DEEZER_AUDIO_CHUNK_SIZE = 2048;
 
     void GetKey(unsigned char *buffer);
 
-    constexpr ffmpeg_read_callback GetReadAudioCallback() override;
+    void Play(Bragi::Player& player) override;
 
-    int GetAudioBufferSize() override;
+    constexpr ffmpeg_read_callback GetReadAudioCallback() const override;
+
+    constexpr int GetAudioBufferSize() const override;
 
     static int ReadDeezerAudio(void *opaque_context,
                           unsigned char *buffer, int buffer_size);
 };
-
-#endif
