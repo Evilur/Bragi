@@ -144,6 +144,73 @@ void Track::Play(Bragi::Player& player) {
         av_packet_unref(pkt);
     }
 
+    // Завершаем декодирование (декодер может ещё вернуть фреймы)
+    avcodec_send_packet(cctx, nullptr);
+    while (avcodec_receive_frame(cctx, frame) == 0) {
+        int out_samples = swr_convert(
+            swr,
+            resampled_data,
+            MAX_OUT_SAMPLES,
+            frame->data,
+            frame->nb_samples
+        );
+        if (out_samples < 0) break;
+
+        int data_size = av_samples_get_buffer_size(
+            nullptr, 2, out_samples, out_fmt, 1
+        );
+
+        for (int i = 0; i < data_size; i++) {
+            *_pcm_buffer_ptr++ = resampled_data[0][i];
+            if (_pcm_buffer_ptr < _pcm_buffer_end)
+                continue;
+            _pcm_buffer_ptr = (char*)_pcm_buffer;
+
+            unsigned char opus_buffer[OPUS_CHUNK_SIZE];
+            const int len = opus_encode(
+                _encoder, _pcm_buffer, FRAME_SIZE,
+                opus_buffer, OPUS_CHUNK_SIZE
+            );
+            player.voice_client->send_audio_opus(
+                opus_buffer, len, 60
+            );
+        }
+    }
+
+    // Дренаж SwrContext, чтобы забрать остатки
+    int out_samples;
+    do {
+        out_samples = swr_convert(
+            swr,
+            resampled_data,
+            MAX_OUT_SAMPLES,
+            nullptr,
+            0
+        );
+
+        if (out_samples > 0) {
+            int data_size = av_samples_get_buffer_size(
+                nullptr, 2, out_samples, out_fmt, 1
+            );
+            for (int i = 0; i < data_size; i++) {
+                *_pcm_buffer_ptr++ = resampled_data[0][i];
+                if (_pcm_buffer_ptr < _pcm_buffer_end)
+                    continue;
+                _pcm_buffer_ptr = (char*)_pcm_buffer;
+
+                unsigned char opus_buffer[OPUS_CHUNK_SIZE];
+                const int len = opus_encode(
+                    _encoder, _pcm_buffer, FRAME_SIZE,
+                    opus_buffer, OPUS_CHUNK_SIZE
+                );
+                player.voice_client->send_audio_opus(
+                    opus_buffer, len, 60
+                );
+            }
+        }
+    } while (out_samples > 0);
+
+
     /* Send EOF marker */
     player.voice_client->insert_marker();
 
