@@ -219,12 +219,15 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     if (playback_rate < 25)
         throw BragiException(_("**Minimum speed - 25%**"),
                              BragiException::HARD);
-    else if (playback_rate > 250)
+    if (playback_rate > 250)
         throw BragiException(_("**Maximum speed - 250%**"),
                              BragiException::HARD);
 
     /* If all is OK */
     _player.playback_rate = playback_rate;
+
+    /* Replay current track */
+    Play();
 
     /* Return a _message */
     return {
@@ -342,8 +345,8 @@ void Bragi::OnMarker() {
 }
 
 void Bragi::Play() {
-    /* Join the old thread */
-    if (_play_thread.joinable()) _play_thread.join();
+    /* Abort the old playing */
+    AbortPlaying();
 
     /* Play the track in the new thread */
     _play_thread = std::thread([this] {
@@ -354,6 +357,9 @@ void Bragi::Play() {
 void Bragi::AbortPlaying() {
     /* Abort the track */
     _tracks.Head()->Abort();
+
+    /* Delete voice client packet queue */
+    _player.voice_client->stop_audio();
 
     /* Wait play thread */
     if (_play_thread.joinable()) _play_thread.join();
