@@ -18,8 +18,8 @@ void Track::Play(Bragi::Player& player) {
     /* Allocate the format context */
     AVFormatContext* format_ctx = avformat_alloc_context();
 
-    /* Allocate the avio context */
-    AVIOContext* avio_ctx =
+    /* Allocate and set avio context */
+    format_ctx->pb =
         avio_alloc_context((unsigned char*)av_malloc(GetAudioBufferSize()),
                            GetAudioBufferSize(),
                            0,
@@ -27,9 +27,6 @@ void Track::Play(Bragi::Player& player) {
                            GetReadAudioCallback(),
                            nullptr,
                            nullptr);
-
-    /* Set avio context to the format context */
-    format_ctx->pb = avio_ctx;
 
     // 1.2) Открываем формат (FFmpeg сам «угадает» контейнер/кодек по заголовкам из потока)
     if (avformat_open_input(&format_ctx, nullptr, nullptr, nullptr) < 0) {
@@ -58,6 +55,45 @@ void Track::Play(Bragi::Player& player) {
         throw -1;
     }
 
+    const AVChannelLayout in_ch_layout = cctx->ch_layout;
+    const AVSampleFormat in_fmt = cctx->sample_fmt;
+    const int in_rate = cctx->sample_rate;
+
+    constexpr AVChannelLayout out_ch_layout = AV_CHANNEL_LAYOUT_STEREO;
+    constexpr AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
+    const int out_rate = 48000 * 100 / player.playback_rate;
+
+    // 2) Аллоцируем и настраиваем SwrContext через swr_alloc_set_opts2
+    SwrContext* swr = nullptr;
+    int ret = swr_alloc_set_opts2(
+        &swr,
+        &out_ch_layout, out_fmt, out_rate,    // выход
+        &in_ch_layout,  in_fmt,  in_rate,     // вход
+        0, nullptr                           // логирование
+    );
+    if (ret < 0 || !swr) {
+        std::cerr << "Не удалось аллоцировать/настроить ресемплер ("
+                  << av_err2str(ret) << ")\n";
+        throw -1;
+    }
+    if ((ret = swr_init(swr)) < 0) {
+        std::cerr << "swr_init failed: " << av_err2str(ret) << "\n";
+        throw -1;
+    }
+
+    // 3) Буфер для ресемплированных данных
+    const int MAX_OUT_SAMPLES = FRAME_SIZE;
+    uint8_t** resampled_data = nullptr;
+    int resampled_linesize = 0;
+    av_samples_alloc_array_and_samples(
+        &resampled_data,
+        &resampled_linesize,
+        2,                // каналы
+        MAX_OUT_SAMPLES,
+        out_fmt,
+        0
+    );
+
     // 3) Бьем пакеты, декодируем, и сбрасываем raw PCM в out_pcm
     AVPacket* pkt = av_packet_alloc();
     AVFrame* frame = av_frame_alloc();
@@ -66,30 +102,41 @@ void Track::Play(Bragi::Player& player) {
         if (pkt->stream_index == stream_index) {
             if (avcodec_send_packet(cctx, pkt) == 0) {
                 while (avcodec_receive_frame(cctx, frame) == 0) {
-                    // frame->data содержит декодированные PCM-сэмплы
+                    // 2) ресемплинг
+                    int in_samples = frame->nb_samples;
+                    // Преобразуем; возвращает число полученных сэмплов
+                    int out_samples = swr_convert(
+                        swr,
+                        resampled_data,
+                        MAX_OUT_SAMPLES,
+                        frame->data,
+                        in_samples
+                    );
+                    if (out_samples < 0) {
+                        std::cerr << "Ошибка ресемплинга\n";
+                        continue;
+                    }
+                    // Вычисляем размер в байтах
                     int data_size = av_samples_get_buffer_size(
-                        nullptr,
-                        2,
-                        frame->nb_samples,
-                        cctx->sample_fmt,
-                        1
-                        );
+                        nullptr, 2, out_samples, out_fmt, 1
+                    );
 
                     if (_is_aborted) goto free_memory;
 
                     for (int i = 0; i < data_size; i++) {
-                        *_pcm_buffer_ptr++ = frame->data[0][i];
-
+                        *_pcm_buffer_ptr++ = resampled_data[0][i];
                         if (_pcm_buffer_ptr < _pcm_buffer_end)
                             continue;
                         _pcm_buffer_ptr = (char*)_pcm_buffer;
 
                         unsigned char opus_buffer[OPUS_CHUNK_SIZE];
                         const int len = opus_encode(
-                            _encoder, _pcm_buffer, FRAME_SIZE, opus_buffer,
-                            OPUS_CHUNK_SIZE);
+                            _encoder, _pcm_buffer, FRAME_SIZE,
+                            opus_buffer, OPUS_CHUNK_SIZE
+                        );
                         player.voice_client->send_audio_opus(
-                            opus_buffer, len, 60);
+                            opus_buffer, len, 60
+                        );
                     }
                 }
             }
@@ -102,8 +149,8 @@ void Track::Play(Bragi::Player& player) {
 
     /* Free the memory */
 free_memory:
-    av_free(avio_ctx->buffer);
-    avio_context_free(&avio_ctx);
+    av_free(format_ctx->pb->buffer);
+    avio_context_free(&format_ctx->pb);
     avformat_close_input(&format_ctx);
     avformat_free_context(format_ctx);
 
