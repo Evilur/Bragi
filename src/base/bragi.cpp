@@ -272,11 +272,11 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
     if (!IsEmpty())
         AbortPlaying();
 
-    /* Connect to the new channel */
-    event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
-
     /* Reset the old voice connection */
     _player.voice_client = nullptr;
+
+    /* Connect to the new channel */
+    event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
 
     /* Return the result to the channel */
     return std::format(DIC_JOINED, user_voice_channel->name);
@@ -285,6 +285,9 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Update the voice */
     _player.voice_client = event.voice_client;
+
+    /* Keep this connection alive */
+    _player.voice_client->keepalive = true;
 
     /* Set the audio type to store data in the buffer before sending */
     _player.voice_client->set_send_audio_type(

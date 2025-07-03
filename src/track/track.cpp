@@ -55,10 +55,7 @@ void Track::Play(Bragi::Player& player) {
         throw -1;
     }
 
-    const AVChannelLayout in_ch_layout = cctx->ch_layout;
-    const AVSampleFormat in_fmt = cctx->sample_fmt;
-    const int in_rate = cctx->sample_rate;
-
+    /* Set output audio format */
     constexpr AVChannelLayout out_ch_layout = AV_CHANNEL_LAYOUT_STEREO;
     constexpr AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
     const int out_rate = 48000 * 100 / player.playback_rate;
@@ -66,10 +63,10 @@ void Track::Play(Bragi::Player& player) {
     // 2) Аллоцируем и настраиваем SwrContext через swr_alloc_set_opts2
     SwrContext* swr = nullptr;
     int ret = swr_alloc_set_opts2(
-        &swr,
-        &out_ch_layout, out_fmt, out_rate,    // выход
-        &in_ch_layout,  in_fmt,  in_rate,     // вход
-        0, nullptr                           // логирование
+        &swr,                                                   // Resampler
+        &out_ch_layout, out_fmt, out_rate,                      // Output
+        &cctx->ch_layout, cctx->sample_fmt, cctx->sample_rate,  // Input
+        0, nullptr                                              // Logging
     );
     if (ret < 0 || !swr) {
         std::cerr << "Не удалось аллоцировать/настроить ресемплер ("
@@ -210,14 +207,16 @@ void Track::Play(Bragi::Player& player) {
         }
     } while (out_samples > 0);
 
-
     /* Send EOF marker */
     player.voice_client->insert_marker();
 
     /* Free the memory */
 free_memory:
+    /* AVIO context */
     av_free(format_ctx->pb->buffer);
     avio_context_free(&format_ctx->pb);
+
+    /* Format context */
     avformat_close_input(&format_ctx);
     avformat_free_context(format_ctx);
 
