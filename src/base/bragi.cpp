@@ -288,6 +288,8 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Update the voice */
     _player.voice_client = event.voice_client;
+
+    /* Log this handler */
     DEBUG_LOG("Bot has been connected to a voice channel");
 
     /* Keep this connection alive */
@@ -311,6 +313,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     /* If the voice channel doesn't change, exit the method */
     if (_player.voice_client->channel_id == event.state.channel_id) return;
 
+    /* Log this handler */
     DEBUG_LOG("Bot has changed its voice channel");
 
     /* If the playlist isn't empty,abort the first track to
@@ -328,6 +331,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 }
 
 void Bragi::OnMarker() {
+    /* Log this handler */
     DEBUG_LOG("Bot has received track marker");
 
     /* Check the loop type */

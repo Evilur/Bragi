@@ -19,64 +19,41 @@ void Track::Play(Bragi::Player& player) {
     AVFormatContext* format_ctx = avformat_alloc_context();
 
     /* Allocate and set avio context */
-    format_ctx->pb =
-        avio_alloc_context((unsigned char*)av_malloc(GetAudioBufferSize()),
-                           GetAudioBufferSize(),
-                           0,
-                           this,
-                           GetReadAudioCallback(),
-                           nullptr,
-                           nullptr);
+    format_ctx->pb = avio_alloc_context(
+        (unsigned char*)av_malloc(GetAudioBufferSize()),
+        GetAudioBufferSize(),
+        0,
+        this,
+        GetReadAudioCallback(),
+        nullptr,
+        nullptr
+    );
 
-    // 1.2) Открываем формат (FFmpeg сам «угадает» контейнер/кодек по заголовкам из потока)
-    if (avformat_open_input(&format_ctx, nullptr, nullptr, nullptr) < 0) {
-        std::cerr << "Не удалось открыть входной поток\n";
-        throw -1;
-    }
-    if (avformat_find_stream_info(format_ctx, nullptr) < 0) {
-        std::cerr << "Не удалось найти информацию о потоках\n";
-        throw -1;
-    }
+    /* Open audio stream */
+    avformat_open_input(&format_ctx, nullptr, nullptr, nullptr);
+    avformat_find_stream_info(format_ctx, nullptr);
 
-    // 2) Ищем аудиопоток и инициализируем декодер
-    const AVCodec* codec = nullptr;
-    int stream_index = av_find_best_stream(format_ctx, AVMEDIA_TYPE_AUDIO,
-                                           -1, -1,
-                                           &codec, 0);
-    if (stream_index < 0) {
-        std::cerr << "Аудиопоток не найден\n";
-        throw -1;
-    }
-    AVStream* audio_st = format_ctx->streams[stream_index];
-    AVCodecContext* cctx = avcodec_alloc_context3(codec);
-    avcodec_parameters_to_context(cctx, audio_st->codecpar);
-    if (avcodec_open2(cctx, codec, nullptr) < 0) {
-        std::cerr << "Не удалось открыть декодер\n";
-        throw -1;
-    }
+    /* Init codec context */
+    const AVCodecParameters* const codec_par = format_ctx->streams[0]->codecpar;
+    AVCodecContext* codec_ctx =
+        avcodec_alloc_context3(avcodec_find_decoder(codec_par->codec_id));
+    avcodec_parameters_to_context(codec_ctx, codec_par);
+    avcodec_open2(codec_ctx, codec_ctx->codec, nullptr);
 
     /* Set output audio format */
     constexpr AVChannelLayout out_ch_layout = AV_CHANNEL_LAYOUT_STEREO;
     constexpr AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
     const int out_rate = 48000 * 100 / player.playback_rate;
 
-    // 2) Аллоцируем и настраиваем SwrContext через swr_alloc_set_opts2
+    /* Init resampler */
     SwrContext* swr = nullptr;
-    int ret = swr_alloc_set_opts2(
-        &swr,                                                   // Resampler
-        &out_ch_layout, out_fmt, out_rate,                      // Output
-        &cctx->ch_layout, cctx->sample_fmt, cctx->sample_rate,  // Input
-        0, nullptr                                              // Logging
+    swr_alloc_set_opts2(
+        &swr,
+        &out_ch_layout, out_fmt, out_rate,
+        &codec_ctx->ch_layout, codec_ctx->sample_fmt, codec_ctx->sample_rate,
+        0, nullptr
     );
-    if (ret < 0 || !swr) {
-        std::cerr << "Не удалось аллоцировать/настроить ресемплер ("
-                  << av_err2str(ret) << ")\n";
-        throw -1;
-    }
-    if ((ret = swr_init(swr)) < 0) {
-        std::cerr << "swr_init failed: " << av_err2str(ret) << "\n";
-        throw -1;
-    }
+    swr_init(swr);
 
     // 3) Буфер для ресемплированных данных
     const int MAX_OUT_SAMPLES = FRAME_SIZE;
@@ -96,9 +73,9 @@ void Track::Play(Bragi::Player& player) {
     AVFrame* frame = av_frame_alloc();
 
     while (av_read_frame(format_ctx, pkt) >= 0) {
-        if (pkt->stream_index == stream_index) {
-            if (avcodec_send_packet(cctx, pkt) == 0) {
-                while (avcodec_receive_frame(cctx, frame) == 0) {
+        if (pkt->stream_index == 0) {
+            if (avcodec_send_packet(codec_ctx, pkt) == 0) {
+                while (avcodec_receive_frame(codec_ctx, frame) == 0) {
                     // 2) ресемплинг
                     int in_samples = frame->nb_samples;
                     // Преобразуем; возвращает число полученных сэмплов
@@ -142,8 +119,8 @@ void Track::Play(Bragi::Player& player) {
     }
 
     // Завершаем декодирование (декодер может ещё вернуть фреймы)
-    avcodec_send_packet(cctx, nullptr);
-    while (avcodec_receive_frame(cctx, frame) == 0) {
+    avcodec_send_packet(codec_ctx, nullptr);
+    while (avcodec_receive_frame(codec_ctx, frame) == 0) {
         int out_samples = swr_convert(
             swr,
             resampled_data,
@@ -212,6 +189,7 @@ void Track::Play(Bragi::Player& player) {
 
     /* Free the memory */
 free_memory:
+
     /* AVIO context */
     av_free(format_ctx->pb->buffer);
     avio_context_free(&format_ctx->pb);
@@ -220,10 +198,11 @@ free_memory:
     avformat_close_input(&format_ctx);
     avformat_free_context(format_ctx);
 
-    // 5) cleanup
-    av_frame_free(&frame);
-    av_packet_free(&pkt);
-    avcodec_free_context(&cctx);
+    /* Codec context */
+    avcodec_free_context(&codec_ctx);
+
+    /* Resampler context */
+    swr_free(&swr);
 }
 
 inline void Track::Abort() { _is_aborted = true; }
