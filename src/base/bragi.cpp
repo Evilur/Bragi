@@ -288,6 +288,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Update the voice */
     _player.voice_client = event.voice_client;
+    DEBUG_LOG("Bot has been connected to a voice channel");
 
     /* Keep this connection alive */
     _player.voice_client->keepalive = true;
@@ -301,28 +302,34 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
+    /* If there isn't the bot, exit the function */
+    if (event.state.user_id != event.owner->me.id) return;
+
     /* If the voice client isn't initialized, exit the method */
-    if (!_player.voice_client)
-        return;
+    if (!_player.voice_client) return;
 
     /* If the voice channel doesn't change, exit the method */
-    if (_player.voice_client->channel_id == event.state.channel_id)
-        return;
+    if (_player.voice_client->channel_id == event.state.channel_id) return;
 
-    /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
-    if (!IsEmpty())
-        AbortPlaying();
+    DEBUG_LOG("Bot has changed its voice channel");
 
-    /* Reset the old voice connection */
-    _player.voice_client->stop_audio();
+    /* If the playlist isn't empty,abort the first track to
+     * avoid sending the data to the old voice client */
+    if (!IsEmpty()) AbortPlaying();
+
+    /* Delete pointer to the old connection */
     _player.voice_client = nullptr;
 
-    /* If the bot reconnect to the other voice channelm connect to the new voice channel */
+    /* If the bot reconnects to the other voice channel,
+     * connect to the new voice channel */
     if (event.state.channel_id)
-        event.from()->connect_voice(event.state.guild_id, event.state.channel_id);
+        event.from()->connect_voice(event.state.guild_id,
+                                    event.state.channel_id);
 }
 
 void Bragi::OnMarker() {
+    DEBUG_LOG("Bot has received track marker");
+
     /* Check the loop type */
     if (_loop_type == TRACK) Play();
     else if (_loop_type == PLAYLIST) {

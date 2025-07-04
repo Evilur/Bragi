@@ -60,11 +60,6 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 }
 
 void on_voice_state_update(const dpp::voice_state_update_t &event) {
-    /* If there isn't the bot, exit the function */
-    if (event.state.user_id != event.owner->me.id)
-        return;
-
-    /* Handle the voice state update */
     Bragi::Get(event.state.guild_id)->OnVoiceStateUpdate(event);
 }
 
