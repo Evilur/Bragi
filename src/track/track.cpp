@@ -141,7 +141,7 @@ end:
     av_frame_free(&frame);
 
     /* Resampler buffer */
-    av_freep(&*resampled_data);
+    av_freep(*resampled_data);
     av_freep(&resampled_data);
 
     /* Codec context */
