@@ -2,13 +2,18 @@
 
 #include "util/logger.hpp"
 
+extern "C" {
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswresample/swresample.h>
+}
+
 Track::~Track() {
     /* Destroy the opus encoder */
     opus_encoder_destroy(_encoder);
 
-    /* Abort the playing and join the play thread */
+    /* Abort the playing */
     Abort();
-    if (_play_thread.joinable()) _play_thread.join();
 }
 
 void Track::Play(Bragi::Player& player) {
@@ -55,140 +60,95 @@ void Track::Play(Bragi::Player& player) {
     );
     swr_init(swr);
 
-    // 3) Буфер для ресемплированных данных
-    const int MAX_OUT_SAMPLES = FRAME_SIZE;
-    uint8_t** resampled_data = nullptr;
+    /* Allocate resampled data buffer */
+    unsigned char** resampled_data = nullptr;
     int resampled_linesize = 0;
     av_samples_alloc_array_and_samples(
         &resampled_data,
         &resampled_linesize,
-        2,                // каналы
-        MAX_OUT_SAMPLES,
+        CHANNELS,
+        FRAME_SIZE,
         out_fmt,
         0
     );
 
-    // 3) Бьем пакеты, декодируем, и сбрасываем raw PCM в out_pcm
-    AVPacket* pkt = av_packet_alloc();
+    /* Allocate packer and frame */
+    AVPacket* packet = av_packet_alloc();
     AVFrame* frame = av_frame_alloc();
 
-    while (av_read_frame(format_ctx, pkt) >= 0) {
-        if (pkt->stream_index == 0) {
-            if (avcodec_send_packet(codec_ctx, pkt) == 0) {
-                while (avcodec_receive_frame(codec_ctx, frame) == 0) {
-                    // 2) ресемплинг
-                    int in_samples = frame->nb_samples;
-                    // Преобразуем; возвращает число полученных сэмплов
-                    int out_samples = swr_convert(
-                        swr,
-                        resampled_data,
-                        MAX_OUT_SAMPLES,
-                        frame->data,
-                        in_samples
-                    );
-                    if (out_samples < 0) {
-                        std::cerr << "Ошибка ресемплинга\n";
-                        continue;
-                    }
-                    // Вычисляем размер в байтах
-                    int data_size = av_samples_get_buffer_size(
-                        nullptr, 2, out_samples, out_fmt, 1
-                    );
+    /* Send OPUS data to the discord */
+    auto send_data = [&](const unsigned char* const* const frame_data,
+                         const int samples_number) {
+        /* Resample audio */
+        const int out_samples = swr_convert(
+            swr,
+            resampled_data,
+            FRAME_SIZE,
+            frame_data,
+            samples_number
+        );
 
-                    if (_is_aborted) goto free_memory;
+        /* Get resamples data size in bytes */
+        const int data_size = av_samples_get_buffer_size(
+            nullptr, CHANNELS, out_samples, out_fmt, 1
+        );
 
-                    for (int i = 0; i < data_size; i++) {
-                        *_pcm_buffer_ptr++ = resampled_data[0][i];
-                        if (_pcm_buffer_ptr < _pcm_buffer_end)
-                            continue;
-                        _pcm_buffer_ptr = (char*)_pcm_buffer;
+        /* If we have not enough pcm data, exit the lambda */
+        if (data_size != PCM_CHUNK_SIZE) return false;
 
-                        unsigned char opus_buffer[OPUS_CHUNK_SIZE];
-                        const int len = opus_encode(
-                            _encoder, _pcm_buffer, FRAME_SIZE,
-                            opus_buffer, OPUS_CHUNK_SIZE
-                        );
-                        player.voice_client->send_audio_opus(
-                            opus_buffer, len, 60
-                        );
-                    }
-                }
-            }
+        /* Convert PCM to OPUS */
+        unsigned char opus_buffer[OPUS_CHUNK_SIZE];
+        const int opus_len = opus_encode(_encoder,
+                                         (short*)*resampled_data,
+                                         FRAME_SIZE,
+                                         opus_buffer,
+                                         OPUS_CHUNK_SIZE);
+
+        /* Send data to the discord and exit */
+        player.voice_client->send_audio_opus(opus_buffer, opus_len, 60);
+        return true;
+    };
+
+    /* Read data and send to the discord */
+    while (av_read_frame(format_ctx, packet) >= 0) {
+        avcodec_send_packet(codec_ctx, packet);
+        while (avcodec_receive_frame(codec_ctx, frame) == 0) {
+            if (_is_aborted) goto end;
+            send_data(frame->data, frame->nb_samples);
         }
-        av_packet_unref(pkt);
+        av_packet_unref(packet);
     }
 
-    // Завершаем декодирование (декодер может ещё вернуть фреймы)
+    /* Codec drain */
     avcodec_send_packet(codec_ctx, nullptr);
     while (avcodec_receive_frame(codec_ctx, frame) == 0) {
-        int out_samples = swr_convert(
-            swr,
-            resampled_data,
-            MAX_OUT_SAMPLES,
-            frame->data,
-            frame->nb_samples
-        );
-        if (out_samples < 0) break;
-
-        int data_size = av_samples_get_buffer_size(
-            nullptr, 2, out_samples, out_fmt, 1
-        );
-
-        for (int i = 0; i < data_size; i++) {
-            *_pcm_buffer_ptr++ = resampled_data[0][i];
-            if (_pcm_buffer_ptr < _pcm_buffer_end)
-                continue;
-            _pcm_buffer_ptr = (char*)_pcm_buffer;
-
-            unsigned char opus_buffer[OPUS_CHUNK_SIZE];
-            const int len = opus_encode(
-                _encoder, _pcm_buffer, FRAME_SIZE,
-                opus_buffer, OPUS_CHUNK_SIZE
-            );
-            player.voice_client->send_audio_opus(
-                opus_buffer, len, 60
-            );
-        }
+        if (_is_aborted) goto end;
+        send_data(frame->data, frame->nb_samples);
     }
 
-    // Дренаж SwrContext, чтобы забрать остатки
-    int out_samples;
-    do {
-        out_samples = swr_convert(
-            swr,
-            resampled_data,
-            MAX_OUT_SAMPLES,
-            nullptr,
-            0
-        );
+    /* Resampler drain */
+    for (;;) {
+        if (_is_aborted) goto end;
+        if (!send_data(frame->data, frame->nb_samples)) break;
+    }
 
-        if (out_samples > 0) {
-            int data_size = av_samples_get_buffer_size(
-                nullptr, 2, out_samples, out_fmt, 1
-            );
-            for (int i = 0; i < data_size; i++) {
-                *_pcm_buffer_ptr++ = resampled_data[0][i];
-                if (_pcm_buffer_ptr < _pcm_buffer_end)
-                    continue;
-                _pcm_buffer_ptr = (char*)_pcm_buffer;
-
-                unsigned char opus_buffer[OPUS_CHUNK_SIZE];
-                const int len = opus_encode(
-                    _encoder, _pcm_buffer, FRAME_SIZE,
-                    opus_buffer, OPUS_CHUNK_SIZE
-                );
-                player.voice_client->send_audio_opus(
-                    opus_buffer, len, 60
-                );
-            }
-        }
-    } while (out_samples > 0);
-
+end:
     /* Send EOF marker */
     player.voice_client->insert_marker();
 
-    /* Free the memory */
-free_memory:
+    /* Packet and frame */
+    av_packet_free(&packet);
+    av_frame_free(&frame);
+
+    /* Resampler buffer */
+    av_freep(&*resampled_data);
+    av_freep(&resampled_data);
+
+    /* Codec context */
+    avcodec_free_context(&codec_ctx);
+
+    /* Resampler context */
+    swr_free(&swr);
 
     /* AVIO context */
     av_free(format_ctx->pb->buffer);
@@ -197,12 +157,6 @@ free_memory:
     /* Format context */
     avformat_close_input(&format_ctx);
     avformat_free_context(format_ctx);
-
-    /* Codec context */
-    avcodec_free_context(&codec_ctx);
-
-    /* Resampler context */
-    swr_free(&swr);
 }
 
 inline void Track::Abort() { _is_aborted = true; }

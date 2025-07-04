@@ -8,6 +8,10 @@
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
 
+extern "C" {
+#include <libavformat/avformat.h>
+}
+
 DeezerTrack::DeezerTrack(const unsigned short track_duration,
                          const unsigned int track_id,
                          const std::string& track_title,
