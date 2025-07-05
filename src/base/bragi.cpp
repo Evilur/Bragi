@@ -88,7 +88,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     /* If the playlist is empty, throw an exception */
     if (IsEmpty())
         throw BragiException(
-            DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::SOFT);
+            DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::MINOR);
 
     /* Get the index of the track */
     if (track_index == 0 || track_index > _tracks_size)
@@ -107,7 +107,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
 
     /* If there is no new track */
     if (next_track == nullptr)
-        throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::SOFT);
+        throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::MINOR);
 
     /* Delete the old track and replace with the next one */
     delete old_track;
@@ -132,13 +132,13 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     Track *track = nullptr;
     try { track = DeezerClient::Search(query); }
     catch (const InvalidArlException&) {
-        throw BragiException(_("**Invalid Deezer ARL token**"), BragiException::HARD);
+        throw BragiException(_("**Invalid Deezer ARL token**"), BragiException::MAJOR);
     }
 
     /* If there is no such track */
     if (track == nullptr)
         throw BragiException(DIC_ERROR_TRACK_NOT_FIND,
-                             BragiException::SOFT);
+                             BragiException::MINOR);
 
     /* If all is OK */
     const bool need_to_play_first_track = IsEmpty();
@@ -180,11 +180,11 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
 
     /* If the playlist is empty */
     if (IsEmpty())
-        throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, BragiException::SOFT);
+        throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, BragiException::MINOR);
 
     /* If we can't skip that number of tracks */
     if (num_for_skip == 0)
-        throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, BragiException::SOFT);
+        throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, BragiException::MINOR);
 
     /* Stop the audio and clear the packet queue */
     AbortPlaying();
@@ -218,10 +218,10 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     /* Check for overflow */
     if (playback_rate < 25)
         throw BragiException(_("**Minimum speed - 25%**"),
-                             BragiException::HARD);
+                             BragiException::MAJOR);
     if (playback_rate > 250)
         throw BragiException(_("**Maximum speed - 250%**"),
-                             BragiException::HARD);
+                             BragiException::MAJOR);
 
     /* If all is OK */
     _player.playback_rate = playback_rate;
@@ -257,19 +257,19 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
     /* If the user isn't in a voice channel */
     if (!user_voice_channel)
         throw BragiException(
-            DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, BragiException::HARD);
+            DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, BragiException::MAJOR);
 
     /* If the user and a bot already in the same channel */
     if (IsPlayerReady() && _player.voice_client->channel_id == user_voice_channel->id)
         throw BragiException(
-            DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, BragiException::SOFT);
+            DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, BragiException::MINOR);
 
     /* If bot can not connect to the channel or speak there */
     dpp::permission channel_permission = user_voice_channel->
         get_user_permissions(&event.owner->me);
     if (!channel_permission.can(dpp::p_connect) || !channel_permission.can(
             dpp::p_speak))
-        throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::HARD);
+        throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::MAJOR);
 
     /* If we have a track in our playlist, abort it */
     if (!IsEmpty())

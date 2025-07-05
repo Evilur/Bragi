@@ -50,7 +50,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
                 : command_name == "ping"
                 ? Bragi::PingCommand(event)
                 : throw BragiException(_("**Unexpected error**"),
-                                       BragiException::HARD);
+                                       BragiException::MAJOR);
         event.reply(message);
     } catch (const BragiException &e) {
         /* Handle the exception and print the error message to the user */

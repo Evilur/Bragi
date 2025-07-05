@@ -5,15 +5,16 @@
 
 class BragiException final : std::exception {
 public:
-	enum Type { HARD, SOFT };
+    enum Type { MINOR, MAJOR };
 
-	BragiException(const char* e_data, Type e_type);
+    BragiException(const char* error_data,
+                   Type error_type);
 
-	dpp::message GetMessage() const;
+    dpp::message GetMessage() const;
 
 private:
-	const char* const _message;
-	const Type _type;
+    const char* const _message;
+    const Type _type;
 };
 
 #endif
