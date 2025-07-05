@@ -17,6 +17,9 @@ Track::~Track() {
 }
 
 void Track::Play(Bragi::Player& player) {
+    /* Log */
+    TRACE_LOG("Start playing the track");
+
     /* Reset abort state */
     _is_aborted = false;
 
@@ -135,13 +138,14 @@ void Track::Play(Bragi::Player& player) {
 end:
     /* Send EOF marker */
     player.voice_client->insert_marker();
+    TRACE_LOG("The track has been fully sent to the voice client");
 
     /* Packet and frame */
     av_packet_free(&packet);
     av_frame_free(&frame);
 
     /* Resampler buffer */
-    av_freep(*resampled_data);
+    av_freep(&resampled_data[0]);
     av_freep(&resampled_data);
 
     /* Codec context */
