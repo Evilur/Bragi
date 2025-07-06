@@ -290,7 +290,7 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     _player.voice_client = event.voice_client;
 
     /* Log this handler */
-    DEBUG_LOG("Bot has been connected to a voice channel");
+    TRACE_LOG("Bot has been connected to a voice channel");
 
     /* Keep this connection alive */
     _player.voice_client->keepalive = true;
@@ -314,7 +314,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     if (_player.voice_client->channel_id == event.state.channel_id) return;
 
     /* Log this handler */
-    DEBUG_LOG("Bot has changed its voice channel");
+    TRACE_LOG("Bot has changed its voice channel");
 
     /* If the playlist isn't empty,abort the first track to
      * avoid sending the data to the old voice client */
@@ -332,7 +332,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
 
 void Bragi::OnMarker() {
     /* Log this handler */
-    DEBUG_LOG("Bot has received track marker");
+    TRACE_LOG("Bot has received track marker");
 
     /* Check the loop type */
     if (_loop_type == TRACK) Play();
