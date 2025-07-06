@@ -106,8 +106,7 @@ void Track::Play(Bragi::Player& player) {
         if (resampled_samples_number < FRAME_SIZE) return true;
 
         /* Reset the offset */
-        resampled_data[0] -=
-            resampled_samples_number * sizeof(short) * CHANNELS;
+        resampled_data[0] -= FRAME_SIZE * sizeof(short) * CHANNELS;
         resampled_samples_number = 0;
 
         /* Convert PCM to OPUS */

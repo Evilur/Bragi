@@ -61,24 +61,36 @@ DeezerTrack *DeezerClient::Search(const std::string &query,
 }
 
 std::string DeezerClient::GetTrackUrl(const std::string &token) {
-    /* Send the https request */
-    const std::string http_body = std::format(GET_URL_BODY_TEMPLATE,
-                                              _license_token,
-                                              TRACK_QUALITY_STR[FLAC],
-                                              token);
-    HttpsClient http_client = HttpsClient(_get_track_url_url, _headers,
-                                          http_body, "POST");
-    const char *json_string = http_client.ReadAll();
+    for (TrackQuality quality = FLAC;
+         quality >= MP3_128;
+         quality = (TrackQuality)(quality - 1)) {
+        /* Send the https request */
+        const std::string http_body = std::format(GET_URL_BODY_TEMPLATE,
+                                                  _license_token,
+                                                  TRACK_QUALITY_STR[quality],
+                                                  token);
+        HttpsClient http_client = HttpsClient(_get_track_url_url, _headers,
+                                              http_body, "POST");
+        const char* json_string = http_client.ReadAll();
 
-    /* Init the JSON object */
-    const Json json_media = Json(json_string)["data"][0]["media"];
-    const std::string result = ((std::string)json_media[0]["sources"][0]["url"])
-        .substr(8);
+        /* Init the JSON object */
+        const Json json_media = Json(json_string)["data"][0]["media"];
 
-    /* If the track in such quality exists */
-    delete[] json_string;
-    json_string = nullptr;
-    return result;
+        /* Check for existence such a quality url */
+        if (json_media.IsEmpty()) {
+            delete[] json_string;
+            json_string = nullptr;
+            continue;
+        }
+
+        /* If the track in such quality exists */
+        const std::string result = (
+            (std::string)json_media[0]["sources"][0]["url"]
+        ).substr(8);
+        delete[] json_string;
+        json_string = nullptr;
+        return result;
+    }
 }
 
 void DeezerClient::UpdateSession() {
