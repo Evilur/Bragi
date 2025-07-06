@@ -11,9 +11,6 @@ extern "C" {
 Track::~Track() {
     /* Destroy the opus encoder */
     opus_encoder_destroy(_encoder);
-
-    /* Abort the playing */
-    Abort();
 }
 
 void Track::Play(Bragi::Player& player) {
@@ -65,10 +62,10 @@ void Track::Play(Bragi::Player& player) {
 
     /* Allocate resampled data buffer */
     unsigned char** resampled_data = nullptr;
-    int resampled_linesize = 0;
+    int resampled_samples_number = 0;
     av_samples_alloc_array_and_samples(
         &resampled_data,
-        &resampled_linesize,
+        nullptr,
         CHANNELS,
         FRAME_SIZE,
         out_fmt,
@@ -80,29 +77,43 @@ void Track::Play(Bragi::Player& player) {
     AVFrame* frame = av_frame_alloc();
 
     /* Send OPUS data to the discord */
-    auto send_data = [&](const unsigned char* const* const frame_data,
-                         const int samples_number) {
+    auto send_data = [&] {
         /* Resample audio */
         const int out_samples = swr_convert(
             swr,
             resampled_data,
-            FRAME_SIZE,
-            frame_data,
-            samples_number
+            FRAME_SIZE - resampled_samples_number,
+            frame->data,
+            frame->nb_samples
         );
 
-        /* Get resamples data size in bytes */
-        const int data_size = av_samples_get_buffer_size(
-            nullptr, CHANNELS, out_samples, out_fmt, 1
-        );
+        /* Check for out samples number */
+        if (out_samples == 0) {
+            /* Reset the offset */
+            resampled_data[0] -=
+                resampled_samples_number * sizeof(short) * CHANNELS;
+            resampled_samples_number = 0;
+
+            /* Exit the lambda */
+            return false;
+        }
+
+        /* Increase the offset */
+        resampled_data[0] += out_samples * sizeof(short) * CHANNELS;
+        resampled_samples_number += out_samples;
 
         /* If we have not enough pcm data, exit the lambda */
-        if (data_size != PCM_CHUNK_SIZE) return false;
+        if (resampled_samples_number < FRAME_SIZE) return true;
+
+        /* Reset the offset */
+        resampled_data[0] -=
+            resampled_samples_number * sizeof(short) * CHANNELS;
+        resampled_samples_number = 0;
 
         /* Convert PCM to OPUS */
         unsigned char opus_buffer[OPUS_CHUNK_SIZE];
         const int opus_len = opus_encode(_encoder,
-                                         (short*)*resampled_data,
+                                         (short*)resampled_data[0],
                                          FRAME_SIZE,
                                          opus_buffer,
                                          OPUS_CHUNK_SIZE);
@@ -117,7 +128,7 @@ void Track::Play(Bragi::Player& player) {
         avcodec_send_packet(codec_ctx, packet);
         while (avcodec_receive_frame(codec_ctx, frame) == 0) {
             if (_is_aborted) goto end;
-            send_data(frame->data, frame->nb_samples);
+            send_data();
         }
         av_packet_unref(packet);
     }
@@ -126,19 +137,16 @@ void Track::Play(Bragi::Player& player) {
     avcodec_send_packet(codec_ctx, nullptr);
     while (avcodec_receive_frame(codec_ctx, frame) == 0) {
         if (_is_aborted) goto end;
-        send_data(frame->data, frame->nb_samples);
+        send_data();
     }
 
     /* Resampler drain */
-    for (;;) {
-        if (_is_aborted) goto end;
-        if (!send_data(frame->data, frame->nb_samples)) break;
-    }
+    while (send_data() && !_is_aborted) { }
 
 end:
     /* Send EOF marker */
     player.voice_client->insert_marker();
-    TRACE_LOG("The track has been fully sent to the voice client");
+    TRACE_LOG("Track has been fully sent to the voice client");
 
     /* Packet and frame */
     av_packet_free(&packet);
@@ -163,4 +171,4 @@ end:
     avformat_free_context(format_ctx);
 }
 
-inline void Track::Abort() { _is_aborted = true; }
+void Track::Abort() { _is_aborted = true; }

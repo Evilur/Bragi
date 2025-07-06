@@ -20,7 +20,7 @@ public:
 
     virtual void Play(Bragi::Player& player);
 
-    inline void Abort();
+    void Abort();
 
 protected:
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
