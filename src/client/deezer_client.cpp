@@ -1,6 +1,7 @@
 #include "deezer_client.h"
 
 #include "exception/InvalidArlException.h"
+#include "exception/bragi_exception.h"
 #include "web/http_client.h"
 #include "util/properties.h"
 #include "util/json.h"
@@ -9,7 +10,7 @@
 #include "web/https_client.h"
 #include "util/parser.h"
 
-DeezerTrack *DeezerClient::Search(const std::string &query,
+DeezerTrack* DeezerClient::Search(const std::string& query,
                                   const unsigned int start) {
     /* If the session has been expired update it */
     const unsigned long c_time = time(nullptr);
@@ -23,7 +24,7 @@ DeezerTrack *DeezerClient::Search(const std::string &query,
                                               start);
     HttpClient http_client = HttpClient(_search_track_url, _headers, http_body,
                                         "POST");
-    const char *json_string = http_client.ReadAll();
+    const char* json_string = http_client.ReadAll();
 
     /* Init the JSON object */
     const Json json_results = Json(json_string)["results"];
@@ -39,16 +40,16 @@ DeezerTrack *DeezerClient::Search(const std::string &query,
     /* TODO: GET THE BEST AVAILABLE TRACK QUALITY */
 
     /* Create the track instance */
-    DeezerTrack *result =
+    DeezerTrack* result =
         new DeezerTrack(
-            Parser::ToUInt16((const char *)json_track["DURATION"]),
-            Parser::ToUInt32((const char *)json_track["SNG_ID"]),
+            Parser::ToUInt16((const char*)json_track["DURATION"]),
+            Parser::ToUInt32((const char*)json_track["SNG_ID"]),
             (std::string)json_track["SNG_TITLE"],
             (std::string)json_track["TRACK_TOKEN"],
-            Parser::ToUInt32((const char *)json_track["ALB_ID"]),
+            Parser::ToUInt32((const char*)json_track["ALB_ID"]),
             (std::string)json_track["ALB_TITLE"],
             (std::string)json_track["ALB_PICTURE"],
-            Parser::ToUInt32((const char *)json_track["ART_ID"]),
+            Parser::ToUInt32((const char*)json_track["ART_ID"]),
             (std::string)json_track["ART_NAME"],
             (std::string)json_track["ART_PICTURE"],
             (unsigned short)json_results["total"],
@@ -60,7 +61,7 @@ DeezerTrack *DeezerClient::Search(const std::string &query,
     return result;
 }
 
-std::string DeezerClient::GetTrackUrl(const std::string &token) {
+std::string DeezerClient::GetTrackUrl(const std::string& token) {
     for (TrackQuality quality = FLAC;
          quality >= MP3_128;
          quality = (TrackQuality)(quality - 1)) {
@@ -91,6 +92,8 @@ std::string DeezerClient::GetTrackUrl(const std::string &token) {
         json_string = nullptr;
         return result;
     }
+
+    throw std::runtime_error("Impossible to get the deezer track url");
 }
 
 void DeezerClient::UpdateSession() {
@@ -99,7 +102,7 @@ void DeezerClient::UpdateSession() {
 
     /* Send the http request */
     HttpClient http_client = HttpClient(UPDATE_SESSION_URL, _headers);
-    const char *json_string = http_client.ReadAll();
+    const char* json_string = http_client.ReadAll();
 
     /* Init the JSON objects */
     const Json json_results = Json(json_string)["results"];
