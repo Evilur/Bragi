@@ -22,7 +22,7 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
 
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
     /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
-    if (!IsEmpty())
+    if (!_playlist.IsEmpty())
         AbortPlaying();
 
     /* Disconnect the voice connection */
@@ -34,14 +34,14 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::ListCommand() const {
-    if (IsEmpty())
+    if (_playlist.IsEmpty())
         return dpp::embed()
                .set_color(Color::GREEN)
                .set_title(_("**Playlist is empty**"));
 
     std::stringstream playlist_stream;
     u_int counter = 1;
-    for (const Track *const track : _tracks) {
+    for (const Track *const track : _playlist) {
         playlist_stream << counter++ << ". " << track->GetTrackData() << '\n';
     }
 
@@ -86,7 +86,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
             track_index = std::get<long>(track_num_par);
 
     /* If the playlist is empty, throw an exception */
-    if (IsEmpty())
+    if (_playlist.IsEmpty())
         throw BragiException(
             DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::MINOR);
 
@@ -102,7 +102,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
         AbortPlaying();
 
     /* Get the next track pointer */
-    Track * &old_track = _tracks[track_index];
+    Track * &old_track = _playlist[track_index];
     Track *next_track = old_track->Next();
 
     /* If there is no new track */
@@ -141,7 +141,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
                              BragiException::MINOR);
 
     /* If all is OK */
-    const bool need_to_play_first_track = IsEmpty();
+    const bool need_to_play_first_track = _playlist.IsEmpty();
     //If the playlist is empty this track will be played right now
     dpp::message result_msg = track->GetMessage(need_to_play_first_track,
                                                 event.command.channel_id);
@@ -150,7 +150,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* If player is ready */
     if (IsPlayerReady()) {
         /* Add a track to the playlist */
-        _tracks.Push(track);
+        _playlist.Push(track);
         _tracks_size++;
 
         /* Async play the current track */
@@ -166,7 +166,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     //Join to the channel and insert the _message to the result _message
 
     /* Add a track to the playlist (if we successfully joined the channel) */
-    _tracks.Push(track);
+    _playlist.Push(track);
     _tracks_size++;
     return result_msg; //Return a track _message
 }
@@ -179,7 +179,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
         num_for_skip = std::get<long>(num_for_skip_par);
 
     /* If the playlist is empty */
-    if (IsEmpty())
+    if (_playlist.IsEmpty())
         throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, BragiException::MINOR);
 
     /* If we can't skip that number of tracks */
@@ -196,11 +196,11 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
         num_for_skip = _tracks_size;
 
     /* Skip delete track/tracks from the playlist */
-    _tracks.PopFront(num_for_skip, [](Track *track) { delete track; });
+    _playlist.Pop(num_for_skip);
     _tracks_size -= num_for_skip;
 
     /* If the playlist isn't empty, play the next track */
-    if (!IsEmpty() && IsPlayerReady())
+    if (!_playlist.IsEmpty() && IsPlayerReady())
         Play();
 
     return {std::format(DIC_SKIP_MSG, num_for_skip)};
@@ -272,7 +272,7 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
         throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::MAJOR);
 
     /* If we have a track in our playlist, abort it */
-    if (!IsEmpty())
+    if (!_playlist.IsEmpty())
         AbortPlaying();
 
     /* Reset the old voice connection */
@@ -286,11 +286,11 @@ std::string Bragi::Join(const dpp::slashcommand_t &event,
 }
 
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
+    /* Log */
+    TRACE_LOG("Bot has been connected to a voice channel");
+
     /* Update the voice */
     _player.voice_client = event.voice_client;
-
-    /* Log this handler */
-    TRACE_LOG("Bot has been connected to a voice channel");
 
     /* Keep this connection alive */
     _player.voice_client->keepalive = true;
@@ -300,7 +300,7 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
         dpp::discord_voice_client::send_audio_type_t::satype_recorded_audio);
 
     /* If we need to play the first track, play it */
-    if (!IsEmpty()) Play();
+    if (!_playlist.IsEmpty()) Play();
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
@@ -310,15 +310,12 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     /* If the voice client isn't initialized, exit the method */
     if (!_player.voice_client) return;
 
-    /* If the voice channel doesn't change, exit the method */
-    if (_player.voice_client->channel_id == event.state.channel_id) return;
-
     /* Log this handler */
-    TRACE_LOG("Bot has changed its voice channel");
+    TRACE_LOG("Bot has changed its voice state");
 
     /* If the playlist isn't empty,abort the first track to
      * avoid sending the data to the old voice client */
-    if (!IsEmpty()) AbortPlaying();
+    if (!_playlist.IsEmpty()) AbortPlaying();
 
     /* Delete pointer to the old connection */
     _player.voice_client = nullptr;
@@ -338,19 +335,19 @@ void Bragi::OnMarker() {
     if (_loop_type == TRACK) Play();
     else if (_loop_type == PLAYLIST) {
         /* Move the first track to the end of the playlist */
-        Track *track = _tracks.Head();
-        _tracks.PopFront();
-        _tracks.Push(track);
+        Track *track = _playlist.Head();
+        _playlist.Pop();
+        _playlist.Push(track);
 
         /* Play the next track */
         Play();
     } else {
         /* Remove the first track in the list */
-        _tracks.PopFront([](Track *track) { delete track; });
+        _playlist.Pop();
         _tracks_size--;
 
         /* If the playlist isn't empty, play the next track */
-        if (!IsEmpty())
+        if (!_playlist.IsEmpty())
             Play();
     }
 }
@@ -361,13 +358,13 @@ void Bragi::Play() {
 
     /* Play the track in the new thread */
     _play_thread = std::thread([this] {
-        _tracks.Head()->Play(_player);
+        _playlist.Head()->Play(_player);
     });
 }
 
 void Bragi::AbortPlaying() {
     /* Abort the track */
-    _tracks.Head()->Abort();
+    _playlist.Head()->Abort();
 
     /* Delete voice client packet queue */
     _player.voice_client->stop_audio();
@@ -380,8 +377,6 @@ void Bragi::AbortPlaying() {
 inline bool Bragi::IsPlayerReady() const {
     return _player.voice_client && _player.voice_client->is_ready();
 }
-
-inline bool Bragi::IsEmpty() const { return !_tracks_size; }
 
 #pragma region Static Members
 

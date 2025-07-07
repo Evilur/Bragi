@@ -1,5 +1,6 @@
 #pragma once
 
+#include "playlist.h"
 #include "template/linked_list.hpp"
 
 #include <dpp/dpp.h>
@@ -46,7 +47,7 @@ public:
 private:
     enum LoopType { DISABLED, TRACK, PLAYLIST };
 
-    LinkedList<Track *> _tracks;
+    Playlist _playlist;
     unsigned short _tracks_size = 0;
     LoopType _loop_type = DISABLED;
     Player _player = { nullptr, 100 };
@@ -57,8 +58,6 @@ private:
     inline void AbortPlaying();
 
     inline bool IsPlayerReady() const;
-
-    inline bool IsEmpty() const;
 
 public:
     static Bragi* Get(const dpp::snowflake &guild_id);
