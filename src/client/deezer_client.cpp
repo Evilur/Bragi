@@ -37,8 +37,6 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
         return nullptr;
     const Json json_track = json_results["data"][0];
 
-    /* TODO: GET THE BEST AVAILABLE TRACK QUALITY */
-
     /* Create the track instance */
     DeezerTrack* result =
         new DeezerTrack(
@@ -64,7 +62,7 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
 std::string DeezerClient::GetTrackUrl(const std::string& token) {
     for (TrackQuality quality = FLAC;
          quality >= MP3_128;
-         quality = (TrackQuality)(quality - 1)) {
+         quality = TrackQuality(quality - 1)) {
         /* Send the https request */
         const std::string http_body = std::format(GET_URL_BODY_TEMPLATE,
                                                   _license_token,
