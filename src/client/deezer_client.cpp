@@ -1,6 +1,6 @@
 #include "deezer_client.h"
 
-#include "exception/InvalidArlException.h"
+#include "exception/invalid_arl_exception.h"
 #include "exception/bragi_exception.h"
 #include "web/http_client.h"
 #include "util/properties.h"

@@ -4,7 +4,7 @@
 #include "util/color.h"
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
-#include "exception/InvalidArlException.h"
+#include "exception/invalid_arl_exception.h"
 #include "util/logger.hpp"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
