@@ -19,3 +19,7 @@ String::~String() {
 String::operator const char*() const {
     return _str;
 }
+
+String::operator std::string_view() const {
+    return std::string_view(_str);
+}

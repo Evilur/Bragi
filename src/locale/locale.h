@@ -36,8 +36,8 @@ public:
         /* Ping command */
         TR("Ping",
            "Задержка");
-        TR("{}ms",
-           "{}мс");
+        TR("%.0fms",
+           "%.0fмс");
 
         /* Bragi exception */
         TR("**Error**",

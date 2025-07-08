@@ -19,6 +19,8 @@ public:
 
     operator const char*() const;
 
+    operator std::string_view() const;
+
 private:
     char* const _str;
 

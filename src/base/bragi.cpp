@@ -5,6 +5,7 @@
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
 #include "exception/invalid_arl_exception.h"
+#include "types/string.hpp"
 #include "util/logger.hpp"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
@@ -236,14 +237,12 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
-    /* Get the ping */
-    unsigned int ping = (unsigned int)(event.owner->rest_ping * 1000.0);
-
-    /* Return the result */
     return dpp::embed()
            .set_color(Color::GREEN)
            .set_title(_("Ping"))
-           .set_description(std::format(_("{}ms"), ping));
+           .set_description(
+               String::Format(_("%.0fms"), event.owner->rest_ping * 1000)
+           );
 }
 
 std::string Bragi::Join(const dpp::slashcommand_t &event,
