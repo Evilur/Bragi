@@ -65,9 +65,9 @@ private:
 };
 
 template <typename... Args>
-void Logger::Log(FILE* stream,
+void Logger::Log(FILE* const stream,
                  const LogLevel log_level,
-                 const char* format,
+                 const char* const format,
                  Args... args) {
     /* Get current time */
     char time_buffer[20];
