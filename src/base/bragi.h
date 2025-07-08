@@ -1,12 +1,12 @@
 #pragma once
 
 #include "playlist.h"
-#include "template/linked_list.hpp"
 
 #include <dpp/dpp.h>
 
 class BragiHashMap;
 class Track;
+class String;
 
 class Bragi final {
 public:
@@ -34,10 +34,6 @@ public:
 
     static dpp::message PingCommand(const dpp::slashcommand_t& event);
 
-    std::string Join(const dpp::slashcommand_t &event,
-                     const dpp::snowflake &user_id,
-                     const dpp::snowflake &channel_id);
-
     void OnVoiceReady(const dpp::voice_ready_t& event);
 
     void OnVoiceStateUpdate(const dpp::voice_state_update_t& event);
@@ -52,6 +48,9 @@ private:
     LoopType _loop_type = DISABLED;
     Player _player = { nullptr, 100 };
     std::thread _play_thread;
+
+    String Join(const dpp::slashcommand_t &event,
+                const dpp::snowflake& user_id);
 
     inline void Play();
 

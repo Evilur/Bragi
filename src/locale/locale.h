@@ -7,6 +7,18 @@ public:
     static constexpr const char* GetText(const char* text) {
 #define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
+        /* Join command */
+        TR("**The user must be in the voice channel**",
+           "**Пользователь должен находиться в голосовом канале**");
+        TR("**The bot is already connected to this voice channel**",
+           "**Бот уже подключен к этому голосовому каналу**");
+        TR("**Unable to connect to the voice channel.\n"
+           "Insufficient rights**",
+           "**Невозможно подключиться к голосовому каналу\n"
+           "Недостаточно прав**");
+        TR("**:thumbsup: The bot has joined the channel `%s`**",
+           "**:thumbsup: Бот присоединился к каналу `%s`**");
+
         /* Leave command */
         TR("**:person_walking: Bot has left the voice channel**",
            "**:person_walking: Бот покинул голосовой канал**");
@@ -54,7 +66,6 @@ public:
 //join command
 #define DIC_SLASH_JOIN "Присоединиться к голосовому каналу"
 #define DIC_SLASH_JOIN_USER "Пользователь, к которому необходимо присоединиться"
-#define DIC_JOINED "**:thumbsup: Бот присоединился к каналу `{}`**"
 
 //leave command
 #define DIC_SLASH_LEAVE "Покинуть голосовой канал"
@@ -100,7 +111,4 @@ public:
 
 //errors
 #define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
-#define DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL "**Бот уже подключен к этому голосовому каналу**"
-#define DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL "**Пользователь должен находиться в голосовом канале**"
-#define DIC_ERROR_PERMISSION_DENIED "**Невозможно подключиться к голосовому каналу\nНедостаточно прав**"
 #define DIC_ERROR_TRACK_NOT_FIND "**По данному запросу не было найдено ни одного результата**"

@@ -5,8 +5,8 @@
 #include "client/deezer_client.h"
 #include "bragi_hash_map.h"
 #include "exception/invalid_arl_exception.h"
-#include "types/string.hpp"
 #include "util/logger.hpp"
+#include "types/string.hpp"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     /* Default user for connection */
@@ -18,7 +18,7 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
         user_id = event.command.get_resolved_user(
             std::get<dpp::snowflake>(user_par)).id;
 
-    return { Join(event, user_id, event.command.channel_id) };
+    return { Join(event, user_id) };
 }
 
 dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
@@ -163,7 +163,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
 
     /* If player is not ready */
     result_msg.content.insert(
-        0, Join(event, event.command.usr.id, event.command.channel_id) + '\n');
+        0, Join(event, event.command.usr.id) + '\n');
     //Join to the channel and insert the _message to the result _message
 
     /* Add a track to the playlist (if we successfully joined the channel) */
@@ -245,45 +245,6 @@ dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
            );
 }
 
-std::string Bragi::Join(const dpp::slashcommand_t &event,
-                        const dpp::snowflake &user_id,
-                        const dpp::snowflake &channel_id) {
-    /* Get the user voice channel */
-    const dpp::guild *const guild = dpp::find_guild(event.command.guild_id);
-    const dpp::channel *const user_voice_channel = dpp::find_channel(
-        guild->voice_members.find(user_id)->second.channel_id);
-
-    /* If the user isn't in a voice channel */
-    if (!user_voice_channel)
-        throw BragiException(
-            DIC_ERROR_USER_NOT_IN_VOICE_CHANNEL, BragiException::MAJOR);
-
-    /* If the user and a bot already in the same channel */
-    if (IsPlayerReady() && _player.voice_client->channel_id == user_voice_channel->id)
-        throw BragiException(
-            DIC_ERROR_ALREADY_IN_CURRENT_CHANNEL, BragiException::MINOR);
-
-    /* If bot can not connect to the channel or speak there */
-    dpp::permission channel_permission = user_voice_channel->
-        get_user_permissions(&event.owner->me);
-    if (!channel_permission.can(dpp::p_connect) || !channel_permission.can(
-            dpp::p_speak))
-        throw BragiException(DIC_ERROR_PERMISSION_DENIED, BragiException::MAJOR);
-
-    /* If we have a track in our playlist, abort it */
-    if (!_playlist.IsEmpty())
-        AbortPlaying();
-
-    /* Reset the old voice connection */
-    _player.voice_client = nullptr;
-
-    /* Connect to the new channel */
-    event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
-
-    /* Return the result to the channel */
-    return std::format(DIC_JOINED, user_voice_channel->name);
-}
-
 void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Log */
     TRACE_LOG("Bot has been connected to a voice channel");
@@ -351,9 +312,58 @@ void Bragi::OnMarker() {
     }
 }
 
+String Bragi::Join(const dpp::slashcommand_t &event,
+                        const dpp::snowflake &user_id) {
+    /* Get the user voice channel */
+    const dpp::channel* const user_voice_channel = find_channel(
+        find_guild(event.command.guild_id)
+        ->voice_members.find(user_id)
+        ->second.channel_id
+    );
+
+    /* If the user isn't in a voice channel */
+    if (!user_voice_channel)
+        throw BragiException(_("**The user must be in the voice channel**"),
+                             BragiException::MAJOR);
+
+    /* If the user and the bot already in the same channel */
+    if (IsPlayerReady()
+        && _player.voice_client->channel_id == user_voice_channel->id)
+        throw BragiException(
+            _("**The bot is already connected to this voice channel**"),
+            BragiException::MINOR
+        );
+
+    /* If bot can not connect to the channel or speak there */
+    const dpp::permission channel_permission =
+        user_voice_channel->get_user_permissions(&event.owner->me);
+    if (!channel_permission.can(dpp::p_connect)
+        || !channel_permission.can(dpp::p_speak))
+        throw BragiException(
+            _("**Unable to connect to the voice channel.\n"
+              "Insufficient rights**"),
+            BragiException::MAJOR
+        );
+
+    /* If we have a track in our playlist, abort it */
+    if (!_playlist.IsEmpty()) AbortPlaying();
+
+    /* Reset the old voice client */
+    _player.voice_client = nullptr;
+
+    /* Connect to a new channel */
+    event.from()->connect_voice(event.command.guild_id, user_voice_channel->id);
+
+    /* Return the result */
+    return String::Format(
+        _("**:thumbsup: The bot has joined the channel `%s`**"),
+        user_voice_channel->name.c_str()
+    );
+}
+
 void Bragi::Play() {
-    /* Abort the old playing */
-    AbortPlaying();
+    /* Join the old thread */
+    if (_play_thread.joinable()) _play_thread.join();
 
     /* Play the track in the new thread */
     _play_thread = std::thread([this] {
