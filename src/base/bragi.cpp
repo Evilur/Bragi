@@ -12,12 +12,14 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     /* Default user for connection */
     dpp::snowflake user_id = event.command.usr.id;
 
-    /* Get user from the command parameter (if exists) */
-    dpp::command_value user_par = event.get_parameter("user");
-    if (user_par.index() != 0)
+    /* Get the user from the command parameter (if exists) */
+    if (const dpp::command_value user_parameter = event.get_parameter("user");
+        user_parameter.index() != 0)
         user_id = event.command.get_resolved_user(
-            std::get<dpp::snowflake>(user_par)).id;
+            std::get<dpp::snowflake>(user_parameter)
+        ).id;
 
+    /* Join the channel and return the message */
     return { Join(event, user_id) };
 }
 
@@ -163,7 +165,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
 
     /* If player is not ready */
     result_msg.content.insert(
-        0, Join(event, event.command.usr.id) + '\n');
+        0, String::Format("%s\n", (const char*)Join(event, event.command.usr.id)));
     //Join to the channel and insert the _message to the result _message
 
     /* Add a track to the playlist (if we successfully joined the channel) */

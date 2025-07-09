@@ -105,7 +105,7 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
     MD5((unsigned char*)id_str.c_str(), id_str.size(), md5_digest);
     unsigned char md5_sum[MD5_DIGEST_LENGTH * 2];
     constexpr unsigned char alph[] = "0123456789abcdef";
-    for (char i = 0; i < MD5_DIGEST_LENGTH; i++) {
+    for (unsigned short i = 0; i < MD5_DIGEST_LENGTH; i++) {
         const char cur_i = i * 2;
         md5_sum[cur_i] = alph[md5_digest[i] >> 4];
         md5_sum[cur_i + 1] = alph[md5_digest[i] & 0xF];
@@ -116,7 +116,7 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
     //Get the first half of the hash
     const unsigned char* md5_sum_sec_half = md5_sum + MD5_DIGEST_LENGTH;
     //Get the second half of the hash
-    for (char i = 0; i < MD5_DIGEST_LENGTH; i++)
+    for (unsigned short i = 0; i < MD5_DIGEST_LENGTH; i++)
         buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
 }
 

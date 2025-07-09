@@ -1,8 +1,6 @@
 #pragma once
-#include "util/logger.hpp"
 
-#include <iosfwd>
-#include <sstream>
+#include <string_view>
 
 class String final {
 public:
