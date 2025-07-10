@@ -93,13 +93,3 @@ std::string Parser::Utf8(const char* data) {
 	return std::string(result, count);
 }
 
-std::string Parser::Time(const unsigned short &all_seconds) {
-	/* Get hours, minutes and seconds */
-	const unsigned short all_minutes = all_seconds / 60;
-	const unsigned short all_hours = all_minutes / 60;
-
-	if (all_hours > 0) return std::format(DIC_TRACK_MORE_THAN_HOUR, all_hours, all_minutes % 60, all_seconds % 60);
-	else if (all_minutes > 0) return std::format(DIC_TRACK_LESS_THAN_HOUR, all_minutes, all_seconds % 60);
-	else return std::format(DIC_TRACK_LESS_THAN_MINUTE, all_seconds);
-	return std::string();
-}
