@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstring>
+
 #define _(TEXT) Locale::GetText(TEXT)
 
 class Locale final {
 public:
-    static constexpr const char* GetText(const char* text) {
+    static consteval const char* GetText(const char* text) {
 #define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
         /* Join command */
@@ -18,6 +20,10 @@ public:
            "Недостаточно прав**");
         TR("**:thumbsup: The bot has joined the channel `%s`**",
            "**:thumbsup: Бот присоединился к каналу `%s`**");
+
+        /* Play command */
+        TR("**No results have been found for this query**",
+           "**По данному запросу не было найдено ни одного результата**");
 
         /* Leave command */
         TR("**:person_walking: Bot has left the voice channel**",
@@ -105,10 +111,6 @@ public:
 #define DIC_TRACK_DURATION ":watch: Продолжительность: `{}`**"
 #define DIC_TRACK_ALBUM "**Альбом**"
 #define DIC_TRACK_ARTIST "**Исполнитель**"
-#define DIC_TRACK_LESS_THAN_MINUTE "{}с"
-#define DIC_TRACK_LESS_THAN_HOUR "{}м{}с"
-#define DIC_TRACK_MORE_THAN_HOUR "{}ч{}м{}с"
 
 //errors
 #define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
-#define DIC_ERROR_TRACK_NOT_FIND "**По данному запросу не было найдено ни одного результата**"
