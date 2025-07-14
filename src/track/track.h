@@ -11,8 +11,7 @@ class Track {
 public:
     virtual ~Track();
 
-    virtual dpp::message GetMessage(const bool &is_playing_now,
-                                    const dpp::snowflake &channel_id) const = 0;
+    virtual dpp::message GetMessage(bool is_currently_playing) const = 0;
 
     virtual std::string GetTrackData() const = 0;
 

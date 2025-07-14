@@ -9,21 +9,20 @@
 
 class DeezerTrack final : public Track {
 public:
-    DeezerTrack(const unsigned short track_duration,
-                const unsigned int track_id, const std::string &track_title,
+    DeezerTrack(unsigned short track_duration,
+                unsigned int track_id, const std::string &track_title,
                 const std::string &track_token,
-                const unsigned int album_id, const std::string &album_title,
+                unsigned int album_id, const std::string &album_title,
                 const std::string &album_picture_id,
-                const unsigned int artist_id, const std::string &artist_name,
+                unsigned int artist_id, const std::string &artist_name,
                 const std::string &artist_picture_id,
-                const unsigned short search_total,
-                const unsigned short search_next,
+                unsigned short search_total,
+                unsigned short search_next,
                 const std::string &search_query);
 
     ~DeezerTrack() override;
 
-    dpp::message GetMessage(const bool &is_playing_now,
-                            const dpp::snowflake &channel_id) const override;
+    dpp::message GetMessage(bool is_currently_playing) const override;
 
     std::string GetTrackData() const override;
 

@@ -1,9 +1,9 @@
 #include "deezer_track.h"
-#include "util/parser.h"
 #include "util/color.h"
 #include "util/logger.hpp"
 #include "client/deezer_client.h"
-#include "master.h"
+#include "types/string.hpp"
+#include "util/time.h"
 
 #include <openssl/md5.h>
 #include <openssl/blowfish.h>
@@ -47,30 +47,38 @@ DeezerTrack::~DeezerTrack() {
     _http = nullptr;
 }
 
-dpp::message DeezerTrack::GetMessage(const bool& is_playing_now,
-                                     const dpp::snowflake& channel_id) const {
-    std::string msg_body = '\n' + std::format(
-                               DIC_TRACK_DURATION,
-                               Parser::Time(_track.duration));
+dpp::message DeezerTrack::GetMessage(const bool is_currently_playing) const {
+    /* Create a message instance */
+    dpp::message result_message(
+        String::Format(is_currently_playing
+                           ? _("**:notes: Currently playing: `%s`\n"
+                               ":watch: Duration: `%s`**")
+                           : _("**:notes: Added to playlist: `%s`\n"
+                               ":watch: Duration: `%s`**"),
+                       _track.title.c_str(),
+                       (const char*)Time::Format(_track.duration))
+        );
 
-    if (is_playing_now)
-        msg_body.insert(0, std::format(DIC_TRACK_PLAYING_NOW, _track.title));
-    else
-        msg_body.
-            insert(0, std::format(DIC_TRACK_ADD_TO_PLAYLIST, _track.title));
+    /* Assemble and attach an embed */
+    result_message.add_embed(
+        dpp::embed()
+        .set_color(Color::RED)
+        .add_field(_("**Album**"), _album.title)
+        .add_field(_("**Artist**"), _artist.name)
+        .set_image(
+            String::Format("https://e-cdns-images.dzcdn.net/images/cover/"
+                           "%s/1000x1000-000000-80-0-0.jpg",
+                           _album.picture_id.c_str())
+        )
+        .set_thumbnail(
+            String::Format("https://e-cdns-images.dzcdn.net/images/artist/"
+                           "%s/1000x1000-000000-80-0-0.jpg",
+                           _artist.picture_id.c_str())
+        )
+    );
 
-    dpp::message result = dpp::message(channel_id, msg_body);
-    result.add_embed(dpp::embed()
-                     .set_color(Color::RED)
-                     .add_field(DIC_TRACK_ALBUM, _album.title)
-                     .add_field(DIC_TRACK_ARTIST, _artist.name)
-                     .set_image(
-                         "https://e-cdns-images.dzcdn.net/images/cover/" +
-                         _album.picture_id + "/1000x1000-000000-80-0-0.jpg")
-                     .set_thumbnail(
-                         "https://e-cdns-images.dzcdn.net/images/artist/" +
-                         _artist.picture_id + "/1000x1000-000000-80-0-0.jpg"));
-    return result;
+    /* Return the message */
+    return result_message;
 }
 
 std::string DeezerTrack::GetTrackData() const {
