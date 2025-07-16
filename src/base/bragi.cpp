@@ -124,54 +124,61 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
     }
 
     /* Return the _message */
-    return next_track->GetMessage(is_playing, event.command.channel_id);
+    return next_track->GetMessage(is_playing);
 }
 
 dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     /* Get query from the command parameter */
-    std::string query = std::get<std::string>(event.get_parameter("query"));
+    const std::string query =
+        std::get<std::string>(event.get_parameter("query"));
 
     /* Try to search the Deezer track */
     Track *track = nullptr;
-    try { track = DeezerClient::Search(query); }
-    catch (const InvalidArlException&) {
-        throw BragiException(_("**Invalid Deezer ARL token**"), BragiException::MAJOR);
+    try {
+        track = DeezerClient::Search(query);
+    } catch (const InvalidArlException&) {
+        throw BragiException(_("**Invalid Deezer ARL token**"),
+                             BragiException::MAJOR);
     }
 
-    /* If there is no such track */
+    /* If we can't find a track */
     if (track == nullptr)
-        throw BragiException(DIC_ERROR_TRACK_NOT_FIND,
-                             BragiException::MINOR);
+        throw BragiException(
+            _("**No results have been found for this query**"),
+            BragiException::MINOR
+        );
 
-    /* If all is OK */
-    const bool need_to_play_first_track = _playlist.IsEmpty();
-    //If the playlist is empty this track will be played right now
-    dpp::message result_msg = track->GetMessage(need_to_play_first_track,
-                                                event.command.channel_id);
-    //Get track _message
-
-    /* If player is ready */
+    /* If all is OK
+     * If the player is ready */
     if (IsPlayerReady()) {
-        /* Add a track to the playlist */
+        /* Add the track to the playlist */
         _playlist.Push(track);
         _tracks_size++;
 
-        /* Async play the current track */
-        if (need_to_play_first_track) std::thread([this, track] {
-                Play();
-            }).detach();
-        return result_msg; //Return the track _message
+        /* Update the voice client
+         * (old can be disconnected even if it is ready) */
+        _player.voice_client = event.from()
+                                    ->get_voice(event.command.guild_id)
+                                    ->voiceclient;
+
+        /* Play the current track */
+        if (!_playlist.IsEmpty()) Play();
+
+        /* Return the track message */
+        return track->GetMessage(true);
     }
 
-    /* If player is not ready */
-    result_msg.content.insert(
-        0, String::Format("%s\n", (const char*)Join(event, event.command.usr.id)));
-    //Join to the channel and insert the _message to the result _message
+    /* If player is not ready
+     * Join to the channel and insert the message to the result message */
+    dpp::message result_message = track->GetMessage(false);
+    result_message.content.insert(0, Join(event, event.command.usr.id) + '\n');
 
     /* Add a track to the playlist (if we successfully joined the channel) */
     _playlist.Push(track);
     _tracks_size++;
-    return result_msg; //Return a track _message
+
+    /* Return the message */
+    return result_message;
 }
 
 dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
