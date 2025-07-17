@@ -1,6 +1,9 @@
 #include "track.h"
 
+#include "locale/locale.h"
+#include "types/string.hpp"
 #include "util/logger.hpp"
+#include "util/time.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -171,3 +174,17 @@ end:
 }
 
 void Track::Abort() { _is_aborted = true; }
+
+dpp::message Track::GetMessage(const bool is_currently_playing,
+                               const char* const track_title,
+                               const unsigned int duration) {
+    return {
+        String::Format(is_currently_playing
+                           ? _("**:notes: Currently playing: `%s`\n"
+                               ":watch: Duration: `%s`**")
+                           : _("**:notes: Added to playlist: `%s`\n"
+                               ":watch: Duration: `%s`**"),
+                       track_title,
+                       (const char*)Time::Format(duration))
+    };
+}

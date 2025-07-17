@@ -22,6 +22,10 @@ public:
     void Abort();
 
 protected:
+    static dpp::message GetMessage(bool is_currently_playing,
+                                   const char* track_title,
+                                   unsigned int duration);
+
     using ffmpeg_read_callback = int(*)(void*, unsigned char*, int);
 
     virtual constexpr ffmpeg_read_callback GetReadAudioCallback() const = 0;

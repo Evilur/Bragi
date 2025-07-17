@@ -49,15 +49,9 @@ DeezerTrack::~DeezerTrack() {
 
 dpp::message DeezerTrack::GetMessage(const bool is_currently_playing) const {
     /* Create a message instance */
-    dpp::message result_message(
-        String::Format(is_currently_playing
-                           ? _("**:notes: Currently playing: `%s`\n"
-                               ":watch: Duration: `%s`**")
-                           : _("**:notes: Added to playlist: `%s`\n"
-                               ":watch: Duration: `%s`**"),
-                       _track.title.c_str(),
-                       (const char*)Time::Format(_track.duration))
-        );
+    dpp::message result_message = Track::GetMessage(is_currently_playing,
+                                                    _track.title.c_str(),
+                                                    _track.duration);
 
     /* Assemble and attach an embed */
     result_message.add_embed(
