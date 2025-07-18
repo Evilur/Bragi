@@ -14,13 +14,13 @@ public:
 
     T& Head();
 
-    void Push(T element);
+    virtual void Push(T element);
 
-    void Pop();
+    virtual void Pop();
 
-    void Pop(unsigned int count);
+    virtual void Pop(unsigned int count);
 
-    void Remove(unsigned int index, unsigned int count = 1);
+    virtual void Remove(unsigned int index, unsigned int count = 1);
 
     T& operator[](unsigned int index) const;
 
