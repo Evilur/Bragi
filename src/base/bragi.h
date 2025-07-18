@@ -41,11 +41,11 @@ public:
     void OnMarker();
 
 private:
-    enum LoopType { DISABLED, TRACK, PLAYLIST };
+    enum LoopType {
+        DISABLED, TRACK, PLAYLIST
+    } _loop_type = DISABLED;
 
     Playlist _playlist;
-    unsigned short _tracks_size = 0;
-    LoopType _loop_type = DISABLED;
     Player _player = { nullptr, 100 };
     std::thread _play_thread;
 

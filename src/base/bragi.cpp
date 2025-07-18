@@ -60,7 +60,7 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
 
     /* If there is no parameters, get the next variant in cycle */
     if (loop_type_param.index() == 0)
-        _loop_type = (LoopType)((_loop_type + 1) % 3);
+        _loop_type = LoopType((_loop_type + 1) % 3);
     /* Else get the parameter value */
     else {
         const std::string loop_type_string = std::get<std::string>(
@@ -94,8 +94,8 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
             DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::MINOR);
 
     /* Get the index of the track */
-    if (track_index == 0 || track_index > _tracks_size)
-        track_index = _tracks_size - 1;
+    if (track_index == 0 || track_index > _playlist.GetSize())
+        track_index = _playlist.GetSize() - 1;
     else
         track_index--;
 
@@ -148,36 +148,42 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
             BragiException::MINOR
         );
 
-    /* If all is OK
-     * If the player is ready */
-    if (IsPlayerReady()) {
-        /* Add the track to the playlist */
-        _playlist.Push(track);
-        _tracks_size++;
+    /* Init the result message variable */
+    dpp::message result_message = track->GetMessage(_playlist.IsEmpty());
 
+    /* Declare a variable where we will save
+     * whether we need to start playing the track or not */
+    bool need_to_play;
+
+    /* If the player is not ready */
+    if (!IsPlayerReady()) {
+        /* Join to the channel and save the message to the result message */
+        result_message
+            .content.insert(0, Join(event, event.command.usr.id) + '\n');
+
+        /* We don't need to play, because the Play() method will be called
+         * from the OnVoiceReady callback */
+        need_to_play = false;
+    /* If the player is ready */
+    } else {
         /* Update the voice client
          * (old can be disconnected even if it is ready) */
         _player.voice_client = event.from()
                                     ->get_voice(event.command.guild_id)
                                     ->voiceclient;
 
-        /* Play the current track */
-        if (!_playlist.IsEmpty()) Play();
-
-        /* Return the track message */
-        return track->GetMessage(true);
+        /* If the playlist is empty now, we push the first track to it.
+         * So we need to start playing */
+        need_to_play = _playlist.IsEmpty();
     }
 
-    /* If player is not ready
-     * Join to the channel and insert the message to the result message */
-    dpp::message result_message = track->GetMessage(false);
-    result_message.content.insert(0, Join(event, event.command.usr.id) + '\n');
-
-    /* Add a track to the playlist (if we successfully joined the channel) */
+    /* Push the track to the playlist */
     _playlist.Push(track);
-    _tracks_size++;
 
-    /* Return the message */
+    /* Play the current track (if we need) */
+    if (need_to_play) Play();
+
+    /* Return the result */
     return result_message;
 }
 
@@ -202,12 +208,11 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
         _player.voice_client->stop_audio();
 
     /* Get the current track number for skip */
-    if (num_for_skip > _tracks_size)
-        num_for_skip = _tracks_size;
+    if (num_for_skip > _playlist.GetSize())
+        num_for_skip = _playlist.GetSize();
 
     /* Skip delete track/tracks from the playlist */
     _playlist.Pop(num_for_skip);
-    _tracks_size -= num_for_skip;
 
     /* If the playlist isn't empty, play the next track */
     if (!_playlist.IsEmpty() && IsPlayerReady())
@@ -313,7 +318,6 @@ void Bragi::OnMarker() {
     } else {
         /* Remove the first track in the list */
         _playlist.Pop();
-        _tracks_size--;
 
         /* If the playlist isn't empty, play the next track */
         if (!_playlist.IsEmpty())

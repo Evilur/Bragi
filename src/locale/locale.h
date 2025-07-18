@@ -24,6 +24,18 @@ public:
         /* Play command */
         TR("**No results have been found for this query**",
            "**По данному запросу не было найдено ни одного результата**");
+        TR("**:notes: Currently playing: `%s`\n"
+           ":watch: Duration: `%s`**",
+           "**:notes: Сейчас играет: `%s`\n"
+           ":watch: Продолжительность: `%s`**");
+        TR("**:notes: Added to playlist: `%s`\n"
+           ":watch: Duration: `%s`**",
+           "**:notes: В плейлист добавлено: `%s`\n"
+           ":watch: Продолжительность: `%s`**");
+        TR("**Album**",
+           "**Альбом**");
+        TR("**Artist**",
+           "**Исполнитель**");
 
         /* Leave command */
         TR("**:person_walking: Bot has left the voice channel**",
@@ -106,7 +118,6 @@ public:
 #define DIC_SLASH_LOOP_TYPE "Тип повторения"
 
 //track
-#define DIC_TRACK_PLAYING_NOW "**:notes: Сейчас играет: `{}`"
 #define DIC_TRACK_ADD_TO_PLAYLIST "**:notes: В плейлист добавлено: `{}`"
 #define DIC_TRACK_DURATION ":watch: Продолжительность: `{}`**"
 #define DIC_TRACK_ALBUM "**Альбом**"
