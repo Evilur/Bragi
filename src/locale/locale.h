@@ -63,6 +63,14 @@ public:
         TR("**Maximum speed - 250%**",
            "**Максимальная скорость - 250%**");
 
+        /* Skip command */
+        TR("**Playlist is empty**",
+           "**В плейлисте нет треков**");
+        TR("**The number of tracks must be greater than 0**",
+           "**Количество треков должно быть больше 0**");
+        TR("**:track_next: Tracks skipped: `%u`**",
+           "**:track_next: Треков пропущено: `%u`**");
+
         /* Ping command */
         TR("Ping",
            "Задержка");
@@ -98,7 +106,6 @@ public:
 #define DIC_SLASH_SKIP_NUMBER "Количество треков для пропуска"
 #define DIC_SKIP_PLAYLIST_IS_EMPTY "**В плейлисте нет треков**"
 #define DIC_SKIP_MSG "**:track_next: Треков пропущено: `{}`**"
-#define DIC_SKIP_WRONG_NUM_FOR_SKIP "**Невозможно пропустить такое количество треков**"
 
 //speed command
 #define DIC_SLASH_SPEED "Изменить скорость воспроизведения трека"

@@ -94,10 +94,10 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
             DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::MINOR);
 
     /* Get the index of the track */
-    if (track_index == 0 || track_index > _playlist.GetSize())
+    /*if (track_index == 0 || track_index > _playlist.GetSize())
         track_index = _playlist.GetSize() - 1;
     else
-        track_index--;
+        track_index--;*/
 
     /* If we need to replace the current playing track, abort it */
     const bool is_playing = !track_index;
@@ -187,38 +187,38 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
     return result_message;
 }
 
-dpp::message Bragi::SkipCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
     /* Get number of tracks for skip (if exists) */
-    unsigned short num_for_skip = 1;
-    dpp::command_value num_for_skip_par = event.get_parameter("number");
-    if (num_for_skip_par.index() != 0)
-        num_for_skip = std::get<long>(num_for_skip_par);
+    long num_for_skip = 1;
+    if (const dpp::command_value num_for_skip_parameter =
+            event.get_parameter("number");
+        num_for_skip_parameter.index() != 0)
+        num_for_skip = std::get<long>(num_for_skip_parameter);
 
     /* If the playlist is empty */
     if (_playlist.IsEmpty())
-        throw BragiException(DIC_SKIP_PLAYLIST_IS_EMPTY, BragiException::MINOR);
+        throw BragiException("**Playlist is empty**",
+                             BragiException::MINOR);
 
     /* If we can't skip that number of tracks */
-    if (num_for_skip == 0)
-        throw BragiException(DIC_SKIP_WRONG_NUM_FOR_SKIP, BragiException::MINOR);
+    if (num_for_skip <= 0)
+        throw BragiException(
+            "**The number of tracks must be greater than 0**",
+            BragiException::MINOR);
 
-    /* Stop the audio and clear the packet queue */
+    /* Abort the playing track */
     AbortPlaying();
-    if (IsPlayerReady())
-        _player.voice_client->stop_audio();
-
-    /* Get the current track number for skip */
-    if (num_for_skip > _playlist.GetSize())
-        num_for_skip = _playlist.GetSize();
 
     /* Skip delete track/tracks from the playlist */
-    _playlist.Pop(num_for_skip);
+    const unsigned int skipped_num = _playlist.TryPop(num_for_skip);
 
     /* If the playlist isn't empty, play the next track */
-    if (!_playlist.IsEmpty() && IsPlayerReady())
-        Play();
+    if (!_playlist.IsEmpty() && IsPlayerReady()) Play();
 
-    return {std::format(DIC_SKIP_MSG, num_for_skip)};
+    /* Return the result */
+    return {
+        String::Format("**:track_next: Tracks skipped: `%u`**", skipped_num)
+    };
 }
 
 dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
