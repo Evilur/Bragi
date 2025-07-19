@@ -14,13 +14,17 @@ public:
 
     T& Head();
 
-    virtual void Push(T element);
+    T& Tail();
 
-    virtual void Pop();
+    void Push(T element);
 
-    virtual void Pop(unsigned int count);
+    void Pop();
 
-    virtual void Remove(unsigned int index, unsigned int count = 1);
+    bool TryPop();
+
+    void Pop(unsigned int count);
+
+    unsigned int TryPop(unsigned int count);
 
     T& operator[](unsigned int index) const;
 
@@ -52,18 +56,21 @@ protected:
     Node* _head = nullptr;
     Node* _tail = nullptr;
 
-    virtual void DeleteNode(Node*& node);
+    void CutNode(Node*& node);
+
+    virtual void FreeNode(Node* node);
 };
 
 template <typename T>
 LinkedList<T>::~LinkedList() {
-    while (_head != nullptr) {
-        LinkedList::DeleteNode(_head);
-    }
+    while (_head != nullptr) CutNode(_head);
 }
 
 template <typename T>
 T& LinkedList<T>::Head() { return _head->value; }
+
+template <typename T>
+T& LinkedList<T>::Tail() { return _tail->value; }
 
 template <typename T>
 void LinkedList<T>::Push(T element) {
@@ -84,7 +91,14 @@ template <typename T>
 void LinkedList<T>::Pop() {
     if (_head == nullptr)
         throw std::runtime_error("LinkedList: Pop() index out of range");
-    DeleteNode(_head);
+    CutNode(_head);
+}
+
+template <typename T>
+bool LinkedList<T>::TryPop() {
+    if (_head == nullptr) return false;
+    CutNode(_head);
+    return true;
 }
 
 template <typename T>
@@ -93,38 +107,17 @@ void LinkedList<T>::Pop(unsigned int count) {
         if (_head == nullptr)
             throw std::runtime_error(
                 "LinkedList: Pop(unsigned int) index out of range");
-        DeleteNode(_head);
+        CutNode(_head);
     }
 }
 
 template <typename T>
-void LinkedList<T>::Remove(unsigned int index, unsigned int count) {
-    /* If we need to remove the first elements */
-    if (index == 0) {
-        Pop(count);
-        return;
+unsigned int LinkedList<T>::TryPop(const unsigned int count) {
+    for (unsigned int i = 0; i < count; i++) {
+        if (_head == nullptr) return i;
+        CutNode(_head);
     }
-
-    /* Get the last node before the deletions */
-    Node* node_before = _head;
-    while (index-- > 1) {
-        node_before = node_before->next;
-        if (!node_before)
-            throw std::runtime_error(
-                "LinkedList: Remove(unsigned int, unsigned int = 1) index out of range");
-    }
-
-    /* Get the first node after deletions, and delete others */
-    Node* node_after = node_before->next;
-    while (count-- > 0) {
-        if (!node_after)
-            throw std::runtime_error(
-                "LinkedList: Remove(unsigned int, unsigned int = 1) index out of range");
-        DeleteNode(node_after);
-    }
-
-    /* Link the node before deletions and the node after deletions */
-    node_before->next = node_after;
+    return count;
 }
 
 template <typename T>
@@ -170,10 +163,15 @@ LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator++() {
 }
 
 template <typename T>
-void LinkedList<T>::DeleteNode(Node*& node) {
-    const Node* const node_for_delete = node;
-    node = node->next;
-    delete node_for_delete;
+void LinkedList<T>::CutNode(Node*& node) {
+    Node* const next_node = node->next;
+    FreeNode(node);
+    node = next_node;
+}
+
+template <typename T>
+void LinkedList<T>::FreeNode(Node* const node) {
+    delete node;
 }
 
 #endif
