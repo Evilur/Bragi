@@ -1,53 +1,54 @@
-#ifndef BRAGI_LINKED_LIST_H
-#define BRAGI_LINKED_LIST_H
+#pragma once
 
-#include <iostream>
+#include <stdexcept>
 
 template <typename T>
 class LinkedList {
 protected:
-    struct Iterator;
-    struct Node;
+    class Iterator;
+    class Node;
 
 public:
-    virtual ~LinkedList();
+    virtual ~LinkedList() noexcept;
 
-    T& Head();
+    T& Head() const noexcept;
 
-    T& Tail();
+    T& Tail() const noexcept;
 
-    void Push(T element);
+    void Push(T element) noexcept;
 
     void Pop();
 
-    bool TryPop();
+    bool TryPop() noexcept;
 
     void Pop(unsigned int count);
 
-    unsigned int TryPop(unsigned int count);
+    unsigned int TryPop(unsigned int count) noexcept;
 
     T& operator[](unsigned int index) const;
 
-    Iterator begin() const;
+    Iterator begin() const noexcept;
 
-    Iterator end() const;
+    Iterator end() const noexcept;
 
 protected:
-    struct Node {
-        Node(const T& value);
+    class Node {
+    public:
+        explicit Node(const T& value) noexcept;
 
         T value;
         Node* next = nullptr;
     };
 
-    struct Iterator {
-        Iterator(Node* node_ptr);
+    class Iterator {
+    public:
+        explicit Iterator(Node* node_ptr) noexcept;
 
-        bool operator!=(const Iterator& other);
+        bool operator!=(const Iterator& other) noexcept;
 
-        const T& operator*() const;
+        const T& operator*() const noexcept;
 
-        Iterator& operator++();
+        Iterator& operator++() noexcept;
 
     private:
         Node* _node;
@@ -56,24 +57,24 @@ protected:
     Node* _head = nullptr;
     Node* _tail = nullptr;
 
-    void CutNode(Node*& node);
+    void CutNode(Node*& node) const noexcept;
 
-    virtual void FreeNode(Node* node);
+    virtual void FreeNode(Node* node) const noexcept;
 };
 
 template <typename T>
-LinkedList<T>::~LinkedList() {
+LinkedList<T>::~LinkedList() noexcept {
     while (_head != nullptr) CutNode(_head);
 }
 
 template <typename T>
-T& LinkedList<T>::Head() { return _head->value; }
+T& LinkedList<T>::Head() const noexcept { return _head->value; }
 
 template <typename T>
-T& LinkedList<T>::Tail() { return _tail->value; }
+T& LinkedList<T>::Tail() const noexcept { return _tail->value; }
 
 template <typename T>
-void LinkedList<T>::Push(T element) {
+void LinkedList<T>::Push(T element) noexcept {
     /* If the list was empty */
     if (!_head) {
         _head = new Node(element);
@@ -95,7 +96,7 @@ void LinkedList<T>::Pop() {
 }
 
 template <typename T>
-bool LinkedList<T>::TryPop() {
+bool LinkedList<T>::TryPop() noexcept {
     if (_head == nullptr) return false;
     CutNode(_head);
     return true;
@@ -112,7 +113,7 @@ void LinkedList<T>::Pop(unsigned int count) {
 }
 
 template <typename T>
-unsigned int LinkedList<T>::TryPop(const unsigned int count) {
+unsigned int LinkedList<T>::TryPop(const unsigned int count) noexcept {
     for (unsigned int i = 0; i < count; i++) {
         if (_head == nullptr) return i;
         CutNode(_head);
@@ -133,45 +134,45 @@ T& LinkedList<T>::operator[](unsigned int index) const {
 }
 
 template <typename T>
-LinkedList<T>::Iterator LinkedList<T>::begin() const { return Iterator(_head); }
-
-template <typename T>
-LinkedList<T>::Iterator LinkedList<T>::end() const { return nullptr; }
-
-template <typename T>
-LinkedList<T>::Node::Node(const T& value) : value(value) {
+LinkedList<T>::Iterator LinkedList<T>::begin() const noexcept {
+    return Iterator(_head);
 }
 
 template <typename T>
-LinkedList<T>::Iterator::Iterator(Node* node_ptr) : _node(node_ptr) {
+LinkedList<T>::Iterator LinkedList<T>::end() const noexcept {
+    return Iterator(nullptr);
 }
 
 template <typename T>
-bool LinkedList<T>::Iterator::operator!=(const Iterator& other) {
+LinkedList<T>::Node::Node(const T& value) noexcept : value(value) { }
+
+template <typename T>
+LinkedList<T>::Iterator::Iterator(Node* node_ptr) noexcept : _node(node_ptr) { }
+
+template <typename T>
+bool LinkedList<T>::Iterator::operator!=(const Iterator& other) noexcept {
     return _node != other._node;
 }
 
 template <typename T>
-const T& LinkedList<T>::Iterator::operator*() const {
+const T& LinkedList<T>::Iterator::operator*() const noexcept {
     return _node->value;
 }
 
 template <typename T>
-LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator++() {
+LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator++() noexcept {
     _node = _node->next;
     return *this;
 }
 
 template <typename T>
-void LinkedList<T>::CutNode(Node*& node) {
+void LinkedList<T>::CutNode(Node*& node) const noexcept {
     Node* const next_node = node->next;
     FreeNode(node);
     node = next_node;
 }
 
 template <typename T>
-void LinkedList<T>::FreeNode(Node* const node) {
+void LinkedList<T>::FreeNode(Node* const node) const noexcept {
     delete node;
 }
-
-#endif

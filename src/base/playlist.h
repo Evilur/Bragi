@@ -13,12 +13,12 @@ class Track;
  */
 class Playlist final : public LinkedList<Track*> {
 public:
-    ~Playlist() override;
+    ~Playlist() noexcept override;
 
-    bool IsEmpty() const;
+    bool IsEmpty() const noexcept;
 
 private:
     unsigned int _size = 0;
 
-    void FreeNode(Node* node) override;
+    void FreeNode(Node* node) const noexcept override;
 };
