@@ -13,9 +13,9 @@ class Track;
  */
 class Playlist final : public LinkedList<Track*> {
 public:
-    ~Playlist() noexcept override;
-
     bool IsEmpty() const noexcept;
+
+    void Loop() noexcept;
 
 private:
     unsigned int _size = 0;
