@@ -6,85 +6,93 @@
 
 class Locale final {
 public:
-    static consteval const char* GetText(const char* text) {
+    static consteval const char* GetText(const char* text);
+};
+
+consteval const char* Locale::GetText(const char* text) {
 #define TR(TEXT1, TEXT2) if (strcmp(text, TEXT1) == 0) return TEXT2
 
-        /* Join command */
-        TR("**The user must be in the voice channel**",
-           "**Пользователь должен находиться в голосовом канале**");
-        TR("**The bot is already connected to this voice channel**",
-           "**Бот уже подключен к этому голосовому каналу**");
-        TR("**Unable to connect to the voice channel.\n"
-           "Insufficient rights**",
-           "**Невозможно подключиться к голосовому каналу\n"
-           "Недостаточно прав**");
-        TR("**:thumbsup: The bot has joined the channel `%s`**",
-           "**:thumbsup: Бот присоединился к каналу `%s`**");
+    /* Join command */
+    TR("**The user must be in the voice channel**",
+       "**Пользователь должен находиться в голосовом канале**");
+    TR("**The bot is already connected to this voice channel**",
+       "**Бот уже подключен к этому голосовому каналу**");
+    TR("**Unable to connect to the voice channel.\n"
+       "Insufficient rights**",
+       "**Невозможно подключиться к голосовому каналу\n"
+       "Недостаточно прав**");
+    TR("**:thumbsup: The bot has joined the channel `%s`**",
+       "**:thumbsup: Бот присоединился к каналу `%s`**");
 
-        /* Play command */
-        TR("**No results have been found for this query**",
-           "**По данному запросу не было найдено ни одного результата**");
-        TR("**:notes: Currently playing: `%s`\n"
-           ":watch: Duration: `%s`**",
-           "**:notes: Сейчас играет: `%s`\n"
-           ":watch: Продолжительность: `%s`**");
-        TR("**:notes: Added to playlist: `%s`\n"
-           ":watch: Duration: `%s`**",
-           "**:notes: В плейлист добавлено: `%s`\n"
-           ":watch: Продолжительность: `%s`**");
-        TR("**Album**",
-           "**Альбом**");
-        TR("**Artist**",
-           "**Исполнитель**");
+    /* Leave command */
+    TR("**:person_walking: Bot has left the voice channel**",
+       "**:person_walking: Бот покинул голосовой канал**");
 
-        /* Leave command */
-        TR("**:person_walking: Bot has left the voice channel**",
-           "**:person_walking: Бот покинул голосовой канал**");
+    /* List command */
+    TR("**Current playlist:**",
+       "**Текущий плейлист:**");
+    TR("**Playlist is empty**",
+       "**Плейлист пуст**");
 
-        /* List command */
-        TR("**Current playlist:**",
-           "**Текущий плейлист:**");
-        TR("**Playlist is empty**",
-           "**Плейлист пуст**");
+    /* Loop command */
+    TR("**:repeat_one: Track repeat enabled**",
+       "**:repeat_one: Повторение трека включено**");
+    TR("**:repeat: Playlist repeat enabled**",
+       "**:repeat: Повторение плейлиста включено**");
+    TR("**:arrow_right: Repeat disabled**",
+       "**:arrow_right: Повторение отключено**");
 
-        /* Loop command */
-        TR("**:repeat_one: Track repeat enabled**",
-           "**:repeat_one: Повторение трека включено**");
-        TR("**:repeat: Playlist repeat enabled**",
-           "**:repeat: Повторение плейлиста включено**");
-        TR("**:arrow_right: Repeat disabled**",
-           "**:arrow_right: Повторение отключено**");
+    /* Next command */
+    TR("**Playlist is empty**",
+       "**Плейлист пуст**");
+    TR("**No more tracks have been found for this search query**",
+       "**Больше не было найдено треков по данному поисковомуcd запросу**");
 
-        /* Speed command */
-        TR("**:asterisk: Playback speed: `{}%`**",
-           "**:asterisk: Скорость воспроизведения: `{}%`**");
-        TR("**Minimum speed - 25%**",
-           "**Минимальная скорость - 25%**");
-        TR("**Maximum speed - 250%**",
-           "**Максимальная скорость - 250%**");
+    /* Play command */
+    TR("**No results have been found for this query**",
+       "**По данному запросу не было найдено ни одного результата**");
+    TR("**:notes: Currently playing: `%s`\n"
+       ":watch: Duration: `%s`**",
+       "**:notes: Сейчас играет: `%s`\n"
+       ":watch: Продолжительность: `%s`**");
+    TR("**:notes: Added to playlist: `%s`\n"
+       ":watch: Duration: `%s`**",
+       "**:notes: В плейлист добавлено: `%s`\n"
+       ":watch: Продолжительность: `%s`**");
+    TR("**Album**",
+       "**Альбом**");
+    TR("**Artist**",
+       "**Исполнитель**");
 
-        /* Skip command */
-        TR("**Playlist is empty**",
-           "**В плейлисте нет треков**");
-        TR("**The number of tracks must be greater than 0**",
-           "**Количество треков должно быть больше 0**");
-        TR("**:track_next: Tracks skipped: `%u`**",
-           "**:track_next: Треков пропущено: `%u`**");
+    /* Skip command */
+    TR("**Playlist is empty**",
+       "**В плейлисте нет треков**");
+    TR("**The number of tracks must be greater than 0**",
+       "**Количество треков должно быть больше 0**");
+    TR("**:track_next: Tracks skipped: `%u`**",
+       "**:track_next: Треков пропущено: `%u`**");
 
-        /* Ping command */
-        TR("Ping",
-           "Задержка");
-        TR("%.0fms",
-           "%.0fмс");
+    /* Speed command */
+    TR("**:asterisk: Playback speed: `{}%`**",
+       "**:asterisk: Скорость воспроизведения: `{}%`**");
+    TR("**Minimum speed - 25%**",
+       "**Минимальная скорость - 25%**");
+    TR("**Maximum speed - 250%**",
+       "**Максимальная скорость - 250%**");
 
-        /* Bragi exception */
-        TR("**Error**",
-           "**Ошибка**");
+    /* Ping command */
+    TR("Ping",
+       "Задержка");
+    TR("%.0fms",
+       "%.0fмс");
 
-        /* If there is no translation for this text, return the source */
-        return text;
-    }
-};
+    /* Bragi exception */
+    TR("**Error**",
+       "**Ошибка**");
+
+    /* If there is no translation for this text, return the source */
+    return text;
+}
 
 //ping command
 #define DIC_SLASH_PING "Получить задержку бота в мс"
@@ -104,8 +112,6 @@ public:
 //skip command
 #define DIC_SLASH_SKIP "Пропустить текущий трек"
 #define DIC_SLASH_SKIP_NUMBER "Количество треков для пропуска"
-#define DIC_SKIP_PLAYLIST_IS_EMPTY "**В плейлисте нет треков**"
-#define DIC_SKIP_MSG "**:track_next: Треков пропущено: `{}`**"
 
 //speed command
 #define DIC_SLASH_SPEED "Изменить скорость воспроизведения трека"
@@ -117,18 +123,7 @@ public:
 
 #define DIC_SLASH_NEXT "Выбрать следующий результат из поиска"
 #define DIC_SLASH_NEXT_ORDINAL "Порядковый номер трека для замены"
-#define DIC_SLASH_NEXT_NO_RESULTS "**По поисковому запросу больше не было найдено треков**"
-#define DIC_SLASH_NEXT_PLAYLIST_EMPTY "**Плейлист пуст**"
 
 //loop command
 #define DIC_SLASH_LOOP "Включить/выключить повторение"
 #define DIC_SLASH_LOOP_TYPE "Тип повторения"
-
-//track
-#define DIC_TRACK_ADD_TO_PLAYLIST "**:notes: В плейлист добавлено: `{}`"
-#define DIC_TRACK_DURATION ":watch: Продолжительность: `{}`**"
-#define DIC_TRACK_ALBUM "**Альбом**"
-#define DIC_TRACK_ARTIST "**Исполнитель**"
-
-//errors
-#define DIC_ERROR_BOT_IN_NOT_A_VOICE_CHANNEL "**Бот не находится в голосовом канале**"
