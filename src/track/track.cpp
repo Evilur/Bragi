@@ -145,13 +145,11 @@ void Track::Play(Bragi::Player& player) {
     /* Resampler drain */
     while (send_data() && !_is_aborted) { }
 
-end:
     /* Send EOF marker */
-    if (!_is_aborted) {
-        player.voice_client->insert_marker();
-        TRACE_LOG("Track has been fully sent to the voice client");
-    }
+    player.voice_client->insert_marker();
+    TRACE_LOG("Track has been fully sent to the voice client");
 
+end:
     /* Packet and frame */
     av_packet_free(&packet);
     av_frame_free(&frame);
