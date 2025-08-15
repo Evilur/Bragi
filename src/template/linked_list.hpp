@@ -83,7 +83,7 @@ void LinkedList<T>::Push(T element) noexcept {
     }
 
     /* If the list was NOT empty, add a pointer of the new node to the last one
- * and replace the last node with the new one */
+     * and replace the last node with the new one */
     _tail->next = new Node(element);
     _tail = _tail->next;
 }

@@ -46,7 +46,7 @@ private:
     } _loop_type = DISABLED;
 
     Playlist _playlist;
-    Player _player = { nullptr, 100 };
+    Player _player { nullptr, 100 };
     std::thread _play_thread;
 
     String Join(const dpp::slashcommand_t &event,

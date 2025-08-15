@@ -8,7 +8,7 @@
 #include "util/logger.hpp"
 #include "types/string.hpp"
 
-dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::JoinCommand(const dpp::slashcommand_t& event) {
     /* Default user for connection */
     dpp::snowflake user_id = event.command.usr.id;
 
@@ -23,10 +23,10 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t &event) {
     return { Join(event, user_id) };
 }
 
-dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
-    /* If the playlist isn't empty, abort the first track to avoid sending the data to the old voice client */
-    if (!_playlist.IsEmpty())
-        AbortPlaying();
+dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t& event) {
+    /* If the playlist isn't empty, abort the first track to avoid sending
+     * the data to the old voice client */
+    if (!_playlist.IsEmpty()) AbortPlaying();
 
     /* Disconnect the voice connection */
     event.from()->disconnect_voice(event.command.guild_id);
@@ -37,40 +37,38 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t &event) {
 }
 
 dpp::message Bragi::ListCommand() const {
+    /* If the playlist is empty */
     if (_playlist.IsEmpty())
         return dpp::embed()
                .set_color(Color::GREEN)
                .set_title(_("**Playlist is empty**"));
 
+    /* Assemble the message */
     std::stringstream playlist_stream;
-    u_int counter = 1;
-    for (const Track *const track : _playlist) {
+    unsigned short counter = 1;
+    for (const Track* const track : _playlist) {
         playlist_stream << counter++ << ". " << track->GetTrackData() << '\n';
     }
 
+    /* Return the result */
     return dpp::embed()
            .set_color(Color::GREEN)
            .set_title(_("**Current playlist:**"))
            .set_description(playlist_stream.str());
 }
 
-dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
-    /* Get the loop type slash command parameter */
-    dpp::command_value loop_type_param = event.get_parameter("type");
-
+dpp::message Bragi::LoopCommand(const dpp::slashcommand_t& event) {
     /* If there is no parameters, get the next variant in cycle */
-    if (loop_type_param.index() == 0)
+    if (const dpp::command_value loop_type_param = event.get_parameter("type");
+        loop_type_param.index() == 0)
         _loop_type = LoopType((_loop_type + 1) % 3);
     /* Else get the parameter value */
     else {
-        const std::string loop_type_string = std::get<std::string>(
-            loop_type_param);
-        _loop_type =
-            loop_type_string == "t"
-                ? TRACK
-                : loop_type_string == "p"
-                ? PLAYLIST
-                : DISABLED;
+        const std::string loop_type_string =
+            std::get<std::string>(loop_type_param);
+        _loop_type = loop_type_string == "t" ? TRACK
+                   : loop_type_string == "p" ? PLAYLIST
+                   : DISABLED;
     }
 
     /* Return the result */
@@ -78,56 +76,14 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t &event) {
         return {_("**:repeat_one: Track repeat enabled**")};
     if (_loop_type == PLAYLIST)
         return {_("**:repeat: Playlist repeat enabled**")};
-    return {_("**:arrow_right: Repeat disabled**")};
-}
-
-dpp::message Bragi::NextCommand(const dpp::slashcommand_t &event) {
-    /* Get number of tracks for skip (if exists) */
-    signed long track_index = 0;
-    if (const dpp::command_value track_num_par = event.get_parameter("number");
-        track_num_par.index() != 0)
-            track_index = std::get<long>(track_num_par);
-
-    /* If the playlist is empty, throw an exception */
-    if (_playlist.IsEmpty())
-        throw BragiException(
-            DIC_SLASH_NEXT_PLAYLIST_EMPTY, BragiException::MINOR);
-
-    /* Get the index of the track */
-    /*if (track_index == 0 || track_index > _playlist.GetSize())
-        track_index = _playlist.GetSize() - 1;
     else
-        track_index--;*/
-
-    /* If we need to replace the current playing track, abort it */
-    const bool is_playing = !track_index;
-    if (is_playing)
-        AbortPlaying();
-
-    /* Get the next track pointer */
-    Track * &old_track = _playlist[track_index];
-    Track *next_track = old_track->Next();
-
-    /* If there is no new track */
-    if (next_track == nullptr)
-        throw BragiException(DIC_SLASH_NEXT_NO_RESULTS, BragiException::MINOR);
-
-    /* Delete the old track and replace with the next one */
-    delete old_track;
-    old_track = next_track;
-
-    /* If the old track is playing, stop the audio, clear the packet queue, and play the new track */
-    if (is_playing) {
-        _player.voice_client->stop_audio();
-        if (IsPlayerReady())
-            Play();
-    }
-
-    /* Return the _message */
-    return next_track->GetMessage(is_playing);
+        return {_("**:arrow_right: Repeat disabled**")};
 }
 
-dpp::message Bragi::PlayCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::NextCommand(const dpp::slashcommand_t& event) {
+}
+
+dpp::message Bragi::PlayCommand(const dpp::slashcommand_t& event) {
     /* Get query from the command parameter */
     const std::string query =
         std::get<std::string>(event.get_parameter("query"));
@@ -202,12 +158,11 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
 
     /* If we can't skip that number of tracks */
     if (num_for_skip <= 0)
-        throw BragiException(
-            "**The number of tracks must be greater than 0**",
-            BragiException::MINOR);
+        throw BragiException("**The number of tracks must be greater than 0**",
+                             BragiException::MINOR);
 
     /* Abort the playing track */
-    AbortPlaying();
+    if (!_playlist.IsEmpty()) AbortPlaying();
 
     /* Skip delete track/tracks from the playlist */
     const unsigned int skipped_num = _playlist.TryPop(num_for_skip);
@@ -221,14 +176,14 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
     };
 }
 
-dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
+dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t& event) {
     /* Get a parameter from the user (if exists) */
-    dpp::command_value playback_rate_param = event.get_parameter("percent");
+    const dpp::command_value playback_rate_param =
+        event.get_parameter("percent");
 
     /* If there is NO parameters, set playback rate to 100 (else use param) */
-    signed long playback_rate = playback_rate_param.index() != 0
-                               ? std::get<signed long>(playback_rate_param)
-                               : 100;
+    long playback_rate = playback_rate_param.index() != 0 ?
+                         std::get<signed long>(playback_rate_param) : 100;
 
     /* Check for overflow */
     if (playback_rate < 25)
@@ -241,10 +196,13 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t &event) {
     /* If all is OK */
     _player.playback_rate = playback_rate;
 
-    /* Replay current track */
-    Play();
+    /* If we are playing the track, replay it again */
+    if (!_playlist.IsEmpty()) {
+        AbortPlaying();
+        Play();
+    }
 
-    /* Return a _message */
+    /* Return a message */
     return {
         std::format(_("**:asterisk: Playback speed: `{}%`**"), playback_rate)
     };
@@ -308,10 +266,8 @@ void Bragi::OnMarker() {
     /* Check the loop type */
     if (_loop_type == TRACK) Play();
     else if (_loop_type == PLAYLIST) {
-        /* Move the first track to the end of the playlist */
-        Track *track = _playlist.Head();
-        _playlist.Pop();
-        _playlist.Push(track);
+        /* Loop the playlist */
+        _playlist.Loop();
 
         /* Play the next track */
         Play();
