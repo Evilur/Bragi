@@ -2,6 +2,10 @@
 
 #include "track/track.h"
 
+Playlist::~Playlist() noexcept {
+    while (_head) CutNode(_head);
+}
+
 bool Playlist::IsEmpty() const noexcept {
     return _head == nullptr;
 }

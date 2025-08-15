@@ -4,15 +4,10 @@
 
 class Track;
 
-/**
- * A container for tracks to play
- * @note {
- * Exists for the entire lifetime of the program,
- * so there is no need to implement a destructor
- * }
- */
 class Playlist final : public LinkedList<Track*> {
 public:
+    virtual ~Playlist() noexcept;
+
     bool IsEmpty() const noexcept;
 
     void Loop() noexcept;

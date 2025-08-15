@@ -28,6 +28,9 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t& event) {
      * the data to the old voice client */
     if (!_playlist.IsEmpty()) AbortPlaying();
 
+    /* Clear the playlist */
+    _playlist = Playlist();
+
     /* Disconnect the voice connection */
     event.from()->disconnect_voice(event.command.guild_id);
     _player.voice_client = nullptr;
@@ -278,6 +281,8 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
+    DEBUG_LOG("VOICE STATE UPDATE");
+
     /* If there isn't the bot, exit the function */
     if (event.state.user_id != event.owner->me.id) return;
 
