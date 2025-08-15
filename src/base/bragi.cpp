@@ -81,6 +81,46 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t& event) {
 }
 
 dpp::message Bragi::NextCommand(const dpp::slashcommand_t& event) {
+    /* Get the index of track to replace */
+    constexpr long last_track = -1;
+    long track_index = last_track;
+    if (const dpp::command_value track_index_parameter =
+            event.get_parameter("number");
+        track_index_parameter.index() != 0)
+        track_index = std::get<long>(track_index_parameter) - 1;
+
+    /* If the playlist is empty, throw an exception */
+    if (_playlist.IsEmpty())
+        throw BragiException(_("**Playlist is empty**"),
+                             BragiException::MINOR);
+
+    /* Get the track to replace */
+    Track*& track = track_index == last_track ? _playlist.Tail()
+                                              : _playlist[track_index];
+
+    /* Get the next track */
+    Track* const next_track = track->Next();
+
+    /* If there is no new track */
+    if (next_track == nullptr)
+        throw BragiException(
+            _("**No more tracks have been found for this search query**"),
+            BragiException::MINOR
+        );
+
+    /* If we are replacing the current playing track, abort it */
+    const bool replace_current = track == _playlist.Head();
+    if (replace_current) AbortPlaying();
+
+    /* Delete the old track and replace with the new one */
+    delete track;
+    track = next_track;
+
+    /* If we have replaced the playing track, play the new one */
+    if (replace_current) Play();
+
+    /* Return the message */
+    return next_track->GetMessage(replace_current);
 }
 
 dpp::message Bragi::PlayCommand(const dpp::slashcommand_t& event) {
@@ -153,13 +193,15 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
 
     /* If the playlist is empty */
     if (_playlist.IsEmpty())
-        throw BragiException("**Playlist is empty**",
+        throw BragiException(_("**Playlist is empty**"),
                              BragiException::MINOR);
 
     /* If we can't skip that number of tracks */
     if (num_for_skip <= 0)
-        throw BragiException("**The number of tracks must be greater than 0**",
-                             BragiException::MINOR);
+        throw BragiException(
+            _("**The number of tracks must be greater than 0**"),
+            BragiException::MINOR
+        );
 
     /* Abort the playing track */
     if (!_playlist.IsEmpty()) AbortPlaying();
@@ -172,7 +214,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
 
     /* Return the result */
     return {
-        String::Format("**:track_next: Tracks skipped: `%u`**", skipped_num)
+        String::Format(_("**:track_next: Tracks skipped: `%u`**"), skipped_num)
     };
 }
 

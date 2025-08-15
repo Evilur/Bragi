@@ -147,8 +147,10 @@ void Track::Play(Bragi::Player& player) {
 
 end:
     /* Send EOF marker */
-    player.voice_client->insert_marker();
-    TRACE_LOG("Track has been fully sent to the voice client");
+    if (!_is_aborted) {
+        player.voice_client->insert_marker();
+        TRACE_LOG("Track has been fully sent to the voice client");
+    }
 
     /* Packet and frame */
     av_packet_free(&packet);
