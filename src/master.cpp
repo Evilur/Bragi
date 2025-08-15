@@ -16,6 +16,10 @@ int main() {
     bot.on_voice_track_marker(on_voice_track_marker);
     bot.on_ready(on_ready);
 
+    bot.on_voice_server_update([](const dpp::voice_server_update_t& event) {
+        DEBUG_LOG("SERVER UPDATE");
+    });
+
     /* Start the bot */
     INFO_LOG("Starting the bot");
     bot.start(dpp::st_wait);

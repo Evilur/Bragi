@@ -13,11 +13,11 @@
 DeezerTrack* DeezerClient::Search(const std::string& query,
                                   const unsigned int start) {
     /* If the session has been expired update it */
-    const unsigned long c_time = time(nullptr);
-    if (c_time - _session_timestamp > DELTA_TIME)
+    if (const unsigned long current_time = time(nullptr);
+        current_time - _session_timestamp > DELTA_TIME)
         UpdateSession();
     else
-        _session_timestamp = c_time;
+        _session_timestamp = current_time;
 
     /* Send the http request */
     const std::string http_body = std::format(SEARCH_TRACK_BODY_TEMPLATE, query,
@@ -32,9 +32,11 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
     /* Check for search results */
     if (!json_results.Has("data"))
         return nullptr;
-    const unsigned short total = (unsigned short)json_results["total"];
-    if (total == 0)
+    if (const unsigned short total = (unsigned short)json_results["total"];
+        total == 0)
         return nullptr;
+
+    /* If all is OK, get the track data */
     const Json json_track = json_results["data"][0];
 
     /* Create the track instance */

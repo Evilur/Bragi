@@ -46,7 +46,7 @@ consteval const char* Locale::GetText(const char* text) {
     TR("**Playlist is empty**",
        "**Плейлист пуст**");
     TR("**No more tracks have been found for this search query**",
-       "**Больше не было найдено треков по данному поисковомуcd запросу**");
+       "**Больше не было найдено треков по данному поисковому запросу**");
 
     /* Play command */
     TR("**No results have been found for this query**",

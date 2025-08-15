@@ -5,9 +5,9 @@ class Properties final {
 public:
     static constexpr char PREFIX = '!';
 
-	static const char* BotToken();
+        static const char* BotToken();
 
-	static const char* ArlToken();
+        static const char* ArlToken();
 
 private:
     inline static const char* _bot_token = nullptr;
