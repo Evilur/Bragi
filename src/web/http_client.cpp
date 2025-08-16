@@ -1,89 +1,172 @@
 #include "http_client.h"
+#include "dns.h"
+#include "types/string.hpp"
 #include "util/logger.hpp"
-#include "util/parser.h"
 
-#include <asio.hpp>
+#include <cstring>
+#include <iostream>
+#include <unistd.h>
 
-HttpClient::HttpClient(const std::string &url, const std::string &headers, const std::string &body, const char* requset_type) {
-        /* !!! DELETE THIS IN PRODUCTION !!! */
-        if (url.starts_with("https://")) throw std::runtime_error("This if a fucking https, not a http!");
-        /* !!! DELETE THIS IN PRODUCTION !!! */
+HttpClient::HttpClient(const char* const hostname, const char* const path,
+                       const char* const headers, const char* const method,
+                       const char* const body) {
+    /* Create a socket */
+    _server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (_server_fd == -1) {
+        ERROR_LOG("Failed to create a socket");
+        return;
+    }
 
-        /* Get the hostname and the get request from the url */
-        const std::string request = url.starts_with("http://") ? url.substr(7) : url;
-        const int get_index = request.find('/');
-        const std::string host = request.substr(0, get_index);
-        const std::string get = request.substr(get_index);
+    /* Create a server address struct */
+    const sockaddr_in server_address {
+        .sin_family = AF_INET,
+        .sin_port = _port,
+        .sin_addr = { DNS::Resolve(hostname) }
+    };
 
-        /* Init the stream and send the request */
-        _stream = new asio::ip::tcp::iostream(host, "80");
-        *_stream << requset_type << ' ' << get << " HTTP/1.1\n"
-                 << "Host: " << host << '\n'
-                 << "Connection: close\n";
-
-        /* Add custom headers (if exists) */
-        if (!headers.empty()) *_stream << headers << '\n';
-
-        if (!body.empty()) {
-                *_stream << "Content-Length: " << body.length() << '\n'
-                         << "\r\n" << body;
+    /* Connect to the server */
+    if (connect(_server_fd, (sockaddr*)&server_address, sizeof(server_address))
+        == -1) {
+        ERROR_LOG("Failed to connect to the server");
+        return;
         }
 
-        /* Write an empty line for the http request */
-        *_stream << "\r\n" << std::flush;
+    /* Log the message */
+    TRACE_LOG("Successfully connected to the server");
 
-        ReadHeaders();
+    /* Get the length of the body */
+    const unsigned int request_body_size = strlen(body);
+
+    /* Assemble the request to send */
+    const unsigned int request_headers_size = snprintf(
+        _buffer,
+        BUFFER_SIZE,
+        "%s /%s HTTP/1.1\r\n"
+        "Host: %s\r\n"
+        "Content-Length: %u\r\n"
+        "Connection: close\r\n"
+        "%s"
+        "\r\n",
+        method, path, hostname, request_body_size, headers
+    );
+
+    /* Check for the response size */
+    if (request_headers_size > BUFFER_SIZE) {
+        ERROR_LOG("Failed to save the request into the buffer");
+        return;
+    }
+
+    /* Write the request headers to the socket */
+    if (!Write(_buffer, request_headers_size)) {
+        ERROR_LOG("Failed to send headers");
+        return;
+    }
+
+    /* Write the full body to the socket */
+    if (request_body_size && !Write(body, request_body_size)) {
+        ERROR_LOG("Failed to send the body");
+        return;
+    }
+
+    /* Read the response */
+    response_read:
+    _buffer_size = 0;
+    {
+        /* Try to read the socket */
+        const long read_result = read(_server_fd,
+                                     _buffer + _buffer_size,
+                                     BUFFER_SIZE - _buffer_size);
+        if (read_result == -1) {
+            ERROR_LOG("Failed to read the response");
+            return;
+        }
+
+        /* Increase the buffer size */
+        _buffer_size += read_result;
+    }
+
+    /* Read headers */
+    const char* buffer_ptr = _buffer;
+    bool read_all_headers = false;
+    do {
+        /* Get the header */
+        buffer_ptr = strstr(buffer_ptr, "\r\n");
+        if (buffer_ptr != nullptr) buffer_ptr += 2;
+        else break;
+
+        /* Handle Content-Length header */
+        if (strncmp(buffer_ptr,
+                    "Content-Length:",
+                    sizeof("Content-Length")) == 0) {
+            buffer_ptr = strchr(buffer_ptr, ':') + 1;
+            while (*buffer_ptr < '0' || *buffer_ptr > '9') buffer_ptr++;
+            _content_length = String::ToUInt64(buffer_ptr);
+        /* Handle the empty line */
+        } else if (strncmp(buffer_ptr, "\r\n", 2) == 0) {
+            read_all_headers = true;
+            buffer_ptr += 2;
+            break;
+        }
+    } while (_buffer_size > 0);
+
+    /* If we don't go through all the headers */
+    if (!read_all_headers) goto response_read;
+
+    /* If we've read all headers */
+    _buffer_offset = buffer_ptr - _buffer;
+    _buffer_size -= _buffer_offset;
 }
 
 HttpClient::~HttpClient() {
-        _stream->close();
-        delete _stream;
-        _stream = nullptr;
+    close(_server_fd);
 }
 
-bool HttpClient::CanRead() const { return !_stream->eof(); }
+bool HttpClient::End() const { return _eof; }
 
-void HttpClient::Read(char* buffer, const int size) { _stream->read(buffer, size); }
+unsigned int HttpClient::Read(char* out, unsigned int size) {
+    /* Save the size variable value */
+    const unsigned int firstborn_size = size;
 
-int HttpClient::PrevCount() const { return _stream->gcount(); }
+    /* If we have the data in the buffer */
+    if (_buffer_size) {
+        /* Get the size of data to copy */
+        const unsigned int cpy_size = _buffer_size < size ?
+                                      _buffer_size : size;
 
-const char* HttpClient::ReadAll() {
-        /* If there is a right content size */
-        if (_content_length > 0) {
-                char* buffer = new char[_content_length];
-                _stream->read(buffer, _content_length);
-                return buffer;
-        } else {  //Else there is chunked data
-                char* buffer = nullptr;
-                unsigned int current_size = 0;
+        /* Copy the data from the buffer to the out array */
+        memcpy(out, _buffer + _buffer_offset, cpy_size);
+        out += cpy_size;
+        size -= cpy_size;
 
-                while (!_stream->eof()) {
-                        /* Get the chunk size */
-                        char line_buffer[1024];
-                        _stream->getline(line_buffer, 1024);
-                        unsigned int chunk_size = Parser::HexToDec(line_buffer);
-                        if (chunk_size == 0) break;
+        /* Increase the buffer offset */
+        _buffer_offset += cpy_size;
+        _buffer_size -= cpy_size;
+    }
 
-                        /* Read the chunk to the temp buffer */
-                        char* tmp_buffer = new char[current_size + chunk_size];
-                        _stream->read(tmp_buffer + current_size, chunk_size);
-                        _stream->ignore(2);  //Ingore the \r\n chars
+    /* Read the socket while there is a free space in the out array */
+    for (unsigned int i = 0; i < size;) {
+        if (const long read_result = read(_server_fd, out, size);
+            read_result <= 0) {
+            /* Set the eof boolean to true */
+            _eof = true;
 
-                        /* Update the current buffer */
-                        for (int i = 0; i < current_size; i++) tmp_buffer[i] = buffer[i];  //Pointer can be null only if the curretn size is 0 => loop will break instantly
-                        delete[] buffer;
-                        buffer = tmp_buffer;
-                        current_size += chunk_size;
-                }
+            /* Eval the size of written data and return it */
+            return firstborn_size - size;
+        } else i += read_result;
+    }
 
-                return buffer;
-        }
+    /* Return the firstborn size value */
+    return firstborn_size;
 }
 
-void HttpClient::ReadHeaders() {
-        char buffer[1024];
-        while (buffer[0] != '\r') {
-                _stream->getline(buffer, 1024);
-                if (std::strncmp(buffer, "Content-Length: ", 16) == 0) _content_length = Parser::ToUInt32(buffer + 16);
-        }
+bool HttpClient::Write(const char* const buffer,
+                       const unsigned int buffer_size) const {
+    for (unsigned int i = 0; i < buffer_size;) {
+        if (const long write_result =
+                write(_server_fd, buffer + i, buffer_size - i);
+            write_result == -1)
+            return false;
+        else i += write_result;
+    }
+    return true;
 }

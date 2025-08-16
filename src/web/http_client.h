@@ -1,31 +1,37 @@
 #ifndef BRAGI_HTTP_CLIENT_H
 #define BRAGI_HTTP_CLIENT_H
-
-#include <asio.hpp>
+#include <netinet/in.h>
 
 class HttpClient {
 public:
-        explicit HttpClient(const std::string &url, const std::string &headers = "", const std::string &body = "", const char* requset_type = "GET");
+    explicit HttpClient(const char* hostname,
+                        const char* path,
+                        const char* headers = "",
+                        const char* method = "GET",
+                        const char* body = "");
 
-        ~HttpClient();
+    ~HttpClient();
 
-        bool CanRead() const;
+    bool End() const;
 
-        void Read(char* buffer, int size);
-
-        int PrevCount() const;
-
-        /** Read all http document
-      * @warning return data is an allocated memory so you need to free it later
-     * @return a char aray with all http document data
-      */
-        const char* ReadAll();
+    unsigned int Read(char* out, unsigned int size);
 
 private:
-        asio::ip::tcp::iostream* _stream = nullptr;
-        unsigned int _content_length = 0;
+    static inline unsigned short _port = htons(80);
+    static constexpr int BUFFER_SIZE = 1024;
 
-        void ReadHeaders();
+    char _buffer[BUFFER_SIZE];
+    unsigned int _buffer_offset = 0;
+    unsigned int _buffer_size = 0;
+
+    int _server_fd;
+
+    unsigned long _content_length = 0;
+
+    bool _eof = false;
+
+    bool Write(const char* buffer,
+               unsigned int buffer_size) const;
 };
 
 #endif
