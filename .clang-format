@@ -69,26 +69,24 @@ AlignOperands: Align
 AlignTrailingComments:
     Kind: Always
     OverEmptyLines: 0
-
-AllowAllArgumentsOnNextLine: true
+AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowBreakBeforeNoexceptSpecifier: Never
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Always
 AllowShortCaseExpressionOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
-AllowShortLoopsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
 AllowShortNamespacesOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AttributeMacros:
     - __capability
-BinPackArguments: true
-BinPackParameters: BinPack
+BinPackArguments: false
+BinPackParameters: OnePerLine
 BitFieldColonSpacing: Both
 BraceWrapping:
     AfterCaseLabel: false
@@ -106,37 +104,39 @@ BraceWrapping:
     BeforeLambdaBody: false
     BeforeWhile: false
     IndentBraces: false
-    SplitEmptyFunction: true
-    SplitEmptyRecord: true
-    SplitEmptyNamespace: true
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+BracedInitializerIndentWidth: 4
 BreakAdjacentStringLiterals: true
 BreakAfterAttributes: Leave
-BreakAfterJavaFieldAnnotations: false
+BreakAfterJavaFieldAnnotations: true
 BreakAfterReturnType: None
-BreakArrays: true
-BreakBeforeBinaryOperators: None
-BreakBeforeConceptDeclarations: Always
+BreakArrays: false
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Attach
+BreakBeforeConceptDeclarations: Always
 BreakBeforeInlineASMColon: OnlyMultiline
-BreakBeforeTernaryOperators: true
-BreakBinaryOperations: Never
-BreakConstructorInitializers: BeforeColon
+BreakBeforeTemplateCloser: false
+BreakBeforeTernaryOperators: false
+BreakBinaryOperations: RespectPrecedence
+BreakConstructorInitializers: AfterColon
 BreakFunctionDefinitionParameters: false
-BreakInheritanceList: BeforeColon
+BreakInheritanceList: AfterComma
 BreakStringLiterals: true
-BreakTemplateDeclarations: MultiLine
+BreakTemplateDeclarations: Yes
 ColumnLimit: 80
 CommentPragmas: '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: true
+Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 DisableFormat: false
 EmptyLineAfterAccessModifier: Never
-EmptyLineBeforeAccessModifier: LogicalBlock
-ExperimentalAutoDetectBinPacking: false
-FixNamespaceComments: true
+EmptyLineBeforeAccessModifier: Never
+FixNamespaceComments: false
+
 ForEachMacros:
     - foreach
     - Q_FOREACH
