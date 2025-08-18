@@ -1,5 +1,6 @@
 #include "http_client.h"
 #include "dns.h"
+#include "template/linked_list.hpp"
 #include "types/string.hpp"
 #include "util/logger.hpp"
 
@@ -7,7 +8,8 @@
 #include <iostream>
 #include <unistd.h>
 
-HttpClient::HttpClient(const char* const hostname, const char* const path,
+HttpClient::HttpClient(const char* const hostname,
+                       const char* const path,
                        const char* const headers, const char* const method,
                        const char* const body) {
     /* Create a socket */
@@ -29,7 +31,7 @@ HttpClient::HttpClient(const char* const hostname, const char* const path,
         == -1) {
         ERROR_LOG("Failed to connect to the server");
         return;
-        }
+    }
 
     /* Log the message */
     TRACE_LOG("Successfully connected to the server");
@@ -37,22 +39,22 @@ HttpClient::HttpClient(const char* const hostname, const char* const path,
     /* Get the length of the body */
     const unsigned int request_body_size = strlen(body);
 
-    /* Assemble the request to send */
+    /* Assemble basic headers */
     const unsigned int request_headers_size = snprintf(
         _buffer,
         BUFFER_SIZE,
         "%s /%s HTTP/1.1\r\n"
         "Host: %s\r\n"
+        "%s"
         "Content-Length: %u\r\n"
         "Connection: close\r\n"
-        "%s"
         "\r\n",
-        method, path, hostname, request_body_size, headers
+        method, path, hostname, headers, request_body_size
     );
 
     /* Check for the response size */
     if (request_headers_size > BUFFER_SIZE) {
-        ERROR_LOG("Failed to save the request into the buffer");
+        FATAL_LOG("Failed to save the request into the buffer");
         return;
     }
 
@@ -68,53 +70,59 @@ HttpClient::HttpClient(const char* const hostname, const char* const path,
         return;
     }
 
-    /* Read the response */
-    response_read:
-    _buffer_size = 0;
-    {
-        /* Try to read the socket */
-        const long read_result = read(_server_fd,
-                                     _buffer + _buffer_size,
-                                     BUFFER_SIZE - _buffer_size);
-        if (read_result == -1) {
-            ERROR_LOG("Failed to read the response");
+    /* Read headers from the socket */
+read_data:
+    _buffer_size += read(_server_fd,
+                         _buffer + _buffer_offset,
+                         BUFFER_SIZE - _buffer_offset);
+
+    /* Handle all headers */
+    const char* header = _buffer;
+    while (_buffer_size > 0) {
+        /* Check for response status header */
+        if (strncmp(header, "HTTP/", sizeof("HTTP/") - 1) == 0) {
+            /* Get the status code */
+            const char* status_code_str =
+                (char*)memchr(header, ' ', _buffer_size);
+            if (status_code_str == nullptr) break;
+            _status_code = String::ToUInt16(status_code_str + 1);
+        /* Check for the Content-Length header */
+        } else if (strncmp(header,
+                           "Content-Length:",
+                           sizeof("Content-Length:") - 1) == 0) {
+            /* Get the content length */
+            const char* content_length_str =
+                header + sizeof("Content-Length:");
+            while (*content_length_str < '0' || *content_length_str > '9')
+                content_length_str++;
+            _content_length = String::ToUInt64(content_length_str);
+            _is_chunked = false;
+        /* Check for the eof */
+        } else if (strncmp(header, "\r\n", sizeof("\r\n") -1) == 0) {
+            /* Get the body */
+            const char* body_str = header + sizeof("\r\n") - 1;
+
+            /* Set the buffer offset and exit */
+            _buffer_offset = body_str - _buffer;
+            _buffer_size -= sizeof("\r\n") - 1;
             return;
         }
 
-        /* Increase the buffer size */
-        _buffer_size += read_result;
+        /* Get the next header */
+        const char* next_header =
+            (char*)memmem(header, _buffer_size, "\r\n", sizeof("\r\n") - 1);
+        if (next_header == nullptr) break;
+        next_header += sizeof("\r\n") - 1;
+        _buffer_size -= next_header - header;
+        header = next_header;
     }
 
-    /* Read headers */
-    const char* buffer_ptr = _buffer;
-    bool read_all_headers = false;
-    do {
-        /* Get the header */
-        buffer_ptr = strstr(buffer_ptr, "\r\n");
-        if (buffer_ptr != nullptr) buffer_ptr += 2;
-        else break;
+    /* If we've not read all headers, copy the last one to the buffer */
+    memmove(_buffer, header, _buffer_size);
+    _buffer_offset = _buffer_size;
 
-        /* Handle Content-Length header */
-        if (strncmp(buffer_ptr,
-                    "Content-Length:",
-                    sizeof("Content-Length")) == 0) {
-            buffer_ptr = strchr(buffer_ptr, ':') + 1;
-            while (*buffer_ptr < '0' || *buffer_ptr > '9') buffer_ptr++;
-            _content_length = String::ToUInt64(buffer_ptr);
-        /* Handle the empty line */
-        } else if (strncmp(buffer_ptr, "\r\n", 2) == 0) {
-            read_all_headers = true;
-            buffer_ptr += 2;
-            break;
-        }
-    } while (_buffer_size > 0);
-
-    /* If we don't go through all the headers */
-    if (!read_all_headers) goto response_read;
-
-    /* If we've read all headers */
-    _buffer_offset = buffer_ptr - _buffer;
-    _buffer_size -= _buffer_offset;
+    /* Then read new headers from the socket */
+    goto read_data;
 }
 
 HttpClient::~HttpClient() {
@@ -124,39 +132,46 @@ HttpClient::~HttpClient() {
 bool HttpClient::End() const { return _eof; }
 
 unsigned int HttpClient::Read(char* out, unsigned int size) {
-    /* Save the size variable value */
-    const unsigned int firstborn_size = size;
+    /* Save the original out array size */
+    const unsigned int original_size = size;
 
-    /* If we have the data in the buffer */
-    if (_buffer_size) {
-        /* Get the size of data to copy */
-        const unsigned int cpy_size = _buffer_size < size ?
-                                      _buffer_size : size;
+    /* If we have a data in the buffer */
+    if (_buffer_size > 0) {
+        /* Copy the data from the buffer */
+        const unsigned int copy_size = _buffer_size < size ?
+                                       _buffer_size : size;
+        mempcpy(out, _buffer + _buffer_offset, copy_size);
 
-        /* Copy the data from the buffer to the out array */
-        memcpy(out, _buffer + _buffer_offset, cpy_size);
-        out += cpy_size;
-        size -= cpy_size;
-
-        /* Increase the buffer offset */
-        _buffer_offset += cpy_size;
-        _buffer_size -= cpy_size;
+        /* Change pointer, offset and sized according to the copy size */
+        out += copy_size;
+        size -= copy_size;
+        _buffer_offset += copy_size;
+        _buffer_size -= copy_size;
+        _content_length -= copy_size;
     }
 
-    /* Read the socket while there is a free space in the out array */
-    for (unsigned int i = 0; i < size;) {
+    /* Read the data from the socket */
+    while (size > 0) {
+        /* Try to read from the socket */
         if (const long read_result = read(_server_fd, out, size);
             read_result <= 0) {
             /* Set the eof boolean to true */
             _eof = true;
 
             /* Eval the size of written data and return it */
-            return firstborn_size - size;
-        } else i += read_result;
+            return original_size - size;
+        } else {
+            size -= read_result;
+            _content_length -= read_result;
+        }
     }
 
-    /* Return the firstborn size value */
-    return firstborn_size;
+    /* Return the size */
+    return original_size - size;
+}
+
+String HttpClient::ReadAll() {
+    return "PLACEHOLDER";
 }
 
 bool HttpClient::Write(const char* const buffer,
