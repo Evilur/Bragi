@@ -1,5 +1,6 @@
 #include "http_client.h"
 #include "dns.h"
+#include "exception/http_exception.h"
 #include "template/linked_list.hpp"
 #include "types/string.hpp"
 #include "util/logger.hpp"
@@ -39,35 +40,49 @@ HttpClient::HttpClient(const char* const hostname,
     /* Get the length of the body */
     const unsigned int request_body_size = strlen(body);
 
+    /* Get the length of custom headers */
+    const unsigned int custom_headers_size = strlen(headers);
+
     /* Assemble basic headers */
     const unsigned int request_headers_size = snprintf(
         _buffer,
         BUFFER_SIZE,
+        custom_headers_size > 0 ?
         "%s /%s HTTP/1.1\r\n"
         "Host: %s\r\n"
-        "%s"
         "Content-Length: %u\r\n"
         "Connection: close\r\n"
-        "\r\n",
-        method, path, hostname, headers, request_body_size
+        "\r\n" :
+        "%s /%s HTTP/1.1\r\n"
+        "Host: %s\r\n"
+        "Content-Length: %u\r\n"
+        "Connection: close\r\n",
+        method, path, hostname, request_body_size
     );
 
     /* Check for the response size */
     if (request_headers_size > BUFFER_SIZE) {
         FATAL_LOG("Failed to save the request into the buffer");
-        return;
+        throw HttpException();
     }
 
     /* Write the request headers to the socket */
     if (!Write(_buffer, request_headers_size)) {
         ERROR_LOG("Failed to send headers");
-        return;
+        throw HttpException();
+    }
+
+    /* Write custom headers */
+    if (custom_headers_size > 0 && (!Write(headers, custom_headers_size) ||
+            !Write("\r\n", 2))) {
+        ERROR_LOG("Failed to write custom headers");
+        throw HttpException();
     }
 
     /* Write the full body to the socket */
     if (request_body_size && !Write(body, request_body_size)) {
         ERROR_LOG("Failed to send the body");
-        return;
+        throw HttpException();
     }
 
     /* Read headers from the socket */

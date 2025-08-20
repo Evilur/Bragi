@@ -28,14 +28,16 @@ private:
     "Accept-Charset: utf-8,ISO-8859-1;q=0.8,*;q=0.7\r\n"
     "Cookie: arl=";
 
+    static constexpr char UPDATE_SESSION_HOST[] = "www.deezer.com";
     static constexpr char UPDATE_SESSION_URL[] =
-    "www.deezer.com/ajax/gw-light.php?version=8.32.0&api_key="
+    "ajax/gw-light.php?version=8.32.0&api_key="
     "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output="
     "3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang="
     "en&method=deezer.getUserData&api_version=1.0&api_token";
 
+    static constexpr char SEARCH_TRACK_HOST[] = "api.deezer.com";
     static constexpr char SEARCH_TRACK_URL_TEMPLATE[] =
-    "api.deezer.com/1.0/gateway.php?api_key="\
+    "1.0/gateway.php?api_key="\
     "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output="
     "3&input=3&method=search.music&sid=";
 

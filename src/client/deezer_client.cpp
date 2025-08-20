@@ -9,6 +9,7 @@
 #include "track/deezer_track.h"
 #include "web/https_client.h"
 #include "util/parser.h"
+#include "types/string.hpp"
 
 DeezerTrack* DeezerClient::Search(const std::string& query,
                                   const unsigned int start) {
@@ -20,10 +21,14 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
         _session_timestamp = current_time;
 
     /* Send the http request */
-    const std::string http_body = std::format(SEARCH_TRACK_BODY_TEMPLATE, query,
+    const std::string http_body = std::format(SEARCH_TRACK_BODY_TEMPLATE,
+                                              query,
                                               start);
-    HttpClient http_client = HttpClient(_search_track_url, _headers, http_body,
-                                        "POST");
+    HttpClient http_client = HttpClient(SEARCH_TRACK_HOST,
+                                        _search_track_url.c_str(),
+                                        _headers.c_str(),
+                                        "POST",
+                                        http_body.c_str());
     const char* json_string = http_client.ReadAll();
 
     /* Init the JSON object */
@@ -101,8 +106,10 @@ void DeezerClient::UpdateSession() {
     _headers = HEADERS_TEMPLATE + std::string(Properties::ArlToken());
 
     /* Send the http request */
-    HttpClient http_client = HttpClient(UPDATE_SESSION_URL, _headers);
-    const char* json_string = http_client.ReadAll();
+    HttpClient http_client = HttpClient(UPDATE_SESSION_HOST,
+                                        UPDATE_SESSION_URL,
+                                        _headers.c_str());
+    const String json_string = http_client.ReadAll();
 
     /* Init the JSON objects */
     const Json json_results = Json(json_string)["results"];
@@ -130,8 +137,4 @@ void DeezerClient::UpdateSession() {
     INFO_LOG("Log in Deezer as \"%s\" <%s>", user_name.c_str(),
              user_email.c_str());
     INFO_LOG("Current Deezer subscription - %s", user_offer.c_str());
-
-    /* Free the memory */
-    delete[] json_string;
-    json_string = nullptr;
 }

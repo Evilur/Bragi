@@ -58,7 +58,7 @@ private:
 
     int _server_fd;
 
-    static constexpr int BUFFER_SIZE = 256;
+    static constexpr int BUFFER_SIZE = 1024;
     char _buffer[BUFFER_SIZE];
     unsigned int _buffer_offset = 0;
     unsigned int _buffer_size = 0;

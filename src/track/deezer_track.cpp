@@ -76,8 +76,8 @@ dpp::message DeezerTrack::GetMessage(const bool is_currently_playing) const {
 }
 
 std::string DeezerTrack::GetTrackData() const {
-    return std::format(
-        DIC_SLASH_LIST_FULL_TRACK_DATA, _track.title, _artist.name);
+    return
+        std::format(DIC_SLASH_LIST_FULL_TRACK_DATA, _track.title, _artist.name);
 }
 
 Track* DeezerTrack::Next() const {
@@ -92,7 +92,9 @@ void DeezerTrack::Play(Bragi::Player& player) {
         _init_thread.join();
 
     /* Create a new http client */
-    _http = new HttpClient(_data_url);
+    const char* const host = strstr(_data_url.c_str(), "://") + 3;
+    const char* const path = strchr(host, '/') + 1;
+    _http = new HttpClient(std::string(host, path - host).c_str(), path);
 
     Track::Play(player);
 }
@@ -131,13 +133,10 @@ int DeezerTrack::ReadDeezerAudio(void* opaque_context, unsigned char* buffer,
     constexpr int chunk_size = 2048;
 
     /* If http stream has ended, or we have aborted the playback */
-    if (!track_ctx->_http->CanRead()) { return AVERROR_EOF; }
+    if (!track_ctx->_http->End()) { return AVERROR_EOF; }
 
     /* Read 3 raw chunks */
-    track_ctx->_http->Read((char*)buffer, chunk_size * 3);
-
-    /* Set the buffer size according to the recieved data size */
-    buffer_size = track_ctx->_http->PrevCount();
+    buffer_size =  track_ctx->_http->Read((char*)buffer, chunk_size * 3);
 
     /* Set the init vectors */
     unsigned char ivec[] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7};
