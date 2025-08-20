@@ -206,7 +206,7 @@ String HttpClient::CompleteReader::ReadAll(HttpClient* http) {
 
     /* Drain the buffer to the result buffer */
     if (http->_buffer_size > 0) {
-        mempcpy(out, http->_buffer, http->_buffer_size);
+        mempcpy(out, http->_buffer + http->_buffer_offset, http->_buffer_size);
         out += http->_buffer_size;
         http->_content_length -= http->_buffer_size;
         http->_buffer_size = 0;
