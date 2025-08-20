@@ -154,7 +154,7 @@ unsigned int HttpClient::CompleteReader::Read(HttpClient* http,
         /* Copy the data from the buffer */
         const unsigned int copy_size = http->_buffer_size < size ?
                                        http->_buffer_size : size;
-        mempcpy(out, http->_buffer + http->_buffer_offset, copy_size);
+        memcpy(out, http->_buffer + http->_buffer_offset, copy_size);
 
         /* Change pointer, offset and sized according to the copy size */
         out += copy_size;
@@ -185,7 +185,31 @@ unsigned int HttpClient::CompleteReader::Read(HttpClient* http,
 }
 
 String HttpClient::CompleteReader::ReadAll(HttpClient* http) {
-    return "Placeholder";
+    /* Create a result buffer */
+    String result(http->_content_length);
+    char* out = (char*)(const char*)result;
+
+    /* Drain the buffer to the result buffer */
+    if (http->_buffer_size > 0) {
+        mempcpy(out, http->_buffer, http->_buffer_size);
+        out += http->_buffer_size;
+        http->_content_length -= http->_buffer_size;
+        http->_buffer_size = 0;
+    }
+
+    /* Read the data from the socket to the out buffer */
+    while (http->_content_length > 0) {
+        /* Try to read from the socket */
+        if (const long read_result = read(http->_server_fd, out,
+                                          http->_content_length);
+            read_result <= 0) goto end;
+        else http->_content_length -= read_result;
+    }
+
+    /* Set the eof to true and return the result */
+    end:
+    http->_eof = true;
+    return result;
 }
 
 unsigned int HttpClient::ChunkedReader::Read(HttpClient* http,
