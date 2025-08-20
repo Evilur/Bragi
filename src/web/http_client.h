@@ -21,6 +21,39 @@ public:
     String ReadAll();
 
 private:
+    class Reader {
+    public:
+        virtual ~Reader() noexcept = default;
+
+        virtual unsigned int Read(HttpClient* http,
+                                  char* out,
+                                  unsigned int size) = 0;
+
+        virtual String ReadAll(HttpClient* http) = 0;
+    } *_reader = nullptr;
+
+    class CompleteReader final : public Reader {
+    public:
+        ~CompleteReader() noexcept override = default;
+
+        unsigned int Read(HttpClient* http,
+                          char* out,
+                          unsigned int size) override;
+
+        String ReadAll(HttpClient* http) override;
+    };
+
+    class ChunkedReader final : public Reader {
+    public:
+        ~ChunkedReader() noexcept override = default;
+
+        unsigned int Read(HttpClient* http,
+                          char* out,
+                          unsigned int size) override;
+
+        String ReadAll(HttpClient* http) override;
+    };
+
     static inline unsigned short _port = htons(80);
 
     int _server_fd;
@@ -34,8 +67,6 @@ private:
     unsigned long _content_length = 0;
 
     bool _eof = false;
-
-    bool _is_chunked = true;
 
     bool Write(const char* buffer,
                unsigned int buffer_size) const;

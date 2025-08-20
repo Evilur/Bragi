@@ -96,7 +96,7 @@ read_data:
             while (*content_length_str < '0' || *content_length_str > '9')
                 content_length_str++;
             _content_length = String::ToUInt64(content_length_str);
-            _is_chunked = false;
+            _reader = new CompleteReader();
         /* Check for the eof */
         } else if (strncmp(header, "\r\n", sizeof("\r\n") -1) == 0) {
             /* Get the body */
@@ -105,6 +105,9 @@ read_data:
             /* Set the buffer offset and exit */
             _buffer_offset = body_str - _buffer;
             _buffer_size -= sizeof("\r\n") - 1;
+
+            /* If the _reader field is not initialized */
+            if (!_reader) _reader = new ChunkedReader();
             return;
         }
 
@@ -127,42 +130,53 @@ read_data:
 
 HttpClient::~HttpClient() {
     close(_server_fd);
+    delete _reader;
 }
 
 bool HttpClient::End() const { return _eof; }
 
-unsigned int HttpClient::Read(char* out, unsigned int size) {
+unsigned int HttpClient::Read(char* const out, const unsigned int size) {
+    return _reader->Read(this, out, size);
+}
+
+String HttpClient::ReadAll() {
+    return _reader->ReadAll(this);
+}
+
+unsigned int HttpClient::CompleteReader::Read(HttpClient* http,
+                                              char* out,
+                                              unsigned int size) {
     /* Save the original out array size */
     const unsigned int original_size = size;
 
     /* If we have a data in the buffer */
-    if (_buffer_size > 0) {
+    if (http->_buffer_size > 0) {
         /* Copy the data from the buffer */
-        const unsigned int copy_size = _buffer_size < size ?
-                                       _buffer_size : size;
-        mempcpy(out, _buffer + _buffer_offset, copy_size);
+        const unsigned int copy_size = http->_buffer_size < size ?
+                                       http->_buffer_size : size;
+        mempcpy(out, http->_buffer + http->_buffer_offset, copy_size);
 
         /* Change pointer, offset and sized according to the copy size */
         out += copy_size;
         size -= copy_size;
-        _buffer_offset += copy_size;
-        _buffer_size -= copy_size;
-        _content_length -= copy_size;
+        http->_buffer_offset += copy_size;
+        http->_buffer_size -= copy_size;
+        http->_content_length -= copy_size;
     }
 
     /* Read the data from the socket */
     while (size > 0) {
         /* Try to read from the socket */
-        if (const long read_result = read(_server_fd, out, size);
+        if (const long read_result = read(http->_server_fd, out, size);
             read_result <= 0) {
             /* Set the eof boolean to true */
-            _eof = true;
+            http->_eof = true;
 
             /* Eval the size of written data and return it */
             return original_size - size;
         } else {
             size -= read_result;
-            _content_length -= read_result;
+            http->_content_length -= read_result;
         }
     }
 
@@ -170,8 +184,16 @@ unsigned int HttpClient::Read(char* out, unsigned int size) {
     return original_size - size;
 }
 
-String HttpClient::ReadAll() {
-    return "PLACEHOLDER";
+String HttpClient::CompleteReader::ReadAll(HttpClient* http) {
+    return "Placeholder";
+}
+
+unsigned int HttpClient::ChunkedReader::Read(HttpClient* http,
+                                             char* out,
+                                             unsigned int size) { return 0; }
+
+String HttpClient::ChunkedReader::ReadAll(HttpClient* http) {
+    return "Placeholder";
 }
 
 bool HttpClient::Write(const char* const buffer,

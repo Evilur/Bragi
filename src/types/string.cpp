@@ -27,10 +27,42 @@ String String::operator+(const char symbol) const noexcept {
     return result;
 }
 
-String::operator const char*() const {
+String::operator const char*() const noexcept {
     return _str;
 }
 
 String::operator std::string_view() const {
     return std::string_view(_str);
+}
+
+unsigned char String::ToUInt8(const char* str) {
+    return ToUInt<unsigned char>(str);
+}
+
+unsigned short String::ToUInt16(const char* str) {
+    return ToUInt<unsigned short>(str);
+}
+
+unsigned int String::ToUInt32(const char* str) {
+    return ToUInt<unsigned int>(str);
+}
+
+unsigned long String::ToUInt64(const char* str) {
+    return ToUInt<unsigned long>(str);
+}
+
+char String::ToInt8(const char* str) {
+    return ToInt<char, unsigned char>(str);
+}
+
+short String::ToInt16(const char* str) {
+    return ToInt<short, unsigned short>(str);
+}
+
+int String::ToInt32(const char* str) {
+    return ToInt<int, unsigned int>(str);
+}
+
+long String::ToInt64(const char* str) {
+    return ToInt<long, unsigned long>(str);
 }
