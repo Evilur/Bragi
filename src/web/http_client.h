@@ -34,6 +34,8 @@ private:
 
     class CompleteReader final : public Reader {
     public:
+        explicit CompleteReader(unsigned long content_length) noexcept;
+
         ~CompleteReader() noexcept override = default;
 
         unsigned int Read(HttpClient* http,
@@ -41,6 +43,9 @@ private:
                           unsigned int size) override;
 
         String ReadAll(HttpClient* http) override;
+
+    private:
+        unsigned long _content_length;
     };
 
     class ChunkedReader final : public Reader {
@@ -64,7 +69,6 @@ private:
     unsigned int _buffer_size = 0;
 
     unsigned short _status_code = 0;
-    unsigned long _content_length = 0;
 
     bool _eof = false;
 

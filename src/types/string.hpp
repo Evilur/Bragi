@@ -39,6 +39,8 @@ public:
     template<typename... Args>
     static String Format(const char* format, Args... args);
 
+    static unsigned int HexToInt(const char* str);
+
     static unsigned char ToUInt8(const char* str);
 
     static unsigned short ToUInt16(const char* str);
@@ -70,7 +72,7 @@ T String::ToUInt(const char* str) {
 template <typename T, typename U>
 T String::ToInt(const char* str) {
     if (*str++ == '-') return -ToUInt<U>(str);
-    else return ToUInt<U>(str);
+    return ToUInt<U>(str);
 }
 
 template <typename... Args>

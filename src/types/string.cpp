@@ -35,6 +35,25 @@ String::operator std::string_view() const {
     return std::string_view(_str);
 }
 
+unsigned int String::HexToInt(const char* str) {
+    for (unsigned int result = 0;; str++) {
+        if (const char chr = *str;
+            chr >= '0' && chr <= '9') {
+            result *= 16;
+            result += chr - '0';
+        }
+        else if (chr >= 'a' && chr <= 'f') {
+            result *= 16;
+            result += chr - 'a' + 10;
+        }
+        else if (chr >= 'A' && chr <= 'F') {
+            result *= 16;
+            result += chr - 'A' + 10;
+        }
+        else return result;
+    }
+}
+
 unsigned char String::ToUInt8(const char* str) {
     return ToUInt<unsigned char>(str);
 }
