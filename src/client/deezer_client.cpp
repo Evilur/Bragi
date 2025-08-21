@@ -29,7 +29,7 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
                                         _headers.c_str(),
                                         "POST",
                                         http_body.c_str());
-    const char* json_string = http_client.ReadAll();
+    const String json_string = http_client.ReadAll();
 
     /* Init the JSON object */
     const Json json_results = Json(json_string)["results"];
@@ -61,8 +61,6 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
             (unsigned short)json_results["next"], query);
 
     /* Free the memory and return a result */
-    delete[] json_string;
-    json_string = nullptr;
     return result;
 }
 

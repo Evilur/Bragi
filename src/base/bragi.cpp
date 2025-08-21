@@ -281,8 +281,6 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
 }
 
 void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
-    DEBUG_LOG("VOICE STATE UPDATE");
-
     /* If there isn't the bot, exit the function */
     if (event.state.user_id != event.owner->me.id) return;
 
@@ -304,6 +302,8 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     if (event.state.channel_id)
         event.from()->connect_voice(event.state.guild_id,
                                     event.state.channel_id);
+    /* Else clear the playlist */
+    else _playlist = Playlist();
 }
 
 void Bragi::OnMarker() {

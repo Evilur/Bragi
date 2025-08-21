@@ -69,7 +69,7 @@ bool Json::Find(const char*&data, const char* key) {
 
         do {
                 if (!in_string) {
-                        /* Increase or descrease the bracket level var and compare the json to the key */
+                        /* Increase or decrease the bracket level var and compare the json to the key */
                         if (*data == '{') curly_bracket_level++;
                         else if (*data == '}') curly_bracket_level--;
                         else if (*data == '[') square_bracket_level++;
@@ -77,7 +77,7 @@ bool Json::Find(const char*&data, const char* key) {
                         else if (curly_bracket_level == 1 && CompareKey(data, key)) return data = std::strchr(data, ':') + 1;
                 }
 
-                /* If we enter the string type or escape it, spawp the boolean */
+                /* If we enter the string type or escape it, swap the boolean */
                 if (*data == '\"' && *(data - 1) != '\\') in_string ^= true;
 
                 /* Increase the pointer */

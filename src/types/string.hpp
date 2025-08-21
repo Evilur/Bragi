@@ -39,8 +39,6 @@ public:
     template<typename... Args>
     static String Format(const char* format, Args... args);
 
-    static unsigned int HexToInt(const char* str);
-
     static unsigned char ToUInt8(const char* str);
 
     static unsigned short ToUInt16(const char* str);

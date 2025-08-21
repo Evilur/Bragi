@@ -10,13 +10,24 @@
 #include <iostream>
 #include <unistd.h>
 
-static unsigned int num_of_digits(unsigned int num) {
-    unsigned int result = 0;
-    do {
-        result++;
-        num >>= 4;
-    } while (num != 0);
-    return result;
+static unsigned int hex_to_int(const char* str, unsigned int& digit_number) {
+    digit_number = 0;
+    for (unsigned int result = 0;; str++, digit_number++) {
+        if (const char chr = *str;
+            chr >= '0' && chr <= '9') {
+            result *= 16;
+            result += chr - '0';
+        }
+        else if (chr >= 'a' && chr <= 'f') {
+            result *= 16;
+            result += chr - 'a' + 10;
+        }
+        else if (chr >= 'A' && chr <= 'F') {
+            result *= 16;
+            result += chr - 'A' + 10;
+        }
+        else return result;
+    }
 }
 
 HttpClient::HttpClient(const char* const hostname,
@@ -135,6 +146,9 @@ read_data:
 
             /* If the _reader field is not initialized */
             if (!_reader) _reader = new ChunkedReader();
+            TRACE_LOG("Content-Transfer-Encoding: %s",
+                      typeid(*_reader) == typeid(ChunkedReader) ?
+                      "chunked" : "none");
             return;
         }
 
@@ -205,6 +219,7 @@ unsigned int HttpClient::CompleteReader::Read(HttpClient* http,
             /* Eval the size of written data and return it */
             return original_size - size;
         } else {
+            out += read_result;
             size -= read_result;
             _content_length -= read_result;
         }
@@ -221,7 +236,7 @@ String HttpClient::CompleteReader::ReadAll(HttpClient* http) {
 
     /* Drain the buffer to the result buffer */
     if (http->_buffer_size > 0) {
-        mempcpy(out, http->_buffer + http->_buffer_offset, http->_buffer_size);
+        memcpy(out, http->_buffer + http->_buffer_offset, http->_buffer_size);
         out += http->_buffer_size;
         _content_length -= http->_buffer_size;
         http->_buffer_size = 0;
@@ -230,10 +245,14 @@ String HttpClient::CompleteReader::ReadAll(HttpClient* http) {
     /* Read the data from the socket to the out buffer */
     while (_content_length > 0) {
         /* Try to read from the socket */
-        if (const long read_result = read(http->_server_fd, out,
+        if (const long read_result = read(http->_server_fd,
+                                          out,
                                           _content_length);
             read_result <= 0) goto end;
-        else _content_length -= read_result;
+        else {
+            out += read_result;
+            _content_length -= read_result;
+        }
     }
 
     /* Set the eof to true and return the result */
@@ -265,13 +284,13 @@ String HttpClient::ChunkedReader::ReadAll(HttpClient* http) {
     /* Drain the buffer */
     while (http->_buffer_size > 0) {
         /* Get the size of a chunk */
+        unsigned int size_str_size;
         current_chunk_size =
-            String::HexToInt(http->_buffer + http->_buffer_offset);
+            hex_to_int(http->_buffer + http->_buffer_offset, size_str_size);
         if (current_chunk_size == 0) goto end;
 
         /* Get the size of the chunk size string */
-        const unsigned int size_str_size = num_of_digits(current_chunk_size)
-                                           + sizeof("\r\n") - 1;
+        size_str_size += sizeof("\r\n") - 1;
 
         /* If the chunk is not full */
         if (size_str_size > http->_buffer_size ||
@@ -325,7 +344,8 @@ String HttpClient::ChunkedReader::ReadAll(HttpClient* http) {
         }
 
         /* Get the chunk size and allocate the memory */
-        current_chunk_size = String::HexToInt(http->_buffer);
+        unsigned int size_str_size;
+        current_chunk_size = hex_to_int(http->_buffer, size_str_size);
         if (current_chunk_size == 0)
             goto end;
         current_chunk = new char[current_chunk_size + 2];  // + '\r\n'
@@ -333,8 +353,7 @@ String HttpClient::ChunkedReader::ReadAll(HttpClient* http) {
         complete_size += current_chunk_size;
 
         /* Get the size of the size string */
-        const unsigned int size_str_size = num_of_digits(current_chunk_size) +
-                                           sizeof("\r\n") - 1;
+        size_str_size += sizeof("\r\n") - 1;
 
         /* Eval the new buffer size and offset */
         http->_buffer_offset += size_str_size;
@@ -364,6 +383,7 @@ String HttpClient::ChunkedReader::ReadAll(HttpClient* http) {
 
     /* Create a String object to store the result */
     end:
+    http->_eof = true;
     String result(complete_size);
     char* out = (char*)(const char*)result;
 

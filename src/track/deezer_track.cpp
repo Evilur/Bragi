@@ -92,9 +92,10 @@ void DeezerTrack::Play(Bragi::Player& player) {
         _init_thread.join();
 
     /* Create a new http client */
-    const char* const host = strstr(_data_url.c_str(), "://") + 3;
-    const char* const path = strchr(host, '/') + 1;
-    _http = new HttpClient(std::string(host, path - host).c_str(), path);
+    char* const host = (char*)_data_url.c_str();
+    char* const path = strchr(host, '/') + 1;
+    path[-1] = '\0';
+    _http = new HttpClient(host, path);
 
     Track::Play(player);
 }
@@ -124,26 +125,29 @@ void DeezerTrack::GetKey(unsigned char* buffer) {
         buffer[i] = salt[i] ^ md5_sum_fst_half[i] ^ md5_sum_sec_half[i];
 }
 
-int DeezerTrack::ReadDeezerAudio(void* opaque_context, unsigned char* buffer,
+int DeezerTrack::ReadDeezerAudio(void* opaque_context,
+                                 unsigned char* buffer,
                                  int buffer_size) {
     /* Get context */
     const DeezerTrack* const track_ctx = (DeezerTrack*)opaque_context;
 
-    /* Set the chunk size */
-    constexpr int chunk_size = 2048;
-
     /* If http stream has ended, or we have aborted the playback */
-    if (!track_ctx->_http->End()) { return AVERROR_EOF; }
+    if (track_ctx->_http->End()) { return AVERROR_EOF; }
 
     /* Read 3 raw chunks */
-    buffer_size =  track_ctx->_http->Read((char*)buffer, chunk_size * 3);
+    buffer_size =  track_ctx->_http->Read((char*)buffer,
+                                          DEEZER_AUDIO_CHUNK_SIZE * 3);
 
     /* Set the init vectors */
     unsigned char ivec[] = {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7};
 
     /* Decrypt the first chunk */
-    if (buffer_size >= chunk_size)
-        BF_cbc_encrypt(buffer, buffer, chunk_size, &track_ctx->_bf_key, ivec,
+    if (buffer_size >= DEEZER_AUDIO_CHUNK_SIZE)
+        BF_cbc_encrypt(buffer,
+                       buffer,
+                       DEEZER_AUDIO_CHUNK_SIZE,
+                       &track_ctx->_bf_key,
+                       ivec,
                        BF_DECRYPT);
     return buffer_size;
 }
