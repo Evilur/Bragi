@@ -92,10 +92,9 @@ void DeezerTrack::Play(Bragi::Player& player) {
         _init_thread.join();
 
     /* Create a new http client */
-    char* const host = (char*)_data_url.c_str();
-    char* const path = strchr(host, '/') + 1;
-    path[-1] = '\0';
-    _http = new HttpClient(host, path);
+    const char* const host = _data_url.c_str();
+    const char* const path = strchr(host, '/') + 1;
+    _http = new HttpClient(std::string(host, path - host - 1).c_str(), path);
 
     Track::Play(player);
 }
