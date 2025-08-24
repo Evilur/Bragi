@@ -20,12 +20,6 @@ private:
     };
 
     static constexpr char HEADERS_TEMPLATE[] =
-    "Accept: application/json, text/plain, */*\r\n"
-    "Content-Type: text/plain; charset=UTF-8\r\n"
-    "User-Agent: Deezer/7.17.0.2 CFNetwork/1098.6 Darwin/19.0.0\r\n"
-    "Cache-Control: max-age=0\r\n"
-    "Accept-Language: en-US,en;q=0.9,en-US;q=0.8,en;q=0.7\r\n"
-    "Accept-Charset: utf-8,ISO-8859-1;q=0.8,*;q=0.7\r\n"
     "Cookie: arl=";
 
     static constexpr char UPDATE_SESSION_HOST[] = "www.deezer.com";
