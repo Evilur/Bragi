@@ -21,7 +21,8 @@ void Playlist::Loop() noexcept {
 }
 
 void Playlist::FreeNode(Node* const node) const noexcept {
+    if (!node) return;
     delete node->value;
-    delete node;
+    LinkedList::FreeNode(node);
 }
 

@@ -21,6 +21,10 @@ public:
 
     bool TryPop() noexcept;
 
+    void PopTail();
+
+    bool TryPopTail() noexcept;
+
     void Pop(unsigned int count);
 
     unsigned int TryPop(unsigned int count) noexcept;
@@ -57,7 +61,7 @@ protected:
     Node* _head = nullptr;
     Node* _tail = nullptr;
 
-    void CutNode(Node*& node) const noexcept;
+    void CutNode(Node*& node) noexcept;
 
     virtual void FreeNode(Node* node) const noexcept;
 };
@@ -93,12 +97,30 @@ void LinkedList<T>::Pop() {
     if (_head == nullptr)
         throw std::runtime_error("LinkedList: Pop() index out of range");
     CutNode(_head);
+    if (_head == nullptr) _tail = nullptr;
 }
 
 template <typename T>
 bool LinkedList<T>::TryPop() noexcept {
     if (_head == nullptr) return false;
     CutNode(_head);
+    if (_head == nullptr) _tail = nullptr;
+    return true;
+}
+
+template <typename T>
+void LinkedList<T>::PopTail() {
+    if (_tail == nullptr)
+        throw std::runtime_error("LinkedList: PopTail() index out of range");
+    CutNode(_tail);
+    if (_tail == nullptr) _head = nullptr;
+}
+
+template <typename T>
+bool LinkedList<T>::TryPopTail() noexcept {
+    if (_tail == nullptr) return false;
+    CutNode(_tail);
+    if (_tail == nullptr) _head = nullptr;
     return true;
 }
 
@@ -110,6 +132,7 @@ void LinkedList<T>::Pop(unsigned int count) {
                 "LinkedList: Pop(unsigned int) index out of range");
         CutNode(_head);
     }
+    if (_head == nullptr) _tail = nullptr;
 }
 
 template <typename T>
@@ -118,6 +141,7 @@ unsigned int LinkedList<T>::TryPop(const unsigned int count) noexcept {
         if (_head == nullptr) return i;
         CutNode(_head);
     }
+    if (_head == nullptr) _tail = nullptr;
     return count;
 }
 
@@ -166,7 +190,7 @@ LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator++() noexcept {
 }
 
 template <typename T>
-void LinkedList<T>::CutNode(Node*& node) const noexcept {
+void LinkedList<T>::CutNode(Node*& node) noexcept {
     Node* const next_node = node->next;
     FreeNode(node);
     node = next_node;
