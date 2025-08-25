@@ -16,10 +16,6 @@ int main() {
     bot.on_voice_track_marker(on_voice_track_marker);
     bot.on_ready(on_ready);
 
-    bot.on_voice_server_update([](const dpp::voice_server_update_t& event) {
-        DEBUG_LOG("SERVER UPDATE");
-    });
-
     /* Start the bot */
     INFO_LOG("Starting the bot");
     bot.start(dpp::st_wait);
@@ -35,30 +31,22 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
     try {
         /* Run a command and get a result _message */
         const dpp::message message =
-            command_name == "play"
-                ? bragi->PlayCommand(event)
-                : command_name == "skip"
-                ? bragi->SkipCommand(event)
-                : command_name == "list"
-                ? bragi->ListCommand()
-                : command_name == "next"
-                ? bragi->NextCommand(event)
-                : command_name == "loop"
-                ? bragi->LoopCommand(event)
-                : command_name == "join"
-                ? bragi->JoinCommand(event)
-                : command_name == "speed"
-                ? bragi->SpeedCommand(event)
-                : command_name == "leave"
-                ? bragi->LeaveCommand(event)
-                : command_name == "ping"
-                ? Bragi::PingCommand(event)
-                : throw BragiException(_("**Unexpected error**"),
-                                       BragiException::MAJOR);
+            command_name == "play" ? bragi->PlayCommand(event) :
+            command_name == "skip" ? bragi->SkipCommand(event) :
+            command_name == "list" ? bragi->ListCommand() :
+            command_name == "next" ? bragi->NextCommand(event) :
+            command_name == "loop" ? bragi->LoopCommand(event) :
+            command_name == "remove" ? bragi->RemoveCommand(event) :
+            command_name == "join" ? bragi->JoinCommand(event) :
+            command_name == "speed" ? bragi->SpeedCommand(event) :
+            command_name == "leave" ? bragi->LeaveCommand(event) :
+            command_name == "ping" ? Bragi::PingCommand(event) :
+            throw BragiException(_("**Unexpected error**"),
+                                 BragiException::MAJOR);
         event.reply(message);
-    } catch (const BragiException &e) {
+    } catch (const BragiException& e) {
         /* Handle the exception and print the error message to the user */
-        const dpp::message &message = e.GetMessage();
+        const dpp::message& message = e.GetMessage();
         event.reply(message);
     }
 }
@@ -99,6 +87,18 @@ void on_ready(const dpp::ready_t &event) {
         dpp::slashcommand("skip", DIC_SLASH_SKIP, bot->me.id).add_option(
             dpp::command_option(dpp::co_integer, "number",
                                 DIC_SLASH_SKIP_NUMBER, false)));
+
+    bot->global_command_create(
+        dpp::slashcommand("remove",
+                          _("Remove track(s) from the playlist"),
+                          bot->me.id)
+            .add_option(dpp::command_option(
+                dpp::co_string,
+                "removable",
+                _("Which track(s) should be removed"),
+                false
+            ))
+    );
 
     bot->global_command_create(
         dpp::slashcommand("speed", DIC_SLASH_SPEED, bot->me.id).add_option(

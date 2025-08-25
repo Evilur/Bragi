@@ -32,6 +32,8 @@ public:
 
     dpp::message SpeedCommand(const dpp::slashcommand_t& event);
 
+    dpp::message RemoveCommand(const dpp::slashcommand_t& event);
+
     static dpp::message PingCommand(const dpp::slashcommand_t& event);
 
     void OnVoiceReady(const dpp::voice_ready_t& event);

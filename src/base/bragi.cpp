@@ -253,6 +253,85 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t& event) {
     };
 }
 
+dpp::message Bragi::RemoveCommand(const dpp::slashcommand_t& event) {
+    /* Get the parameter from the event */
+    const dpp::command_value& removable_parameter =
+        event.get_parameter("removable");
+
+    /* If we have empty parameter,
+     * remove the last track from the playlist and exit */
+    if (removable_parameter.index() == 0) {
+        /* If the playlist is empty */
+        if (_playlist.IsEmpty())
+            throw BragiException(_("**Playlist is empty**"),
+                                 BragiException::MAJOR);
+
+        /* If the last track is a first one too
+         * (and is playing now), abort the playing */
+        if (_playlist.Head() == _playlist.Tail()) AbortPlaying();
+
+        /* Pop() the playlist tail */
+        _playlist.PopTail();
+
+        /* Return the result */
+        return dpp::embed()
+            .set_color(Color::RED)
+            .set_description(
+                _("**:wastebasket: The last track has been removed**")
+            );
+    }
+
+    /* Get the index and number of removable tracks */
+    unsigned short remove_index, remove_end_index;
+    {
+        /* Get the string with removable track indexes */
+        const char* removable =
+            std::get<std::string>(removable_parameter).c_str();
+
+        unsigned short* current_number_ptr = &remove_index;
+        do {
+            /* Get the first numeric symbol */
+            if (const char current_char = *removable;
+                current_char < '0' || current_char > '9') continue;
+
+            /* Get the number */
+            *current_number_ptr = String::ToUInt16(removable);
+
+            /* If we've got all values */
+            if (current_number_ptr == &remove_end_index) break;
+
+            /* If we've got only remove_index */
+            current_number_ptr = &remove_end_index;
+
+            /* Try to get the final track index */
+            removable = strchr(removable, '-');
+            if (removable == nullptr) {
+                remove_end_index = remove_index + 1;
+                break;
+            }
+        } while (*++removable != '\0');
+    }
+
+    /* Check for right input */
+    if (remove_end_index < remove_index) throw BragiException(
+            _("**The last index cannot be less than the first one**"),
+            BragiException::MAJOR
+        );
+    if (remove_index == 0) throw BragiException(
+            _("**The index should be larger than 0**"),
+            BragiException::MAJOR
+        );
+
+    /* If we are deleting the current playing track */
+    if (remove_index == 1) AbortPlaying();
+
+    return {
+        String::Format(_("**:wastebasket: Tracks removed: `%u`**"),
+                       _playlist.TryRemove(remove_index - 1,
+                                           remove_end_index - remove_index + 1))
+    };
+}
+
 dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
     return dpp::embed()
            .set_color(Color::GREEN)

@@ -80,6 +80,22 @@ consteval const char* Locale::GetText(const char* text) {
     TR("**Maximum speed - 250%**",
        "**Максимальная скорость - 250%**");
 
+    /* Remove command */
+    TR("Remove track(s) from the playlist",
+       "Удалить трек(и) из плейлиста");
+    TR("Which track(s) should be removed",
+       "Какой трек(и) нужно удалить");
+    TR("**Playlist is empty**",
+       "**Плейлист пуст**");
+    TR("**:wastebasket: The last track has been removed**",
+       "**:wastebasket: Последний трек был удален**");
+    TR("**The last index cannot be less than the first one**",
+       "**Последний индекс не может быть меньше первого**");
+    TR("**The index should be larger than 0**",
+       "**Индекс должен быть больше чем 0**");
+    TR("**:wastebasket: Tracks removed: `%u`**",
+       "**:wastebasket: Треков удалено: `%u`**");
+
     /* Ping command */
     TR("Ping",
        "Задержка");
