@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/logger.hpp"
+
 #include <stdexcept>
 
 template <typename T>
@@ -21,13 +23,17 @@ public:
 
     bool TryPop() noexcept;
 
-    void PopTail();
-
-    bool TryPopTail() noexcept;
-
     void Pop(unsigned int count);
 
     unsigned int TryPop(unsigned int count) noexcept;
+
+    void Remove(unsigned int index, unsigned int number);
+
+    unsigned int TryRemove(unsigned int index, unsigned int number) noexcept;
+
+    void PopTail();
+
+    bool TryPopTail() noexcept;
 
     T& operator[](unsigned int index) const;
 
@@ -109,22 +115,6 @@ bool LinkedList<T>::TryPop() noexcept {
 }
 
 template <typename T>
-void LinkedList<T>::PopTail() {
-    if (_tail == nullptr)
-        throw std::runtime_error("LinkedList: PopTail() index out of range");
-    CutNode(_tail);
-    if (_tail == nullptr) _head = nullptr;
-}
-
-template <typename T>
-bool LinkedList<T>::TryPopTail() noexcept {
-    if (_tail == nullptr) return false;
-    CutNode(_tail);
-    if (_tail == nullptr) _head = nullptr;
-    return true;
-}
-
-template <typename T>
 void LinkedList<T>::Pop(unsigned int count) {
     while (count-- > 0) {
         if (_head == nullptr)
@@ -143,6 +133,111 @@ unsigned int LinkedList<T>::TryPop(const unsigned int count) noexcept {
     }
     if (_head == nullptr) _tail = nullptr;
     return count;
+}
+
+template <typename T>
+void LinkedList<T>::Remove(unsigned int index, unsigned int number) {
+    /* If we are deleting first elements */
+    if (index == 0) { Pop(number); return; }
+
+    /* Get the element before the removable */
+    Node* before_removable = _head;
+    while (index-- > 1) {
+        if (!before_removable) throw std::runtime_error(
+                "LinkedList: Remove(unsigned int, unsigned int) "
+                "index out of range"
+            );
+        before_removable = before_removable->next;
+    }
+
+    /* Remove elements */
+    while (number-- > 0) {
+        if (!before_removable || !before_removable->next)
+            throw std::runtime_error(
+                "LinkedList: Remove(unsigned int, unsigned int) "
+                "index out of range"
+            );
+        CutNode(before_removable->next);
+
+        /* If we get the last element, update the tail */
+        if (!before_removable->next) _tail = before_removable;
+    }
+}
+
+template <typename T>
+unsigned int LinkedList<T>::TryRemove(unsigned int index,
+    unsigned int number) noexcept {
+    /* If we are deleting first elements */
+    if (index == 0) return TryPop(number);
+
+    /* Get the element before the removable */
+    Node* before_removable = _head;
+    while (index-- > 1) {
+        if (!before_removable) return 0;
+        before_removable = before_removable->next;
+    }
+
+    /* A variable for store the result */
+    unsigned int result = 0;
+
+    /* Remove elements */
+    while (number-- > 0) {
+        if (!before_removable || !before_removable->next) return result;
+        CutNode(before_removable->next);
+        result++;
+
+        /* If we get the last element, update the tail */
+        if (!before_removable->next) _tail = before_removable;
+    }
+
+    /* Return the result */
+    return result;
+}
+
+template <typename T>
+void LinkedList<T>::PopTail() {
+    /* If the list is empty */
+    if (!_head)
+        throw std::runtime_error("LinkedList: PopTail() index out of range");
+
+    /* If we have only one element */
+    if (!_head->next) {
+        CutNode(_head);
+        _tail = nullptr;
+        return;
+    }
+
+    /* Get the second last node */
+    Node* second_last_node = _head;
+    while (second_last_node->next->next)
+        second_last_node = second_last_node->next;
+
+    /* Change the tail */
+    CutNode(second_last_node->next);
+    _tail = second_last_node;
+}
+
+template <typename T>
+bool LinkedList<T>::TryPopTail() noexcept {
+    /* If the list is empty */
+    if (!_head) return false;
+
+    /* If we have only one element */
+    if (!_head->next) {
+        CutNode(_head);
+        _tail = nullptr;
+        return true;
+    }
+
+    /* Get the second last node */
+    Node* second_last_node = _head;
+    while (second_last_node->next->next)
+        second_last_node = second_last_node->next;
+
+    /* Change the tail */
+    CutNode(second_last_node->next);
+    _tail = second_last_node;
+    return true;
 }
 
 template <typename T>
