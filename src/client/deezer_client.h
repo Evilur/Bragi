@@ -24,38 +24,25 @@ private:
 
     static constexpr char UPDATE_SESSION_HOST[] = "www.deezer.com";
     static constexpr char UPDATE_SESSION_URL[] =
-    "ajax/gw-light.php?version=8.32.0&api_key="
-    "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output="
-    "3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang="
-    "en&method=deezer.getUserData&api_version=1.0&api_token";
+    "ajax/gw-light.php?method=deezer.getUserData&api_version=1.0&api_token";
 
     static constexpr char SEARCH_TRACK_HOST[] = "api.deezer.com";
     static constexpr char SEARCH_TRACK_URL_TEMPLATE[] =
-    "1.0/gateway.php?api_key="\
-    "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output="
-    "3&input=3&method=search.music&sid=";
-
+    "1.0/gateway.php?method=search.music&input=3&output=3&sid=%s&"\
+    "api_key=ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY";
     static constexpr char SEARCH_TRACK_BODY_TEMPLATE[] =
-    "{{\"query\":\"{}\",\"nb\":1,\"output\":\"TRACK\","
-    "\"filter\":\"TRACK\",\"start\":{}}}";
+    R"({"query":"%s","nb":1,"output":"TRACK","filter":"TRACK","start":%u})";
 
-    static constexpr char GET_URL_URL_TEMPLATE[] =
-    "media.deezer.com/v1/get_url?version=8.32.0&api_key="
-    "ZAIVAHCEISOHWAICUQUEXAEPICENGUAFAEZAIPHAELEEVAHPHUCUFONGUAPASUAY&output="
-    "3&input=3&buildId=ios12_universal&screenHeight=480&screenWidth=320&lang="
-    "en&sid=";
-
+    static constexpr char GET_TRACK_URL_URL[] = "media.deezer.com/v1/get_url";
     static constexpr char GET_URL_BODY_TEMPLATE[] =
-    "{{\"license_token\":\"{}\",\"media\":[{{\"type\":\"FULL\",\"formats\":"
-    "[{{\"format\":\"{}\",\"cipher\":\"BF_CBC_STRIPE\"}}]}}],"
-    "\"track_tokens\":[\"{}\"]}}";
+    R"({"license_token":"%s","media":[{"type":"FULL","formats":)"
+    R"([{"format":"%s","cipher":"BF_CBC_STRIPE"}]}],"track_tokens":["%s"]})";
 
     static inline std::string _headers;
     static inline std::string _session_id;
     static inline std::string _license_token;
 
     static inline std::string _search_track_url;
-    static inline std::string _get_track_url_url;
 
     static inline unsigned long _session_timestamp = 0;
     static constexpr unsigned int DELTA_TIME = 600;

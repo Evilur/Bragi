@@ -21,14 +21,14 @@ DeezerTrack* DeezerClient::Search(const std::string& query,
         _session_timestamp = current_time;
 
     /* Send the http request */
-    const std::string http_body = std::format(SEARCH_TRACK_BODY_TEMPLATE,
-                                              query,
-                                              start);
+    const String http_body = String::Format(SEARCH_TRACK_BODY_TEMPLATE,
+                                            query.c_str(),
+                                            start);
     HttpClient http_client = HttpClient(SEARCH_TRACK_HOST,
                                         _search_track_url.c_str(),
-                                        _headers.c_str(),
+                                        "",
                                         "POST",
-                                        http_body.c_str());
+                                        http_body);
     const String json_string = http_client.ReadAll();
 
     /* Init the JSON object */
@@ -69,12 +69,12 @@ std::string DeezerClient::GetTrackUrl(const std::string& token) {
          quality >= MP3_128;
          quality = TrackQuality(quality - 1)) {
         /* Send the https request */
-        const std::string http_body = std::format(GET_URL_BODY_TEMPLATE,
-                                                  _license_token,
-                                                  TRACK_QUALITY_STR[quality],
-                                                  token);
-        HttpsClient http_client = HttpsClient(_get_track_url_url, _headers,
-                                              http_body, "POST");
+        const String http_body = String::Format(GET_URL_BODY_TEMPLATE,
+                                                _license_token.c_str(),
+                                                TRACK_QUALITY_STR[quality],
+                                                token.c_str());
+        HttpsClient http_client = HttpsClient(GET_TRACK_URL_URL, "",
+                                              (const char*)http_body, "POST");
         const char* json_string = http_client.ReadAll();
 
         /* Init the JSON object */
@@ -123,8 +123,8 @@ void DeezerClient::UpdateSession() {
     _session_timestamp = (unsigned long)json_results["SERVER_TIMESTAMP"];
 
     /* Update the dependent urls */
-    _search_track_url = SEARCH_TRACK_URL_TEMPLATE + _session_id;
-    _get_track_url_url = GET_URL_URL_TEMPLATE + _session_id;
+    _search_track_url = String::Format(SEARCH_TRACK_URL_TEMPLATE,
+                                       _session_id.c_str());
 
     /* Get user data for logging */
     const std::string user_name = (std::string)json_user["BLOG_NAME"];
