@@ -112,6 +112,9 @@ void Track::Play(Bragi::Player& player) {
         resampled_data[0] -= FRAME_SIZE * sizeof(short) * CHANNELS;
         resampled_samples_number = 0;
 
+        /* If we have enough seconds in the queue, wait some time */
+        if (player.voice_client->get_secs_remaining() > 15) usleep(100'000);
+
         /* Convert PCM to OPUS */
         unsigned char opus_buffer[OPUS_CHUNK_SIZE];
         const int opus_len = opus_encode(_encoder,
@@ -149,6 +152,7 @@ void Track::Play(Bragi::Player& player) {
     player.voice_client->insert_marker();
     TRACE_LOG("Track has been fully sent to the voice client");
 
+/* Free the memory */
 end:
     /* Packet and frame */
     av_packet_free(&packet);

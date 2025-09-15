@@ -19,8 +19,7 @@ private:
         "MP3_128", "MP3_320", "FLAC"
     };
 
-    static constexpr char HEADERS_TEMPLATE[] =
-    "Cookie: arl=";
+    static constexpr char HEADERS_TEMPLATE[] = "Cookie: arl=";
 
     static constexpr char UPDATE_SESSION_HOST[] = "www.deezer.com";
     static constexpr char UPDATE_SESSION_URL[] =
