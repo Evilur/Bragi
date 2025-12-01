@@ -1,7 +1,7 @@
 #ifndef BRAGI_PARSER_H
 #define BRAGI_PARSER_H
 
-#include "master.h"
+#include "main.h"
 
 class Parser final {
 public:

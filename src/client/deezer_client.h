@@ -8,7 +8,7 @@
 class DeezerClient final {
 public:
     static DeezerTrack* Search(const std::string &query,
-                               uint start = 0);
+                               unsigned int start = 0);
 
     static std::string GetTrackUrl(const std::string &token);
 
