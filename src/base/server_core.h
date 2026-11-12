@@ -14,7 +14,7 @@
 class Track;
 class String;
 
-class Bragi final {
+class ServerCore final {
 public:
     class Player {
     public:
@@ -67,14 +67,14 @@ private:
     inline bool IsPlayerReady() const;
 
 public:
-    static Bragi* Get(const dpp::snowflake &guild_id);
+    static ServerCore* Get(const dpp::snowflake &guild_id);
 
 private:
     static BragiHashMap _bragi_map;
     static constexpr u_int BRAGI_MAP_CAPACITY = 10;
 };
 
-dpp::message Bragi::JoinCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::JoinCommand(const dpp::slashcommand_t& event) {
     /* Default user for connection */
     dpp::snowflake user_id = event.command.usr.id;
 
@@ -89,7 +89,7 @@ dpp::message Bragi::JoinCommand(const dpp::slashcommand_t& event) {
     return { Join(event, user_id) };
 }
 
-dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::LeaveCommand(const dpp::slashcommand_t& event) {
     /* If the playlist isn't empty, abort the first track to avoid sending
      * the data to the old voice client */
     if (!_playlist.IsEmpty()) AbortPlaying();
@@ -105,7 +105,7 @@ dpp::message Bragi::LeaveCommand(const dpp::slashcommand_t& event) {
     return {_("**:person_walking: Bot has left the voice channel**")};
 }
 
-dpp::message Bragi::ListCommand() const {
+dpp::message ServerCore::ListCommand() const {
     /* If the playlist is empty */
     if (_playlist.IsEmpty())
         return dpp::embed()
@@ -126,7 +126,7 @@ dpp::message Bragi::ListCommand() const {
            .set_description(playlist_stream.str());
 }
 
-dpp::message Bragi::LoopCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::LoopCommand(const dpp::slashcommand_t& event) {
     /* If there is no parameters, get the next variant in cycle */
     if (const dpp::command_value loop_type_param = event.get_parameter("type");
         loop_type_param.index() == 0)
@@ -149,7 +149,7 @@ dpp::message Bragi::LoopCommand(const dpp::slashcommand_t& event) {
         return {_("**:arrow_right: Repeat disabled**")};
 }
 
-dpp::message Bragi::NextCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::NextCommand(const dpp::slashcommand_t& event) {
     /* Get the index of track to replace */
     constexpr long last_track = -1;
     long track_index = last_track;
@@ -192,7 +192,7 @@ dpp::message Bragi::NextCommand(const dpp::slashcommand_t& event) {
     return next_track->GetMessage(replace_current);
 }
 
-dpp::message Bragi::PlayCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::PlayCommand(const dpp::slashcommand_t& event) {
     /* Get query from the command parameter */
     const std::string query =
         std::get<std::string>(event.get_parameter("query"));
@@ -252,7 +252,7 @@ dpp::message Bragi::PlayCommand(const dpp::slashcommand_t& event) {
     return result_message;
 }
 
-dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::SkipCommand(const dpp::slashcommand_t& event) {
     /* Get number of tracks for skip (if exists) */
     long num_for_skip = 1;
     if (const dpp::command_value num_for_skip_parameter =
@@ -287,7 +287,7 @@ dpp::message Bragi::SkipCommand(const dpp::slashcommand_t& event) {
     };
 }
 
-dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::SpeedCommand(const dpp::slashcommand_t& event) {
     /* Get a parameter from the user (if exists) */
     const dpp::command_value playback_rate_param =
         event.get_parameter("percent");
@@ -319,7 +319,7 @@ dpp::message Bragi::SpeedCommand(const dpp::slashcommand_t& event) {
     };
 }
 
-dpp::message Bragi::RemoveCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::RemoveCommand(const dpp::slashcommand_t& event) {
     /* Get the parameter from the event */
     const dpp::command_value& removable_parameter =
         event.get_parameter("removable");
@@ -398,7 +398,7 @@ dpp::message Bragi::RemoveCommand(const dpp::slashcommand_t& event) {
     };
 }
 
-dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
+dpp::message ServerCore::PingCommand(const dpp::slashcommand_t& event) {
     return dpp::embed()
            .set_color(Color::GREEN)
            .set_title(_("Ping"))
@@ -407,7 +407,7 @@ dpp::message Bragi::PingCommand(const dpp::slashcommand_t& event) {
            );
 }
 
-void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
+void ServerCore::OnVoiceReady(const dpp::voice_ready_t& event) {
     /* Log */
     TRACE_LOG("Bot has been connected to a voice channel");
 
@@ -425,7 +425,7 @@ void Bragi::OnVoiceReady(const dpp::voice_ready_t& event) {
     if (!_playlist.IsEmpty()) Play();
 }
 
-void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
+void ServerCore::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     /* If there isn't the bot, exit the function */
     if (event.state.user_id != event.owner->me.id) return;
 
@@ -451,7 +451,7 @@ void Bragi::OnVoiceStateUpdate(const dpp::voice_state_update_t& event) {
     else _playlist = Playlist();
 }
 
-void Bragi::OnMarker() {
+void ServerCore::OnMarker() {
     /* Log this handler */
     TRACE_LOG("Bot has received track marker");
 
@@ -473,7 +473,7 @@ void Bragi::OnMarker() {
     }
 }
 
-String Bragi::Join(const dpp::slashcommand_t &event,
+String ServerCore::Join(const dpp::slashcommand_t &event,
                         const dpp::snowflake &user_id) {
     /* Get the user voice channel */
     const dpp::channel* const user_voice_channel = find_channel(
@@ -522,7 +522,7 @@ String Bragi::Join(const dpp::slashcommand_t &event,
     );
 }
 
-void Bragi::Play() {
+void ServerCore::Play() {
     /* Join the old thread */
     if (_play_thread.joinable()) _play_thread.join();
 
@@ -532,7 +532,7 @@ void Bragi::Play() {
     });
 }
 
-void Bragi::AbortPlaying() {
+void ServerCore::AbortPlaying() {
     /* Abort the track */
     _playlist.Head()->Abort();
 
@@ -544,23 +544,23 @@ void Bragi::AbortPlaying() {
 }
 
 
-inline bool Bragi::IsPlayerReady() const {
+inline bool ServerCore::IsPlayerReady() const {
     return _player.voice_client && _player.voice_client->is_ready();
 }
 
 #pragma region Static Members
 
-BragiHashMap Bragi::_bragi_map = BragiHashMap(BRAGI_MAP_CAPACITY);
+BragiHashMap ServerCore::_bragi_map = BragiHashMap(BRAGI_MAP_CAPACITY);
 
-Bragi *Bragi::Get(const dpp::snowflake &guild_id) {
+ServerCore *ServerCore::Get(const dpp::snowflake &guild_id) {
     /* Try to get the guild in the hash map */
-    Bragi *bragi = _bragi_map.Get(guild_id);
+    ServerCore *bragi = _bragi_map.Get(guild_id);
 
     /* If all is OK, return it */
     if (bragi) return bragi;
 
     /* If there is not such an instance, create a new one */
-    bragi = new Bragi();
+    bragi = new ServerCore();
 
     /* Add it to the hash map */
     _bragi_map.Put(guild_id, bragi);

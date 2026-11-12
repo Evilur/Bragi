@@ -1,11 +1,14 @@
 #include "main.h"
+/*
 #include "base/server_core.h"
 #include "exception/bragi_exception.h"
 #include "locale/locale.h"
 #include "util/logger.h"
 #include "util/properties.h"
+*/
 
 int main() {
+#if 0
     /* Create a bot cluster */
     dpp::cluster bot = dpp::cluster(Properties::BotToken());
 
@@ -19,14 +22,16 @@ int main() {
     /* Start the bot */
     INFO_LOG("Starting the bot");
     bot.start(dpp::st_wait);
+#endif
 }
 
+#if 0
 void on_slashcommand(const dpp::slashcommand_t &event) {
     /* Get a command name */
     const std::string command_name = event.command.get_command_name();
 
     /* Get the bragi instance */
-    Bragi *const bragi = Bragi::Get(event.command.guild_id);
+    ServerCore *const bragi = ServerCore::Get(event.command.guild_id);
 
     try {
         /* Run a command and get a result _message */
@@ -40,7 +45,7 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
             command_name == "join" ? bragi->JoinCommand(event) :
             command_name == "speed" ? bragi->SpeedCommand(event) :
             command_name == "leave" ? bragi->LeaveCommand(event) :
-            command_name == "ping" ? Bragi::PingCommand(event) :
+            command_name == "ping" ? ServerCore::PingCommand(event) :
             throw BragiException(_("**Unexpected error**"),
                                  BragiException::MAJOR);
         event.reply(message);
@@ -52,15 +57,15 @@ void on_slashcommand(const dpp::slashcommand_t &event) {
 }
 
 void on_voice_state_update(const dpp::voice_state_update_t &event) {
-    Bragi::Get(event.state.guild_id)->OnVoiceStateUpdate(event);
+    ServerCore::Get(event.state.guild_id)->OnVoiceStateUpdate(event);
 }
 
 void on_voice_ready(const dpp::voice_ready_t &event) {
-    Bragi::Get(event.voice_client->server_id)->OnVoiceReady(event);
+    ServerCore::Get(event.voice_client->server_id)->OnVoiceReady(event);
 }
 
 void on_voice_track_marker(const dpp::voice_track_marker_t &event) {
-    Bragi::Get(event.voice_client->server_id)->OnMarker();
+    ServerCore::Get(event.voice_client->server_id)->OnMarker();
 }
 
 void on_ready(const dpp::ready_t &event) {
@@ -123,3 +128,4 @@ void on_ready(const dpp::ready_t &event) {
 
     INFO_LOG("Bot is ready");
 }
+#endif
