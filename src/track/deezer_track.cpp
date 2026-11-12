@@ -1,8 +1,8 @@
 #include "deezer_track.h"
 #include "util/color.h"
-#include "util/logger.hpp"
+#include "util/logger.h"
 #include "client/deezer_client.h"
-#include "types/string.hpp"
+#include "type/string.h"
 #include "util/time.h"
 
 #include <openssl/md5.h>

@@ -1,7 +1,6 @@
-#ifndef BRAGI_TRACK_H
-#define BRAGI_TRACK_H
+#pragma once
 
-#include "base/bragi.h"
+#include "base/server_core.h"
 
 #include <dpp/dpp.h>
 #include <string>
@@ -44,5 +43,3 @@ private:
                                                 nullptr);
     bool _is_aborted = false;
 };
-
-#endif

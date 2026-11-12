@@ -2,14 +2,12 @@
 
 #include "exception/invalid_arl_exception.h"
 #include "exception/bragi_exception.h"
-#include "web/http_client.h"
 #include "util/properties.h"
 #include "util/json.h"
-#include "util/logger.hpp"
+#include "util/logger.h"
 #include "track/deezer_track.h"
-#include "web/https_client.h"
 #include "util/parser.h"
-#include "types/string.hpp"
+#include "type/string.h"
 
 DeezerTrack* DeezerClient::Search(const std::string& query,
                                   const unsigned int start) {

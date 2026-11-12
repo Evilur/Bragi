@@ -1,5 +1,4 @@
-#ifndef BRAGI_BRAGI_EXCEPTION_H
-#define BRAGI_BRAGI_EXCEPTION_H
+#pragma once
 
 #include <dpp/dpp.h>
 
@@ -16,5 +15,3 @@ private:
     const char* const _message;
     const Type _type;
 };
-
-#endif

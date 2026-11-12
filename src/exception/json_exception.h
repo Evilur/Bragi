@@ -1,5 +1,4 @@
-#ifndef BRAGI_JSON_EXCEPTION_H
-#define BRAGI_JSON_EXCEPTION_H
+#pragma once
 
 #include <exception>
 
@@ -9,5 +8,3 @@ public:
 
         explicit JsonException(const char* json_data, int index);
 };
-
-#endif

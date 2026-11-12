@@ -1,10 +1,7 @@
 #pragma once
 
-#include "playlist.h"
-
 #include <dpp/dpp.h>
 
-class BragiHashMap;
 class Track;
 class String;
 

@@ -1,5 +1,4 @@
-#ifndef BRAGI_SETTINGS_H
-#define BRAGI_SETTINGS_H
+#pragma once
 
 class Properties final {
 public:
@@ -21,5 +20,3 @@ private:
     static void InitToken(const char* var,
                           const char* &token_ptr);
 };
-
-#endif

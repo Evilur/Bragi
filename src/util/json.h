@@ -1,10 +1,8 @@
-#ifndef BRAGI_JSON_H
-#define BRAGI_JSON_H
+#pragma once
 
-#include "web/http_client.h"
+#include <string>
 
 /** Class for working with the JSON data
- * @warning Can work with minified JSON data only (without any spaces and new line characters)
  */
 class Json final {
 public:
@@ -45,5 +43,3 @@ private:
 
         static bool CompareKey(const char* data, const char* key);
 };
-
-#endif

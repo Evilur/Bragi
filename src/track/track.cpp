@@ -1,8 +1,8 @@
 #include "track.h"
 
 #include "locale/locale.h"
-#include "types/string.hpp"
-#include "util/logger.hpp"
+#include "type/string.h"
+#include "util/logger.h"
 #include "util/time.h"
 
 extern "C" {

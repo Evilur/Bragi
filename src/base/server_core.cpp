@@ -1,12 +1,11 @@
-#include "bragi.h"
+#include "server_core.h"
 #include "locale/locale.h"
 #include "exception/bragi_exception.h"
 #include "util/color.h"
 #include "client/deezer_client.h"
-#include "bragi_hash_map.h"
 #include "exception/invalid_arl_exception.h"
-#include "util/logger.hpp"
-#include "types/string.hpp"
+#include "util/logger.h"
+#include "type/string.h"
 
 dpp::message Bragi::JoinCommand(const dpp::slashcommand_t& event) {
     /* Default user for connection */

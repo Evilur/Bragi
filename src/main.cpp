@@ -1,8 +1,8 @@
 #include "main.h"
-#include "base/bragi.h"
+#include "base/server_core.h"
 #include "exception/bragi_exception.h"
 #include "locale/locale.h"
-#include "util/logger.hpp"
+#include "util/logger.h"
 #include "util/properties.h"
 
 int main() {

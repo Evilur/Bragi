@@ -1,5 +1,4 @@
-#ifndef BRAGI_DEEZER_CLIENT_H
-#define BRAGI_DEEZER_CLIENT_H
+#pragma once
 
 #include "track/deezer_track.h"
 
@@ -48,5 +47,3 @@ private:
 
     static void UpdateSession();
 };
-
-#endif

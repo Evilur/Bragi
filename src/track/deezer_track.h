@@ -2,7 +2,6 @@
 
 #include "track.h"
 #include "locale/locale.h"
-#include "web/http_client.h"
 #include "main.h"
 
 #include <openssl/blowfish.h>

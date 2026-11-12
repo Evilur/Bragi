@@ -1,7 +1,7 @@
 #include "time.h"
 
 #include "locale/locale.h"
-#include "types/string.hpp"
+#include "type/string.h"
 
 String Time::Format(const unsigned int seconds) {
     /* Get hours and minutes */

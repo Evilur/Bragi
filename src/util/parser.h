@@ -1,5 +1,4 @@
-#ifndef BRAGI_PARSER_H
-#define BRAGI_PARSER_H
+#pragma once
 
 #include "main.h"
 
@@ -25,5 +24,3 @@ public:
 
         static std::string Utf8(const char* data);
 };
-
-#endif
