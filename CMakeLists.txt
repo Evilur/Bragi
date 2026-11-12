@@ -10,9 +10,7 @@ ELSE ()
     SET(CMAKE_CXX_FLAGS "-g0 -O2")
 ENDIF ()
 
-FILE(GLOB_RECURSE SOURCES "src/*.cpp")
-
-ADD_EXECUTABLE(Bragi ${SOURCES})
+ADD_EXECUTABLE(Bragi src/main.cpp)
 
 TARGET_LINK_LIBRARIES(Bragi
         avcodec
