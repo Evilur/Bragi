@@ -1,8 +1,9 @@
 #pragma once
 
 #include "util/class.h"
-#include "type/string.h"
 #include "web/dns.h"
+#include "web/http_request.h"
+#include "web/http_transport.h"
 
 #include <cstdint>
 
@@ -14,24 +15,34 @@ class HttpClient final {
 public:
     PREVENT_COPY_AND_MOVE(HttpClient);
 
-    HttpClient(const char* domain, const char* path) noexcept;
+    HttpClient(const char* domain,
+               const char* path,
+               const char* method = "GET") noexcept;
+
+    HttpClient(const HttpRequest& request) noexcept;
 
     virtual ~HttpClient() noexcept = default;
 
+    HttpRequest& Request() noexcept;
+
 protected:
-    virtual consteval uint16_t GetPort() const noexcept;
+    virtual uint16_t Port() const noexcept;
 
 private:
-    const String domain;
-    const uint32_t addr;
-    const String path;
+    HttpRequest _request;
+    HttpTransport _transport;
 };
 
-inline
-HttpClient::HttpClient(const char* const domain,
-                       const char* const path) noexcept
-    : domain(domain), addr(DNS::Resolve(domain)), path(path) { }
+inline HttpClient::HttpClient(const char* const domain,
+                              const char* const path,
+                              const char* const method) noexcept
+    : _request(domain, path, method),
+    _transport(DNS::Resolve(domain), Port()) { }
 
-inline consteval uint16_t HttpClient::GetPort() const noexcept {
-    return htons(80);
-}
+inline HttpClient::HttpClient(const HttpRequest& request) noexcept
+    : _request(request),
+    _transport(DNS::Resolve(request.domain), Port()) { }
+
+inline HttpRequest& HttpClient::Request() noexcept { return _request; }
+
+inline uint16_t HttpClient::Port() const noexcept { return htons(80); }

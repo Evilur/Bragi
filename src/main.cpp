@@ -10,7 +10,8 @@
 */
 
 int main() {
-    HttpClient http("google.com", "/");
+    HttpRequest request("google.com", "/");
+
 #if 0
     /* Create a bot cluster */
     dpp::cluster bot = dpp::cluster(Properties::BotToken());

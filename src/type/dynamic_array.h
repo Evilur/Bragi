@@ -13,14 +13,17 @@
 template <typename T, std::unsigned_integral S = uint32_t>
 class DynamicArray final {
 public:
-    PREVENT_COPY_AND_MOVE(DynamicArray);
-
     DynamicArray();
     explicit DynamicArray(S capacity);
 
+    DynamicArray(const DynamicArray & other);
+    DynamicArray &operator=(const DynamicArray & other);
+    DynamicArray(DynamicArray && other) noexcept;
+    DynamicArray &operator=(DynamicArray && other) noexcept;
+
     ~DynamicArray() noexcept;
 
-    S GetSize() const noexcept;
+    S Size() const noexcept;
 
     void Push(const T& element);
     void Push(T&& element);
@@ -45,10 +48,72 @@ inline DynamicArray<T, S>::DynamicArray(const S capacity)
     : _capacity(capacity), _array(new T[capacity]) { }
 
 template <typename T, std::unsigned_integral S>
+inline DynamicArray<T, S>::DynamicArray(const DynamicArray& other)
+    : _capacity(other._capacity),
+    _size(other._size),
+    _array(new T[other._capacity]) {
+    /* Copy copy elements to the array */
+    std::copy(other._array, other._array + other._size, _array);
+}
+
+template <typename T, std::unsigned_integral S>
+inline DynamicArray<T, S>&
+DynamicArray<T, S>::operator=(const DynamicArray& other) {
+    /* Check for the self-assignment */
+    if (this == &other) return *this;
+
+    /* Allocate new memory and copy elements to the array */
+    delete[] _array;
+    _array = new T[other._capacity];
+    std::copy(other._array, other._array + other._size, _array);
+
+    /* Copy the other values */
+    _capacity = other._capacity;
+    _size = other._size;
+
+    /* Return *this */
+    return *this;
+}
+
+template <typename T, std::unsigned_integral S>
+inline DynamicArray<T, S>::DynamicArray(DynamicArray&& other) noexcept
+    : _capacity(other._capacity),
+    _size(other._size),
+    _array(other._array) {
+    /* Null the other's values */
+    other._capacity = 0;
+    other._size = 0;
+    other._array = nullptr;
+}
+
+template <typename T, std::unsigned_integral S>
+inline DynamicArray<T, S>&
+DynamicArray<T, S>::operator=(DynamicArray&& other) noexcept {
+    /* Check for the self-assignment */
+    if (this == &other) return *this;
+
+    /* Free the original memory */
+    delete[] _array;
+
+    /* Move the values from the other object */
+    _capacity = other._capacity;
+    _size = other._size;
+    _array = other._array;
+
+    /* Null the other's values */
+    other._capacity = 0;
+    other._size = 0;
+    other._array = nullptr;
+
+    /* Return *this */
+    return *this;
+}
+
+template <typename T, std::unsigned_integral S>
 inline DynamicArray<T, S>::~DynamicArray() noexcept { delete[] _array; }
 
 template <typename T, std::unsigned_integral S>
-inline S DynamicArray<T, S>::GetSize() const noexcept { return _size; }
+inline S DynamicArray<T, S>::Size() const noexcept { return _size; }
 
 template <typename T, std::unsigned_integral S>
 inline void DynamicArray<T, S>::Push(const T& element) {
