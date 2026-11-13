@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/macro.h"
-
 #include <cstdint>
 #include <cstdio>
 #include <ctime>
@@ -72,10 +70,10 @@ private:
 };
 
 template <typename... Args>
-FORCE_INLINE void Logger::Log(FILE* const stream,
-                              const LogLevel log_level,
-                              const char* const format,
-                              Args... args) {
+inline void Logger::Log(FILE* const stream,
+                        const LogLevel log_level,
+                        const char* const format,
+                        Args... args) {
     /* Get current time */
     constexpr int32_t time_buffer_size = 20;
     char time_buffer[time_buffer_size];

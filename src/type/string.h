@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/macro.h"
-
 #include <cstdint>
 #include <cstring>
 #include <string_view>
@@ -58,29 +56,29 @@ public:
     static T ToInt(const char* str) noexcept;
 };
 
-FORCE_INLINE
+inline
 String::String(const uint64_t str_size) :
     _str(new char[str_size + 1]), _size(str_size) {
     _str[str_size] = '\0';
 }
 
-FORCE_INLINE
+inline
 String::String(const char* const str) : String(str, strlen(str)) { }
 
-FORCE_INLINE
+inline
 String::String(const char* str, const uint64_t str_size) :
     String(str_size) {
     if (str != nullptr) memcpy(_str, str, str_size);
 }
 
-FORCE_INLINE
+inline
 String::String(const String& other) :
     _str(new char[other._size + 1]), _size(other._size) {
     /* Assign a new data */
     memcpy(_str, other._str, other._size + 1);
 }
 
-FORCE_INLINE
+inline
 String& String::operator=(const String& other) {
     /* Self-assignment check */
     if (this == &other) return *this;
@@ -104,14 +102,14 @@ String& String::operator=(const String& other) {
     return *this;
 }
 
-FORCE_INLINE
+inline
 String::String(String&& other) noexcept :
     _str(other._str), _size(other._size) {
     other._str = nullptr;
     other._size = 0;
 }
 
-FORCE_INLINE
+inline
 String& String::operator=(String&& other) noexcept {
     /* Self-move check */
     if (this == &other) return *this;
@@ -129,14 +127,14 @@ String& String::operator=(String&& other) noexcept {
     return *this;
 }
 
-FORCE_INLINE
+inline
 String String::operator+(const char symbol) const {
     String result(_str, _size + 1);
     result._str[_size] = symbol;
     return result;
 }
 
-FORCE_INLINE
+inline
 String String::operator+(const char* const other) const {
     /* Nullptr check */
     if (other == nullptr) return String(_str, _size);
@@ -148,44 +146,44 @@ String String::operator+(const char* const other) const {
     return result;
 }
 
-FORCE_INLINE
+inline
 bool String::operator==(const String& other) const noexcept {
     return strcmp(_str, other._str) == 0;
 }
 
-FORCE_INLINE
+inline
 bool String::operator==(const char* const other) const noexcept {
     return strcmp(_str, other) == 0;
 }
 
-FORCE_INLINE
+inline
 bool String::operator!=(const String& other) const noexcept {
     return strcmp(_str, other._str) != 0;
 }
 
-FORCE_INLINE
+inline
 bool String::operator!=(const char* const other) const noexcept {
     return strcmp(_str, other) != 0;
 }
 
-FORCE_INLINE
+inline
 String::operator const char*() const noexcept { return _str; }
 
-FORCE_INLINE
+inline
 String::operator char*() const noexcept { return _str; }
 
-FORCE_INLINE
+inline
 String::operator std::string_view()
 const noexcept { return { _str, _size }; }
 
-FORCE_INLINE
+inline
 String::~String() noexcept { delete[] _str; }
 
-FORCE_INLINE
+inline
 const char* String::CStr() const noexcept { return _str; }
 
 template <typename T>
-FORCE_INLINE
+inline
 T String::ToInt(const char* str) noexcept {
     /* Check for integer */
     static_assert(std::is_integral_v<T>, "<T> must be the integer");
@@ -207,7 +205,7 @@ T String::ToInt(const char* str) noexcept {
 }
 
 template <typename... Args>
-FORCE_INLINE
+inline
 String String::Format(const char* const format, Args... args) {
     String result((uint64_t)snprintf(nullptr, 0, format, args...));
     sprintf(result._str, format, args...);

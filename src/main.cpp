@@ -1,4 +1,6 @@
 #include "main.h"
+#include "web/http_client.h"
+
 /*
 #include "base/server_core.h"
 #include "exception/bragi_exception.h"
@@ -8,6 +10,7 @@
 */
 
 int main() {
+    HttpClient http("google.com", "/");
 #if 0
     /* Create a bot cluster */
     dpp::cluster bot = dpp::cluster(Properties::BotToken());
