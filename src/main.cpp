@@ -10,7 +10,24 @@
 */
 
 int main() {
+    constexpr const char* const headers[][2] = {
+        { "Content-Length", "1488" },
+        { "Connection", "Close" },
+        { "Cookie", "arl=abc" },
+        { "Accept", "*/*" }
+    };
+
+    constexpr const char* const cookies[][2] = {
+        { "ephemeral_chat" },
+        { "arl", "bca" },
+    };
+
     HttpRequest request("google.com", "/");
+    request.SetHeaders(headers, 4);
+    request.SetCookies(cookies, 2);
+
+    HttpTransport transport(0, 0);
+    request.SendHttp11Headers(transport);
 
 #if 0
     /* Create a bot cluster */
