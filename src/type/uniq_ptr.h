@@ -1,101 +1,79 @@
 #pragma once
 
-#include "util/macro.h"
-
 #include <cstdint>
-
-template <typename T>
-inline void delete_object(T* obj) noexcept;
-
-template <typename T>
-inline void delete_array(T* arr) noexcept;
-
-template <typename T>
-using deleter = void(*)(T*);
+#include <type_traits>
 
 /**
  * Simple implementation of the smart unique pointer
  * @author Evilur <the.evilur@gmail.com>
  */
-template <typename T, deleter<T> D>
-class UniqPtrBase {
+template <typename T>
+class UniqPtr final {
 public:
-    UniqPtrBase(T* ptr) noexcept;
+    using BaseType = std::remove_extent_t<T>;
 
-    UniqPtrBase(UniqPtrBase&& other) noexcept;
+    UniqPtr(BaseType* ptr) noexcept;
 
-    UniqPtrBase& operator=(UniqPtrBase&& other) noexcept;
+    UniqPtr(UniqPtr&& other) noexcept;
 
-    UniqPtrBase(const UniqPtrBase&) noexcept = delete;
+    UniqPtr& operator=(UniqPtr&& other) noexcept;
 
-    UniqPtrBase& operator=(const UniqPtrBase&) noexcept = delete;
+    UniqPtr(const UniqPtr&) = delete;
 
-    ~UniqPtrBase() noexcept;
+    UniqPtr& operator=(const UniqPtr&) = delete;
 
-    T* Get() noexcept;
+    ~UniqPtr() noexcept;
 
-    const T* Get() const noexcept;
+    BaseType* Get() noexcept;
+
+    const BaseType* Get() const noexcept;
 
     void Release() noexcept;
 
-    T& operator*() noexcept;
+    BaseType& operator*() noexcept;
 
-    const T& operator*() const noexcept;
+    const BaseType& operator*() const noexcept;
 
-    operator T*() noexcept;
+    operator BaseType*() noexcept;
 
-    operator const T*() const noexcept;
+    operator const BaseType*() const noexcept;
 
-protected:
-    T* _ptr = nullptr;
-};
+    BaseType* operator->() noexcept
+    requires (!std::is_array_v<T>);
 
-template <typename T>
-class UniqPtr final : public UniqPtrBase<T, delete_object> {
-public:
-    using UniqPtrBase<T, delete_object>::UniqPtrBase;
+    const BaseType* operator->() const noexcept
+    requires (!std::is_array_v<T>);
 
-    T* operator->() noexcept;
+    BaseType& operator[](uint64_t index) noexcept
+    requires (std::is_array_v<T>);
 
-    const T* operator->() const noexcept;
-};
+    const BaseType& operator[](uint64_t index) const noexcept
+    requires (std::is_array_v<T>);
 
-template <typename T>
-class UniqPtr<T[]> final : public UniqPtrBase<T, delete_array> {
-public:
-    using UniqPtrBase<T, delete_array>::UniqPtrBase;
-
-    T& operator[](uint64_t index) noexcept;
-
-    const T& operator[](uint64_t index) const noexcept;
+private:
+    BaseType* _ptr = nullptr;
 };
 
 template<typename T>
-FORCE_INLINE void delete_object(T* const obj) noexcept { delete obj; }
+inline UniqPtr<T>::UniqPtr(BaseType* const ptr) noexcept
+    : _ptr(ptr) { }
 
 template<typename T>
-FORCE_INLINE void delete_array(T* const arr) noexcept { delete[] arr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>::UniqPtrBase(T* const ptr) noexcept : _ptr(ptr) { }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>::UniqPtrBase(UniqPtrBase&& other)
+inline UniqPtr<T>::UniqPtr(UniqPtr&& other)
 noexcept : _ptr(other._ptr) {
     /* Null the other pointer */
     other._ptr = nullptr;
 }
 
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>& UniqPtrBase<T, D>::operator=(UniqPtrBase&& other) noexcept {
-    /* If there is the same object, do nothing */
+template<typename T>
+inline UniqPtr<T>& UniqPtr<T>::operator=(UniqPtr&& other)
+noexcept {
+    /* If there is the same objecto nothing */
     if (this == &other) return *this;
 
     /* Free the memory */
-    (D(_ptr));
+    if constexpr (std::is_array_v<T>) delete[] _ptr;
+    else delete _ptr;
 
     /* Swap the pointers */
     _ptr = other._ptr;
@@ -105,54 +83,50 @@ UniqPtrBase<T, D>& UniqPtrBase<T, D>::operator=(UniqPtrBase&& other) noexcept {
     return *this;
 }
 
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>::~UniqPtrBase() noexcept { (D(_ptr)); }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-T* UniqPtrBase<T, D>::Get() noexcept { return _ptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-const T* UniqPtrBase<T, D>::Get() const noexcept { return _ptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-void UniqPtrBase<T, D>::Release() noexcept { _ptr = nullptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-T& UniqPtrBase<T, D>::operator*() noexcept { return *_ptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-const T& UniqPtrBase<T, D>::operator*() const noexcept { return *_ptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>::operator T*() noexcept { return _ptr; }
-
-template<typename T, deleter<T> D>
-FORCE_INLINE
-UniqPtrBase<T, D>::operator const T*() const noexcept { return _ptr; }
-
 template<typename T>
-FORCE_INLINE
-T* UniqPtr<T>::operator->() noexcept { return this->_ptr; }
-
-template<typename T>
-FORCE_INLINE
-const T* UniqPtr<T>::operator->() const noexcept { return this->_ptr; }
-
-template<typename T>
-FORCE_INLINE
-T& UniqPtr<T[]>::operator[](const uint64_t index) noexcept {
-    return this->_ptr[index];
+inline UniqPtr<T>::~UniqPtr() noexcept {
+    if constexpr (std::is_array_v<T>) delete[] _ptr;
+    else delete _ptr;
 }
 
 template<typename T>
-FORCE_INLINE
-const T& UniqPtr<T[]>::operator[](const uint64_t index) const noexcept {
-    return this->_ptr[index];
-}
+inline UniqPtr<T>::BaseType* UniqPtr<T>::Get() noexcept { return _ptr; }
+
+template<typename T>
+inline const UniqPtr<T>::BaseType* UniqPtr<T>::Get() const
+noexcept { return _ptr; }
+
+template<typename T>
+inline void UniqPtr<T>::Release() noexcept { _ptr = nullptr; }
+
+template<typename T>
+inline UniqPtr<T>::BaseType& UniqPtr<T>::operator*() noexcept { return *_ptr; }
+
+template<typename T>
+inline const UniqPtr<T>::BaseType& UniqPtr<T>::operator*() const
+noexcept { return *_ptr; }
+
+template<typename T>
+inline UniqPtr<T>::operator UniqPtr<T>::BaseType*() noexcept { return _ptr; }
+
+template<typename T>
+inline UniqPtr<T>::operator const UniqPtr<T>::BaseType*() const
+noexcept { return _ptr; }
+
+template <typename T>
+inline UniqPtr<T>::BaseType* UniqPtr<T>::operator->() noexcept
+requires (!std::is_array_v<T>) { return _ptr; }
+
+template <typename T>
+inline const UniqPtr<T>::BaseType* UniqPtr<T>::operator->() const noexcept
+requires (!std::is_array_v<T>) { return _ptr; }
+
+template <typename T>
+inline UniqPtr<T>::BaseType&
+UniqPtr<T>::operator[](const uint64_t index) noexcept
+requires (std::is_array_v<T>) { return _ptr[index]; }
+
+template <typename T>
+inline const UniqPtr<T>::BaseType&
+UniqPtr<T>::operator[](const uint64_t index) const noexcept
+requires (std::is_array_v<T>) { return _ptr[index]; }

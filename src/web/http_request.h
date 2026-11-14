@@ -25,17 +25,21 @@ public:
     HttpRequest(HttpRequest && other) noexcept = default;
     HttpRequest &operator=(HttpRequest &&) noexcept = delete;
 
-    void SetHeaders(const char* const (*headers)[2],
-                    uint32_t headers_num);
+    HttpRequest& SetHeaders(const char* const (*headers)[2],
+                            uint32_t headers_num);
 
-    void SetCookies(const char* const (*cookies)[2],
-                    uint32_t cookies_num);
+    HttpRequest& SetCookies(const char* const (*cookies)[2],
+                            uint32_t cookies_num);
 
-    void AddHeader(const char* name, const char* value) noexcept;
+    HttpRequest& AddHeader(const char* name, const char* value) noexcept;
 
-    void AddCookie(const char* key, const char* value) noexcept;
+    HttpRequest& AddCookie(const char* key, const char* value) noexcept;
 
-    void SetContentLength(uint64_t length) noexcept;
+    HttpRequest& SetContentLength(uint64_t length) noexcept;
+
+    HttpRequest& ResetContentLength() noexcept;
+
+    bool IsChunkedEncoding() const noexcept;
 
     void SendHttp11Headers(HttpTransport& transport) noexcept;
 
@@ -70,14 +74,15 @@ inline HttpRequest::HttpRequest(const char* const domain,
                                 const char* const method) noexcept
     : domain(domain), _path(path), _method(method) { }
 
-inline void HttpRequest::SetHeaders(const char* const (* const headers)[2],
-                                    const uint32_t headers_num) {
+inline HttpRequest&
+HttpRequest::SetHeaders(const char* const (* const headers)[2],
+                        const uint32_t headers_num) {
     /* Create a new dynamic array to replace the old one */
     _headers = DynamicArray<Header>(headers_num + 4);
 
     /* Drop special headers to their default values */
     closeConnection = true;
-    _contentLength = String(0);
+    ResetContentLength();
 
     /* Loop through the headers */
     for (uint32_t i = 0; i < headers_num; ++i) {
@@ -95,10 +100,14 @@ inline void HttpRequest::SetHeaders(const char* const (* const headers)[2],
         /* If all is OK, save the header */
         SaveHeader(name, value);
     }
+
+    /* Return the reference to themselve */
+    return *this;
 }
 
-inline void HttpRequest::SetCookies(const char* const (* const cookies)[2],
-                                    const uint32_t cookies_num) {
+inline HttpRequest&
+HttpRequest::SetCookies(const char* const (* const cookies)[2],
+                        const uint32_t cookies_num) {
     /* Create a new dynamic array to replace the old one */
     DynamicArray<Cookie> new_cookies(cookies_num + 2);
 
@@ -120,18 +129,29 @@ inline void HttpRequest::SetCookies(const char* const (* const cookies)[2],
 
     /* Replace the old cookies array with a new one */
     _cookies = move(new_cookies);
+
+    /* Return the reference to themselve */
+    return *this;
 }
 
-inline void HttpRequest::AddHeader(const char* const name,
-                                   const char* const value)
-noexcept { SaveHeader(name, value); }
+inline HttpRequest& HttpRequest::AddHeader(const char* const name,
+                                           const char* const value)
+noexcept { SaveHeader(name, value); return *this; }
 
-inline void HttpRequest::AddCookie(const char* const key,
-                                   const char* const value)
-noexcept { _cookies.Push({ key, value }); }
+inline HttpRequest& HttpRequest::AddCookie(const char* const key,
+                                           const char* const value)
+noexcept { _cookies.Push({ key, value }); return *this; }
 
-inline void HttpRequest::SetContentLength(uint64_t length)
-noexcept { _contentLength = String::Format("%llu", length); }
+inline HttpRequest& HttpRequest::ResetContentLength() noexcept {
+    if (!_contentLength.IsEmpty()) _contentLength = String(0);
+    return *this;
+}
+
+inline HttpRequest& HttpRequest::SetContentLength(uint64_t length)
+noexcept { _contentLength = String::Format("%llu", length); return *this; }
+
+inline bool HttpRequest::IsChunkedEncoding() const
+noexcept { return _contentLength.IsEmpty(); }
 
 inline void HttpRequest::SendHttp11Headers(HttpTransport& transport)
 noexcept {
@@ -148,7 +168,7 @@ noexcept {
     transport.Send("\r\n");
 
     /* Set the 'Content-Length' or 'Transfer-Encoding' header */
-    if (_contentLength.IsEmpty())
+    if (IsChunkedEncoding())
         transport.Send("Transfer-Encoding: chunked\r\n");
     else {
         transport.Send("Content-Length: ");
