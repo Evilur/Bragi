@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ctype.h>
 #include <cstdint>
 #include <cstring>
 #include <string_view>
@@ -42,6 +43,12 @@ public:
 
     ~String() noexcept;
 
+    bool IsEmpty() const noexcept;
+
+    void ToLower() noexcept;
+
+    void ToUpper() noexcept;
+
     [[nodiscard]] const char* CStr() const noexcept;
 
 private:
@@ -63,7 +70,8 @@ String::String(const uint64_t str_size) :
 }
 
 inline
-String::String(const char* const str) : String(str, strlen(str)) { }
+String::String(const char* const str)
+    : String(str, str != nullptr ? strlen(str) : 0) { }
 
 inline
 String::String(const char* str, const uint64_t str_size) :
@@ -178,6 +186,25 @@ const noexcept { return { _str, _size }; }
 
 inline
 String::~String() noexcept { delete[] _str; }
+
+inline
+bool String::IsEmpty() const noexcept { return _size == 0; }
+
+inline void String::ToLower() noexcept {
+    for (char* str_ptr = _str,
+         * const str_end = _str + _size;
+         str_ptr < str_end; ++str_ptr)
+        if (*str_ptr >= 'A' && *str_ptr <= 'Z')
+            *str_ptr += 'a' - 'A';
+}
+
+inline void String::ToUpper() noexcept {
+    for (char* str_ptr = _str,
+         * const str_end = _str + _size;
+         str_ptr < str_end; ++str_ptr)
+        if (*str_ptr >= 'a' && *str_ptr <= 'z')
+            *str_ptr -= 'a' - 'A';
+}
 
 inline
 const char* String::CStr() const noexcept { return _str; }

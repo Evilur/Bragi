@@ -1,6 +1,6 @@
 #pragma once
 
-#include "socket/socket_exception.h"
+#include "exception/socket_exception.h"
 #include "util/class.h"
 #include "util/logger.h"
 
@@ -29,6 +29,10 @@ public:
     void Connect(const sockaddr_in& address);
 
     void Close() noexcept;
+
+    void SetOption(int32_t optname,
+                   const void* optval,
+                   socklen_t optlen) const noexcept;
 
     int32_t Send(const char* buffer, uint32_t buffer_size) const noexcept;
 
@@ -86,6 +90,18 @@ inline void TcpSocket::Close() noexcept {
     close(_socket_fd);
 #endif
     _socket_fd = -1;
+}
+
+inline
+void TcpSocket::SetOption(const int32_t optname, const void* const optval,
+                          const socklen_t optlen) const noexcept {
+#ifdef _WIN32
+    if (setsockopt(_socket_fd, SOL_SOCKET,
+                   optname, (const char*)optval, optlen) == -1)
+#else
+    if (setsockopt(_socket_fd, SOL_SOCKET, optname, optval, optlen) == -1)
+#endif
+        WARN_LOG("Can't set socket option");
 }
 
 inline int32_t TcpSocket::Send(const char* const buffer,

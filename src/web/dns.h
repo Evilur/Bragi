@@ -2,7 +2,7 @@
 
 #include "util/class.h"
 #include "util/logger.h"
-#include "web/dns_exception.h"
+#include "exception/dns_exception.h"
 
 #include <netdb.h>
 
