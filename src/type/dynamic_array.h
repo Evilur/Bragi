@@ -28,6 +28,8 @@ public:
 
     S Size() const noexcept;
 
+    bool IsEmpty() const noexcept;
+
     void Push(const T& element);
     void Push(T&& element);
 
@@ -114,6 +116,9 @@ inline T* DynamicArray<T, S>::Data() noexcept { return _array; }
 
 template <typename T, std::unsigned_integral S>
 inline S DynamicArray<T, S>::Size() const noexcept { return _size; }
+
+template <typename T, std::unsigned_integral S>
+inline bool DynamicArray<T, S>::IsEmpty() const noexcept { return _size < 1; }
 
 template <typename T, std::unsigned_integral S>
 inline void DynamicArray<T, S>::Push(const T& element) {

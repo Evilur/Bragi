@@ -30,7 +30,8 @@ public:
 
     void Close() noexcept;
 
-    void SetOption(int32_t optname,
+    void SetOption(int32_t level,
+                   int32_t optname,
                    const void* optval,
                    socklen_t optlen) const noexcept;
 
@@ -93,13 +94,15 @@ inline void TcpSocket::Close() noexcept {
 }
 
 inline
-void TcpSocket::SetOption(const int32_t optname, const void* const optval,
+void TcpSocket::SetOption(const int32_t level,
+                          const int32_t optname,
+                          const void* const optval,
                           const socklen_t optlen) const noexcept {
 #ifdef _WIN32
-    if (setsockopt(_socket_fd, SOL_SOCKET,
+    if (setsockopt(_socket_fd, level,
                    optname, (const char*)optval, optlen) == -1)
 #else
-    if (setsockopt(_socket_fd, SOL_SOCKET, optname, optval, optlen) == -1)
+    if (setsockopt(_socket_fd, level, optname, optval, optlen) == -1)
 #endif
         WARN_LOG("Can't set socket option");
 }

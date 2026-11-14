@@ -14,6 +14,7 @@
 class HttpRequest final {
 public:
     const String domain;
+    bool closeConnection = true;
 
     HttpRequest(const char* domain,
                 const char* path,
@@ -33,6 +34,8 @@ public:
     void AddHeader(const char* name, const char* value) noexcept;
 
     void AddCookie(const char* key, const char* value) noexcept;
+
+    void SetContentLength(uint64_t length) noexcept;
 
     void SendHttp11Headers(HttpTransport& transport) noexcept;
 
@@ -54,8 +57,12 @@ private:
     DynamicArray<Header> _headers { 8 };
     DynamicArray<Cookie> _cookies { 4 };
 
+    String _contentLength { 0 };
+
     const String _path;
     const String _method;
+
+    void SaveHeader(const char* name, const char* value) noexcept;
 };
 
 inline HttpRequest::HttpRequest(const char* const domain,
@@ -66,27 +73,28 @@ inline HttpRequest::HttpRequest(const char* const domain,
 inline void HttpRequest::SetHeaders(const char* const (* const headers)[2],
                                     const uint32_t headers_num) {
     /* Create a new dynamic array to replace the old one */
-    DynamicArray<Header> new_headers(headers_num + 4);
+    _headers = DynamicArray<Header>(headers_num + 4);
+
+    /* Drop special headers to their default values */
+    closeConnection = true;
+    _contentLength = String(0);
 
     /* Loop through the headers */
     for (uint32_t i = 0; i < headers_num; ++i) {
         /* Get a key and a value */
-        const char* const key = headers[i][0];
+        const char* const name = headers[i][0];
         const char* const value = headers[i][1];
 
-        /* Check the key and the value */
-        if (key == nullptr || value == nullptr) {
+        /* Check the name and the value */
+        if (name == nullptr || value == nullptr) {
             ERROR_LOG("Failed to set the header: %s cannot be nullptr",
-                      key == nullptr ? "key" : "value");
+                      name == nullptr ? "name" : "value");
             throw HttpRequestException();
         }
 
-        /* If all is OK, push the header to the array */
-        new_headers.Push({ key, value });
+        /* If all is OK, save the header */
+        SaveHeader(name, value);
     }
-
-    /* Replace the old headers array with a new one */
-    _headers = move(new_headers);
 }
 
 inline void HttpRequest::SetCookies(const char* const (* const cookies)[2],
@@ -116,15 +124,80 @@ inline void HttpRequest::SetCookies(const char* const (* const cookies)[2],
 
 inline void HttpRequest::AddHeader(const char* const name,
                                    const char* const value)
-noexcept { _headers.Push({ name, value }); }
+noexcept { SaveHeader(name, value); }
 
 inline void HttpRequest::AddCookie(const char* const key,
                                    const char* const value)
 noexcept { _cookies.Push({ key, value }); }
 
+inline void HttpRequest::SetContentLength(uint64_t length)
+noexcept { _contentLength = String::Format("%llu", length); }
+
 inline void HttpRequest::SendHttp11Headers(HttpTransport& transport)
 noexcept {
-    transport.Send("PENIS", 5);
+    /* Send the request line */
+    transport.Send(_method);
+    transport.Send(' ');
+    transport.Send(_path);
+    transport.Send(' ');
+    transport.Send("HTTP/1.1\r\n");
+
+    /* Send a host header */
+    transport.Send("Host: ");
+    transport.Send(domain);
+    transport.Send("\r\n");
+
+    /* Set the 'Content-Length' or 'Transfer-Encoding' header */
+    if (_contentLength.IsEmpty())
+        transport.Send("Transfer-Encoding: chunked\r\n");
+    else {
+        transport.Send("Content-Length: ");
+        transport.Send(_contentLength);
+        transport.Send("\r\n");
+    }
+
+    /* Set the 'Connection' header according to the 'closeConnection' flag */
+    transport.Send("Connection: ");
+    if (closeConnection) transport.Send("close\r\n");
+    else transport.Send("keep-alive\r\n");
+
+    /* Send cookies */
+    if (!_cookies.IsEmpty()) {
+        /* Send the cookie header name */
+        transport.Send("Cookie: ");
+
+        /* Send all the cookies */
+        for (uint32_t i = 0; i < _cookies.Size();) {
+            Cookie& cookie = _cookies[i];
+            transport.Send(cookie.key);
+            transport.Send('=');
+            transport.Send(cookie.value);
+
+            /* Send the delimeter */
+            if (++i < _cookies.Size()) transport.Send("; ");
+        }
+
+        /* Send the EOF sequence */
+        transport.Send("\r\n");
+    }
+
+    /* Send the other headers */
+    if (!_headers.IsEmpty()) {
+        for (uint32_t i = 0; i < _headers.Size(); ++i) {
+            Header& header = _headers[i];
+            transport.Send(header.name);
+            transport.Send(": ");
+            transport.Send(header.value);
+
+            /* Send the EOF sequence */
+            transport.Send("\r\n");
+        }
+    }
+
+    /* Send yet another one EOF sequence (an empty line )
+     * for the end of the headers */
+    transport.Send("\r\n");
+
     transport.Flush();
 }
 
@@ -138,3 +211,27 @@ inline HttpRequest::Header::Header(const char* const name,
 inline HttpRequest::Cookie::Cookie(const char* const key,
                                    const char* const value) noexcept
     : key(key), value(value) { }
+
+inline void HttpRequest::SaveHeader(const char* const name,
+                                    const char* const value) noexcept {
+    /* Create a header */
+    Header header(name, value);
+
+    /* Check for the 'Connection' header */
+    if (header.name == "connection") {
+        /* Check the value */
+        header.value.ToLower();
+        if (header.value == "close") closeConnection = true;
+        else if (header.value == "keep-alive") closeConnection = false;
+    }
+
+    /* Check for the 'Content-Length' header
+     * Set the content length */
+    else if (header.name == "content-length")
+        _contentLength = header.value;
+
+    /* If there is not a special header
+     * Push the header to the array */
+    else
+        _headers.Push(move(header));
+}

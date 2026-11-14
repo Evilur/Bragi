@@ -12,7 +12,7 @@
 int main() {
     constexpr const char* const headers[][2] = {
         { "Content-Length", "1488" },
-        { "Connection", "Close" },
+        { "Connection", "Keep-Alive" },
         { "Cookie", "arl=abc" },
         { "Accept", "*/*" }
     };
@@ -25,6 +25,7 @@ int main() {
     HttpRequest request("google.com", "/");
     request.SetHeaders(headers, 4);
     request.SetCookies(cookies, 2);
+    request.SetContentLength(0);
 
     HttpTransport transport(0, 0);
     request.SendHttp11Headers(transport);

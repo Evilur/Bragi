@@ -40,8 +40,7 @@ inline HttpClient::HttpClient(const char* const domain,
     _transport(DNS::Resolve(domain), Port()) { }
 
 inline HttpClient::HttpClient(const HttpRequest& request) noexcept
-    : _request(request),
-    _transport(DNS::Resolve(request.domain), Port()) { }
+    : _request(request), _transport(DNS::Resolve(request.domain), Port()) { }
 
 inline HttpRequest& HttpClient::Request() noexcept { return _request; }
 
