@@ -218,7 +218,7 @@ noexcept {
      * for the end of the headers */
     transport.Send("\r\n");
 
-    transport.Flush();
+    transport.Finish();
 }
 
 inline HttpRequest::Header::Header(const char* const name,

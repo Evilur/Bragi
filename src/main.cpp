@@ -10,16 +10,8 @@
 */
 
 int main() {
-    HttpClient client("google.com", "/");
-
-    constexpr const char msg1[] = "Hello";
-    constexpr const char msg2[] = "Test";
-    constexpr const char msg3[] = "fjklasjflkjasdlkfjas;dflkjas;ldkfjas;dlfkjas";
-
-    client.Write(msg1, sizeof(msg1) - 1);
-    client.Write(msg2, sizeof(msg2) - 1);
-    client.Write(msg3, sizeof(msg3) - 1);
-    client.Flush();
+    HttpClient client("google.com", "/", "HEAD");
+    client.Finish();
 
 #if 0
     /* Create a bot cluster */
