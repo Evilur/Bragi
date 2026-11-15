@@ -1,5 +1,6 @@
 #pragma once
 
+#include "exception/http_exception.h"
 #include "socket/tcp_socket.h"
 #include "type/string.h"
 #include "util/class.h"
@@ -15,19 +16,24 @@ class HttpTransport final {
 public:
     PREVENT_COPY_AND_MOVE(HttpTransport);
 
-    HttpTransport(uint32_t addr, uint16_t port);
+    HttpTransport(uint32_t addr, uint16_t port) noexcept;
 
-    void Send(char chr) noexcept;
-    void Send(const char* buffer, uint32_t buffer_size) noexcept;
-    void Send(const String& string) noexcept;
-    template <uint32_t N> void Send(const char (&string)[N]) noexcept;
-    template <typename T> void Send(T) = delete;
+    void Connect();
 
-    void Flush() noexcept;
+    void Send(char chr);
+    void Send(const char* buffer, uint32_t buffer_size);
+    void Send(const String& string);
+    template <uint32_t N> void Send(const char (&string)[N]);
+    template <typename T> void Send(T) noexcept = delete;
 
-    uint32_t Receive(char* buffer, uint32_t buffer_size) noexcept;
+    void Flush();
+
+    uint32_t Receive(char* buffer, uint32_t buffer_size);
+
+    void Abort();
 
 private:
+    const sockaddr_in _addr;
     TcpSocket _socket;
 
     char _buffer[1460];
@@ -36,20 +42,22 @@ private:
 };
 
 inline HttpTransport::HttpTransport(const uint32_t addr,
-                                    const uint16_t port) {
+                                    const uint16_t port) noexcept : _addr({
+    .sin_family = AF_INET,
+    .sin_port = port,
+    .sin_addr { addr }
+}) { }
+
+inline void HttpTransport::Connect() {
     /* Set options */
-    int32_t nodelay = 1;
+    const int32_t nodelay = 1;
     _socket.SetOption(IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
 
     /* Connect a socket to the server */
-    _socket.Connect({
-        .sin_family = AF_INET,
-        .sin_port = port,
-        .sin_addr { addr }
-    });
+    _socket.Connect(_addr);
 }
 
-inline void HttpTransport::Send(const char chr) noexcept {
+inline void HttpTransport::Send(const char chr) {
     /* Check for a free space */
     if (_buffer_ptr >= _buffer_end) Flush();
 
@@ -61,7 +69,7 @@ inline void HttpTransport::Send(const char chr) noexcept {
 }
 
 inline void HttpTransport::Send(const char* buffer,
-                                uint32_t buffer_size) noexcept {
+                                uint32_t buffer_size) {
     /* While we have the data to write */
     while (buffer_size > 0) {
         /* Check for a free space */
@@ -83,21 +91,18 @@ inline void HttpTransport::Send(const char* buffer,
 }
 
 inline void HttpTransport::Send(const String& string)
-noexcept { Send(string, string.Length()); }
+{ Send(string, string.Length()); }
 
 template <uint32_t N>
 inline void HttpTransport::Send(const char (&string)[N])
-noexcept { Send(string, N - 1); }
+{ Send(string, N - 1); }
 
-inline void HttpTransport::Flush() noexcept {
+inline void HttpTransport::Flush() {
     /* Check for an empty buffer */
     if (_buffer_ptr == _buffer) return;
 
     /* Write the data to the socket */
-    if (!_socket.Send(_buffer, _buffer_ptr - _buffer)) {
-        ERROR_LOG("Failed to flush the http buffer");
-        return;
-    }
+    _socket.Send(_buffer, _buffer_ptr - _buffer);
 
     /* Reset the buffer pointer */
     _buffer_ptr = _buffer;
@@ -105,4 +110,12 @@ inline void HttpTransport::Flush() noexcept {
 
 inline uint32_t HttpTransport::Receive(char* const buffer,
                                        const uint32_t buffer_size)
-noexcept { return _socket.Receive(buffer, buffer_size); }
+{ return _socket.Receive(buffer, buffer_size); }
+
+inline void HttpTransport::Abort() {
+    /* Open a new TCP socket */
+    _socket = TcpSocket();
+
+    /* Reset the buffer pointer */
+    _buffer_ptr = _buffer;
+}

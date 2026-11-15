@@ -20,7 +20,7 @@
  */
 class TcpSocket final {
 public:
-    PREVENT_COPY_AND_MOVE(TcpSocket);
+    PREVENT_COPY_ALLOW_MOVE(TcpSocket);
 
     TcpSocket();
 
@@ -35,7 +35,7 @@ public:
                    const void* optval,
                    socklen_t optlen) const noexcept;
 
-    bool Send(const char* buffer, uint32_t buffer_size) const noexcept;
+    void Send(const char* buffer, uint32_t buffer_size) const;
 
     int32_t Receive(char* buffer, uint32_t buffer_size) const noexcept;
 
@@ -46,22 +46,19 @@ private:
 inline TcpSocket::TcpSocket() {
 #ifdef _WIN32
     WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0) {
-        ERROR_LOG("Can't startup the WSA");
-        throw SocketException();
-    }
+    if (WSAStartup(MAKEWORD(2,2), &wsa) != 0)
+        throw SocketException("Can't startup the WSA");
 #endif
 
-    /* Create a socket */
+    /* Create a new socket */
     _socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     /* Check the socket */
     if (_socket_fd == -1) {
-        ERROR_LOG("Can't create a socket");
 #ifdef _WIN32
         WSACleanup();
 #endif
-        throw SocketException();
+        throw SocketException("Can't create a socket");
     }
 }
 
@@ -71,9 +68,8 @@ inline void TcpSocket::Connect(const sockaddr_in& address) {
     /* Connect to the address */
     if (connect(_socket_fd, (const sockaddr*)&address, sizeof(address)) ==
         -1) {
-        ERROR_LOG("Can't connect to the server");
         Close();
-        throw SocketException();
+        throw SocketException("Can't connect to the server");
     }
 
     /* Print the connect address */
@@ -104,11 +100,11 @@ void TcpSocket::SetOption(const int32_t level,
 #else
     if (setsockopt(_socket_fd, level, optname, optval, optlen) == -1)
 #endif
-        WARN_LOG("Can't set the socket option");
+        WARN_LOG("Failed to set the socket option");
 }
 
-inline bool TcpSocket::Send(const char* buffer,
-                            uint32_t buffer_size) const noexcept {
+inline void TcpSocket::Send(const char* buffer,
+                            uint32_t buffer_size) const {
     /* While we have data that has not been sent yet */
     while (buffer_size > 0) {
         /* Send the data */
@@ -127,7 +123,7 @@ inline bool TcpSocket::Send(const char* buffer,
                      buffer_size,
                      inet_ntoa(address.sin_addr),
                      ntohs(address.sin_port));
-            return false;
+            throw SocketException("Failed to send data");
         }
 
         TRACE_LOG("Send %d bytes to %s:%hu",
@@ -139,9 +135,6 @@ inline bool TcpSocket::Send(const char* buffer,
         buffer      += result;
         buffer_size -= result;
     }
-
-    /* Return the success code */
-    return true;
 }
 
 inline int32_t TcpSocket::Receive(char* buffer,
@@ -164,9 +157,9 @@ inline int32_t TcpSocket::Receive(char* buffer,
                   inet_ntoa(from.sin_addr),
                   ntohs(from.sin_port));
     } else {
-        TRACE_LOG("The connection have been closed by the %s:%hu",
-                  inet_ntoa(from.sin_addr),
-                  ntohs(from.sin_port));
+        INFO_LOG("The connection closed by %s:%hu",
+                 inet_ntoa(from.sin_addr),
+                 ntohs(from.sin_port));
     }
 #endif
 

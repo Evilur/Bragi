@@ -2,6 +2,8 @@
 
 #include <dpp/dpp.h>
 
+static inline void on_terminate();
+
 void on_slashcommand(const dpp::slashcommand_t &event);
 
 void on_voice_state_update(const dpp::voice_state_update_t &event);

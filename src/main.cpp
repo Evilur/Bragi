@@ -10,6 +10,9 @@
 */
 
 int main() {
+    /* Bind the 'on_terminate' handler */
+    std::set_terminate(on_terminate);
+
     HttpClient client("google.com", "/");
     client.Send();
 
@@ -35,6 +38,23 @@ int main() {
     INFO_LOG("Starting the bot");
     bot.start(dpp::st_wait);
 #endif
+}
+
+static void on_terminate() {
+    /* Get the current exception */
+    std::exception_ptr exception = std::current_exception();
+
+    /* If there is no current exceptions */
+    if (!exception)
+        FATAL_LOG("Terminate called without an active exception");
+
+    /* Print the exception message */
+    try {
+        std::rethrow_exception(exception);
+    } catch (const std::exception& e) {
+        FATAL_LOG("Unhandled exception of type '%s':\n%s",
+                  typeid(e).name(), e.what());
+    } catch (...) { FATAL_LOG("Unhandled unknown exception"); }
 }
 
 #if 0

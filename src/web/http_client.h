@@ -1,6 +1,5 @@
 #pragma once
 
-#include "type/uniq_ptr.h"
 #include "util/class.h"
 #include "web/dns.h"
 #include "web/http_encoder.h"
@@ -27,11 +26,11 @@ public:
 
     HttpRequest& Request() noexcept;
 
-    virtual void Write(const char* buffer, uint32_t buffer_size) noexcept;
+    virtual bool Write(const char* buffer, uint32_t buffer_size);
 
-    virtual uint32_t Read(char* buffer, uint32_t buffer_size) noexcept;
+    bool Send();
 
-    void Send() noexcept;
+    virtual uint32_t Read(char* buffer, uint32_t buffer_size);
 
 protected:
     virtual uint16_t Port() const noexcept;
@@ -43,8 +42,12 @@ private:
 
     enum State : uint8_t {
         SENDING_HEADERS,
-        SENDING_BODY
+        SENDING_BODY,
+        RECVING_HEADERS,
+        RECVING_BODY
     } _state = SENDING_HEADERS;
+
+    void Abort();
 };
 
 inline HttpClient::HttpClient(const char* const domain,
@@ -57,12 +60,19 @@ inline HttpClient::HttpClient(const HttpRequest& request) noexcept
 
 inline HttpRequest& HttpClient::Request() noexcept { return _request; }
 
-inline void HttpClient::Write(const char* const buffer,
-                              const uint32_t buffer_size) noexcept {
+inline bool HttpClient::Write(const char* const buffer,
+                              const uint32_t buffer_size) {
     /* If we haven't sent the headers yet, do it now */
     if (_state == SENDING_HEADERS) {
+        /* Connect the transport to the server */
+        try { _transport.Connect(); }
+        catch (const SocketException& e)
+        { throw HttpException("Failed to connect to the server"); }
+
         /* Send the request headers */
-        _request.SendHttp11Headers(_transport);
+        try { _request.SendHttp11Headers(_transport); }
+        catch (const SocketException& e)
+        { Abort(); return false; }
 
         /* Set the right encoding */
         if (_request.IsChunkedEncoding())
@@ -78,11 +88,50 @@ inline void HttpClient::Write(const char* const buffer,
     }
 
     /* Send the body */
-    _encoder.Send(_transport, buffer, buffer_size);
+    try { _encoder.Send(_transport, buffer, buffer_size); }
+    catch (const SocketException& e)
+    { Abort(); return false; }
+
+    /* Return the success code */
+    return true;
+}
+
+inline bool HttpClient::Send() {
+    /* If we haven't sent the headers yet (not initialized transport)
+     * Do it now */
+    if (_state == SENDING_HEADERS) {
+        /* Connect the transport to the server */
+        try { _transport.Connect(); }
+        catch (const SocketException& e)
+        { throw HttpException("Failed to connect to the server"); }
+
+        /* Set the 'Content-Length' to 0 and send the request headers */
+        _request.SetContentLength(0);
+        try { _request.SendHttp11Headers(_transport); }
+        catch (const SocketException& e)
+        { Abort(); return false; }
+
+        /* Reset the Content-Length */
+        _request.ResetContentLength();
+
+        /* Set the right encoder */
+        _encoder = HttpEncoder::Plain::Instance();
+    }
+
+    /* Finish the request */
+    try { _encoder.Finish(_transport); }
+    catch (const SocketException& e)
+    { Abort(); return false; }
+
+    /* Update the state */
+    _state = RECVING_HEADERS;
+
+    /* Return the success code */
+    return true;
 }
 
 inline uint32_t HttpClient::Read(char* buffer,
-                                 const uint32_t buffer_size) noexcept {
+                                 const uint32_t buffer_size) {
     /* Save the total received size */
     uint32_t total_received = 0;
 
@@ -108,26 +157,12 @@ inline uint32_t HttpClient::Read(char* buffer,
     return total_received;
 }
 
-inline void HttpClient::Send() noexcept {
-    /* If we haven't sent the headers yet (not initialized transport)
-     * Do it now */
-    if (_state == SENDING_HEADERS) {
-        /* Set the 'Content-Length' to 0 and send the request headers */
-        _request.SetContentLength(0);
-        _request.SendHttp11Headers(_transport);
+inline uint16_t HttpClient::Port() const noexcept { return htons(80); }
 
-        /* Reset the Content-Length */
-        _request.ResetContentLength();
-
-        /* Set the right encoder */
-        _encoder = HttpEncoder::Plain::Instance();
-    }
-
-    /* Finish the request */
-    _encoder.Finish(_transport);
+inline void HttpClient::Abort() {
+    /* Abort the current connection */
+    _transport.Abort();
 
     /* Reset the state */
     _state = SENDING_HEADERS;
 }
-
-inline uint16_t HttpClient::Port() const noexcept { return htons(80); }

@@ -25,7 +25,7 @@
 #endif
 
 #if LOG_LEVEL <= 3
-#define WARN_LOG(...) Logger::Log(stdout, Logger::WARN_LEVEL, __VA_ARGS__)
+#define WARN_LOG(...) Logger::Log(stderr, Logger::WARN_LEVEL, __VA_ARGS__)
 #else
 #define WARN_LOG(...)
 #endif
@@ -44,7 +44,7 @@
 
 class Logger final {
 public:
-    enum LogLevel : char {
+    enum LogLevel : uint8_t {
         TRACE_LEVEL,
         DEBUG_LEVEL,
         INFO_LEVEL,

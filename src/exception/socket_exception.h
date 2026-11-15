@@ -1,12 +1,13 @@
 #pragma once
 
-#include <exception>
+#include "exception/exception.h"
 
-/**
- * A wrapper for the std::exception for sockets
- * @author Evilur <the.evilur@gmail.com>
- */
-class SocketException final : std::exception {
+class SocketException final : public Exception {
 public:
-    SocketException() noexcept = default;
+    EXCEPTION_COMMON_CONTSTRUCT(SocketException);
+
+    const char* what() const noexcept override;
 };
+
+inline const char* SocketException::what() const
+noexcept { return "Socket occur the exception"; }

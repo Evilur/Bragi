@@ -1,8 +1,8 @@
 #pragma once
 
+#include "exception/http_exception.h"
 #include "util/class.h"
 #include "util/logger.h"
-#include "exception/dns_exception.h"
 
 #include <netdb.h>
 
@@ -16,7 +16,9 @@ public:
 inline uint32_t DNS::Resolve(const char* hostname) {
     /* Try to resolve the domain name */
     const hostent* const hostent = gethostbyname(hostname);
-    if (hostent == nullptr) throw DNSException(hostname);
+    if (hostent == nullptr)
+        throw HttpException("Failed to resolve the ip for the %s domain",
+                            hostname);
 
     /* Print the ip */
     TRACE_LOG("DNS resolve: %s -> %hhu.%hhu.%hhu.%hhu",

@@ -12,9 +12,9 @@ public:
 
     virtual void Send(HttpTransport& transport,
                       const char* buffer,
-                      uint32_t buffer_size) noexcept = 0;
+                      uint32_t buffer_size) = 0;
 
-    virtual void Finish(HttpTransport& transport) noexcept = 0;
+    virtual void Finish(HttpTransport& transport) = 0;
 
     class Plain;
     class Chunked;
@@ -29,7 +29,7 @@ public:
 
     void Send(HttpTransport& transport,
               const char* buffer,
-              uint32_t buffer_size) noexcept override;
+              uint32_t buffer_size) override;
 
     void Finish(HttpTransport& transport) noexcept override;
 
@@ -46,9 +46,9 @@ public:
 
     void Send(HttpTransport& transport,
               const char* buffer,
-              uint32_t buffer_size) noexcept override;
+              uint32_t buffer_size) override;
 
-    void Finish(HttpTransport& transport) noexcept override;
+    void Finish(HttpTransport& transport) override;
 
 private:
     Chunked() = default;
@@ -60,7 +60,7 @@ public:
 inline void HttpEncoder::Plain::Send(HttpTransport& transport,
                                      const char* const buffer,
                                      const uint32_t buffer_size)
-noexcept { transport.Send(buffer, buffer_size); }
+{ transport.Send(buffer, buffer_size); }
 
 inline void HttpEncoder::Plain::Finish(HttpTransport& transport) noexcept { }
 
@@ -71,7 +71,7 @@ inline HttpEncoder::Plain& HttpEncoder::Plain::Instance() noexcept {
 
 inline void HttpEncoder::Chunked::Send(HttpTransport& transport,
                                        const char* const buffer,
-                                       const uint32_t buffer_size) noexcept {
+                                       const uint32_t buffer_size) {
     /* Check for an empty chunk */
     if (buffer_size == 0) return;
 
@@ -102,7 +102,7 @@ inline void HttpEncoder::Chunked::Send(HttpTransport& transport,
 
 inline void
 HttpEncoder::Chunked::Finish(HttpTransport& transport)
-noexcept { transport.Send("0\r\n\r\n");  }
+{ transport.Send("0\r\n\r\n");  }
 
 inline HttpEncoder::Chunked& HttpEncoder::Chunked::Instance() noexcept {
     static Chunked instance;
