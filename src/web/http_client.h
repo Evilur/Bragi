@@ -26,9 +26,9 @@ public:
 
     HttpRequest& Request() noexcept;
 
-    virtual void Send(const char* buffer, uint32_t buffer_size) noexcept;
+    virtual void Write(const char* buffer, uint32_t buffer_size) noexcept;
 
-    void Finish() noexcept;
+    void Send() noexcept;
 
 protected:
     virtual uint16_t Port() const noexcept;
@@ -41,15 +41,15 @@ private:
 inline HttpClient::HttpClient(const char* const domain,
                               const char* const path,
                               const char* const method) noexcept
-    : _request(domain, path, method) { }
+: _request(domain, path, method) { }
 
 inline HttpClient::HttpClient(const HttpRequest& request) noexcept
-    : _request(request) { }
+: _request(request) { }
 
 inline HttpRequest& HttpClient::Request() noexcept { return _request; }
 
-inline void HttpClient::Send(const char* const buffer,
-                             const uint32_t buffer_size) noexcept {
+inline void HttpClient::Write(const char* const buffer,
+                              const uint32_t buffer_size) noexcept {
     /* If we haven't sent the headers yet (not initialized transport)
      * Do it now */
     if (_transport == nullptr) {
@@ -67,7 +67,7 @@ inline void HttpClient::Send(const char* const buffer,
         if (_request.IsChunkedEncoding())
             _transport->SetEncoding(HttpTransport::CHUNKED);
 
-        /* Else reset the Content-Length */
+            /* Else reset the Content-Length */
         else _request.ResetContentLength();
     }
 
@@ -75,7 +75,7 @@ inline void HttpClient::Send(const char* const buffer,
     _transport->Send(buffer, buffer_size);
 }
 
-inline void HttpClient::Finish()
+inline void HttpClient::Send()
 noexcept {
     /* If we haven't sent the headers yet (not initialized transport)
      * Do it now */

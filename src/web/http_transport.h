@@ -6,7 +6,6 @@
 #include "util/class.h"
 
 #include <cstdint>
-#include <cstdio>
 #include <netinet/tcp.h>
 
 /**
@@ -27,7 +26,7 @@ public:
                           const char* buffer,
                           uint32_t buffer_size) noexcept = 0;
 
-        virtual void Finish(HttpTransport& transport) noexcept = 0;
+        virtual void Commit(HttpTransport& transport) noexcept = 0;
     };
 
     struct PlainBody final : public Encoder {
@@ -39,7 +38,7 @@ public:
                   const char* buffer,
                   uint32_t buffer_size) noexcept override;
 
-        void Finish(HttpTransport& transport) noexcept override;
+        void Commit(HttpTransport& transport) noexcept override;
     };
 
     struct Chunked final : public Encoder {
@@ -51,7 +50,7 @@ public:
                   const char* buffer,
                   uint32_t buffer_size) noexcept override;
 
-        void Finish(HttpTransport& transport) noexcept override;
+        void Commit(HttpTransport& transport) noexcept override;
     };
 
     PREVENT_COPY_AND_MOVE(HttpTransport);
@@ -96,7 +95,7 @@ inline void HttpTransport::PlainBody::Send(HttpTransport& transport,
                                            const uint32_t buffer_size)
 noexcept { transport.Write(buffer, buffer_size); }
 
-inline void HttpTransport::PlainBody::Finish(HttpTransport& transport)
+inline void HttpTransport::PlainBody::Commit(HttpTransport& transport)
 noexcept { }
 
 inline void HttpTransport::Chunked::Send(HttpTransport& transport,
@@ -138,7 +137,7 @@ inline void HttpTransport::Chunked::Send(HttpTransport& transport,
 }
 
 inline void
-HttpTransport::Chunked::Finish(HttpTransport& transport)
+HttpTransport::Chunked::Commit(HttpTransport& transport)
 noexcept { transport.Write("0\r\n\r\n");  }
 
 inline HttpTransport::HttpTransport(const uint32_t addr,
@@ -175,7 +174,7 @@ inline void HttpTransport::Send(const char (&string)[N])
 noexcept { Send(string, N - 1); }
 
 inline void HttpTransport::Finish()
-noexcept { _encoder->Finish(*this); Flush(); }
+noexcept { _encoder->Commit(*this); Flush(); }
 
 inline void HttpTransport::Write(const char chr) noexcept {
     /* Check for a free space */

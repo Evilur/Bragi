@@ -10,8 +10,8 @@
 */
 
 int main() {
-    HttpClient client("google.com", "/", "GET");
-    client.Finish();
+    HttpClient client("google.com", "/");
+    client.Send();
 
 #if 0
     /* Create a bot cluster */
