@@ -35,7 +35,7 @@ public:
                    const void* optval,
                    socklen_t optlen) const noexcept;
 
-    int32_t Send(const char* buffer, uint32_t buffer_size) const noexcept;
+    bool Send(const char* buffer, uint32_t buffer_size) const noexcept;
 
     int32_t Receive(char* buffer, uint32_t buffer_size) const noexcept;
 
@@ -104,32 +104,44 @@ void TcpSocket::SetOption(const int32_t level,
 #else
     if (setsockopt(_socket_fd, level, optname, optval, optlen) == -1)
 #endif
-        WARN_LOG("Can't set socket option");
+        WARN_LOG("Can't set the socket option");
 }
 
-inline int32_t TcpSocket::Send(const char* const buffer,
-                               const uint32_t buffer_size) const noexcept {
-    /* Send the data */
-    const int32_t result = send(_socket_fd, buffer, buffer_size, 0);
+inline bool TcpSocket::Send(const char* buffer,
+                            uint32_t buffer_size) const noexcept {
+    /* While we have data that has not been sent yet */
+    while (buffer_size > 0) {
+        /* Send the data */
+        const int32_t result = send(_socket_fd, buffer, buffer_size, 0);
 
-    /* Print the log */
+        /* Print the log */
 #if LOG_LEVEL == 0
-    sockaddr_in address;
-    socklen_t address_len = sizeof(address);
-    getpeername(_socket_fd, (sockaddr*)&address, &address_len);
-    if (result != -1)
+        sockaddr_in address;
+        socklen_t address_len = sizeof(address);
+        getpeername(_socket_fd, (sockaddr*)&address, &address_len);
+#endif
+
+        /* Check for an error */
+        if (result == -1) {
+            WARN_LOG("Failed to send %ld bytes to %s:%hu",
+                     buffer_size,
+                     inet_ntoa(address.sin_addr),
+                     ntohs(address.sin_port));
+            return false;
+        }
+
         TRACE_LOG("Send %d bytes to %s:%hu",
                   result,
                   inet_ntoa(address.sin_addr),
                   ntohs(address.sin_port));
-    else WARN_LOG("Failed to send %ld bytes to %s:%hu",
-                  buffer_size,
-                  inet_ntoa(address.sin_addr),
-                  ntohs(address.sin_port));
-#endif
 
-    /* Return the result */
-    return result;
+        /* Update the poitner and the size */
+        buffer      += result;
+        buffer_size -= result;
+    }
+
+    /* Return the success code */
+    return true;
 }
 
 inline int32_t TcpSocket::Receive(char* buffer,
@@ -139,15 +151,18 @@ inline int32_t TcpSocket::Receive(char* buffer,
 
     /* Print the log */
 #if LOG_LEVEL == 0
-    if (result != -1) {
-        sockaddr_in from;
-        socklen_t from_len = sizeof(from);
-        getpeername(_socket_fd, (sockaddr*)&from, &from_len);
+    sockaddr_in from;
+    socklen_t from_len = sizeof(from);
+    getpeername(_socket_fd, (sockaddr*)&from, &from_len);
+    if (result == -1)
+        WARN_LOG("Failed to get data from %s:%hu",
+                 inet_ntoa(from.sin_addr),
+                 ntohs(from.sin_port));
+    else
         TRACE_LOG("Get %d bytes from %s:%hu",
                   result,
                   inet_ntoa(from.sin_addr),
                   ntohs(from.sin_port));
-    }
 #endif
 
     /* Return the result */

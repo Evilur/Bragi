@@ -10,7 +10,7 @@
 */
 
 int main() {
-    HttpClient client("google.com", "/", "HEAD");
+    HttpClient client("google.com", "/", "GET");
     client.Finish();
 
 #if 0

@@ -1,11 +1,13 @@
 #pragma once
 
+#include "socket/tcp_socket.h"
 #include "type/string.h"
 #include "type/uniq_ptr.h"
 #include "util/class.h"
 
 #include <cstdint>
 #include <cstdio>
+#include <netinet/tcp.h>
 
 /**
  * A transport level for the http client
@@ -68,6 +70,7 @@ public:
 
 private:
     UniqPtr<Encoder> _encoder;
+    TcpSocket _socket;
 
     char _buffer[1460];
     char* _buffer_ptr = _buffer;
@@ -141,7 +144,18 @@ noexcept { transport.Write("0\r\n\r\n");  }
 inline HttpTransport::HttpTransport(const uint32_t addr,
                                     const uint16_t port,
                                     const Encoding encoding)
-: _encoder(GetEncoder(encoding)) { }
+: _encoder(GetEncoder(encoding)) {
+    /* Set options */
+    int32_t nodelay = 1;
+    _socket.SetOption(IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+
+    /* Connect a socket to the server */
+    _socket.Connect({
+        .sin_family = AF_INET,
+        .sin_port = port,
+        .sin_addr { addr }
+    });
+}
 
 inline void HttpTransport::SetEncoding(const Encoding encoding)
 { _encoder = GetEncoder(encoding); }
@@ -204,8 +218,11 @@ inline void HttpTransport::Flush() noexcept {
     /* Check for an empty buffer */
     if (_buffer_ptr == _buffer) return;
 
-    fwrite(_buffer, 1, _buffer_ptr - _buffer, stdout);
-    fflush(stdout);
+    /* Write the data to the socket */
+    if (!_socket.Send(_buffer, _buffer_ptr - _buffer)) {
+        ERROR_LOG("Failed to flush the http buffer");
+        return;
+    }
 
     /* Reset the buffer pointer */
     _buffer_ptr = _buffer;
