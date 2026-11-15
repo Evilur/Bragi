@@ -10,10 +10,10 @@ class DNS final {
 public:
     PREVENT_INSTANTIATION(DNS);
 
-    static uint16_t Resolve(const char* hostname);
+    static uint32_t Resolve(const char* hostname);
 };
 
-inline uint16_t DNS::Resolve(const char* hostname) {
+inline uint32_t DNS::Resolve(const char* hostname) {
     /* Try to resolve the domain name */
     const hostent* const hostent = gethostbyname(hostname);
     if (hostent == nullptr) throw DNSException(hostname);
