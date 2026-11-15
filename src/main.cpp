@@ -13,6 +13,13 @@ int main() {
     HttpClient client("google.com", "/");
     client.Send();
 
+    char penis[2048];
+    const uint32_t sz = client.Read(penis, sizeof(penis));
+    fwrite(penis, 1, sz, stdout);
+    fflush(stdout);
+
+    return 0;
+
 #if 0
     /* Create a bot cluster */
     dpp::cluster bot = dpp::cluster(Properties::BotToken());

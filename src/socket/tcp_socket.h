@@ -154,15 +154,20 @@ inline int32_t TcpSocket::Receive(char* buffer,
     sockaddr_in from;
     socklen_t from_len = sizeof(from);
     getpeername(_socket_fd, (sockaddr*)&from, &from_len);
-    if (result == -1)
+    if (result == -1) {
         WARN_LOG("Failed to get data from %s:%hu",
                  inet_ntoa(from.sin_addr),
                  ntohs(from.sin_port));
-    else
+    } else if (result > 0) {
         TRACE_LOG("Get %d bytes from %s:%hu",
                   result,
                   inet_ntoa(from.sin_addr),
                   ntohs(from.sin_port));
+    } else {
+        TRACE_LOG("The connection have been closed by the %s:%hu",
+                  inet_ntoa(from.sin_addr),
+                  ntohs(from.sin_port));
+    }
 #endif
 
     /* Return the result */
