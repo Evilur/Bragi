@@ -275,8 +275,6 @@ inline void HttpTransport::RawFlush() {
 
     /* Write the data to the socket */
     _socket.Send(_buffer, _buffer_ptr - _buffer);
-    fwrite(_buffer, 1, _buffer_ptr - _buffer, stdout);
-    fflush(stdout);
 
     /* Reset the buffer pointer */
     _buffer_ptr = _buffer;
