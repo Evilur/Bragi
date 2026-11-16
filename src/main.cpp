@@ -13,11 +13,14 @@ int main() {
     /* Bind the 'on_terminate' handler */
     std::set_terminate(on_terminate);
 
-    HttpClient client("google.com", "/");
-    client.Send();
+    HttpClient client("google.com", "/", "GET");
+    client.Flush();
+
+    //const HttpResponse& response = client.Response();
 
     char penis[2048];
     const uint32_t sz = client.Read(penis, sizeof(penis));
+    fwrite("\033[0m", 1, sizeof("\033[0m") - 1, stdout);
     fwrite(penis, 1, sz, stdout);
     fflush(stdout);
 
