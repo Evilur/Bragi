@@ -4,6 +4,7 @@
 #include "type/string.h"
 #include "util/class.h"
 
+#include <cassert>
 #include <cstdint>
 #include <netinet/tcp.h>
 
@@ -13,12 +14,12 @@
  */
 class HttpTransport final {
 public:
-    class Encoder {
+    class TxEncoder {
     public:
-        ALLOW_COPY_ALLOW_MOVE(Encoder);
-        virtual ~Encoder() = default;
+        ALLOW_COPY_ALLOW_MOVE(TxEncoder);
+        virtual ~TxEncoder() = default;
 
-        virtual void Write(HttpTransport* transport, char chr) const  = 0;
+        virtual void Write(HttpTransport* transport, char chr) const = 0;
         virtual void Write(HttpTransport* transport,
                            const char* buffer,
                            uint32_t buffer_size) const = 0;
@@ -29,16 +30,30 @@ public:
         class Chunked;
 
     protected:
-        Encoder() = default;
+        TxEncoder() = default;
+    };
+
+    class RxEncoder {
+    public:
+        ALLOW_COPY_ALLOW_MOVE(RxEncoder);
+        virtual ~RxEncoder() = default;
+
+        virtual uint32_t Read(HttpTransport* transport,
+                              char* buffer,
+                              uint32_t buffer_size) = 0;
+
+        class Plain;
+        class Chunked;
+
+    protected:
+        RxEncoder() = default;
     };
 
     PREVENT_COPY_AND_MOVE(HttpTransport);
 
-    HttpTransport(uint32_t addr, uint16_t port) noexcept;
-
-    void SetTxEncoder(const Encoder& encoder) noexcept;
-
-    void SetRxEncoder(const Encoder& encoder) noexcept;
+    HttpTransport(TxEncoder* const& tx_encoder,
+                  RxEncoder* const& rx_encoder,
+                  uint32_t addr, uint16_t port) noexcept;
 
     void Connect();
 
@@ -52,18 +67,30 @@ public:
 
     uint32_t Read(char* buffer, uint32_t buffer_size);
 
+    /**
+     * Push the data back to the front of the receive stream:
+     * the next RawRead() will return these bytes first.
+     * Several calls are allowed, the last pushed block is read first.
+     * The data must not point into _rx_buffer.
+     */
+    void Unread(const char* buffer, uint32_t buffer_size) noexcept;
+
     void Abort();
 
 private:
-    const Encoder* _tx_encoder;
-    const Encoder* _rx_encoder;
+    TxEncoder* const& _tx_encoder;
+    RxEncoder* const& _rx_encoder;
 
     const sockaddr_in _addr;
     TcpSocket _socket;
 
-    char _buffer[1460];
-    char* _buffer_ptr = _buffer;
-    const char* const _buffer_end = _buffer + sizeof(_buffer);
+    char _tx_buffer[1460];
+    char* _tx_ptr = _tx_buffer;
+    const char* const _tx_end = _tx_buffer + sizeof(_tx_buffer);
+
+    char _rx_buffer[1460];
+    char* _rx_ptr = _rx_buffer;
+    char* _rx_end = _rx_buffer;
 
     void RawWrite(char chr);
     void RawWrite(const char* buffer, uint32_t buffer_size);
@@ -72,11 +99,14 @@ private:
     template <typename T> void RawWrite(T) noexcept = delete;
 
     void RawFlush();
+
+    uint32_t RawRead(char* buffer, uint32_t buffer_size);
 };
 
-using HttpEncoder = HttpTransport::Encoder;
+using HttpTxEncoder = HttpTransport::TxEncoder;
+using HttpRxEncoder = HttpTransport::RxEncoder;
 
-class HttpEncoder::Plain final : public Encoder {
+class HttpTxEncoder::Plain final : public TxEncoder {
 public:
     PREVENT_COPY_ALLOW_MOVE(Plain);
 
@@ -94,7 +124,7 @@ public:
     static Plain& Instance() noexcept;
 };
 
-class HttpEncoder::Chunked final : public Encoder {
+class HttpTxEncoder::Chunked final : public TxEncoder {
 public:
     PREVENT_COPY_ALLOW_MOVE(Chunked);
 
@@ -112,31 +142,61 @@ public:
     static Chunked& Instance() noexcept;
 };
 
-inline void HttpEncoder::Plain::Write(HttpTransport* const transport,
+class HttpRxEncoder::Plain final : public RxEncoder {
+public:
+    PREVENT_COPY_ALLOW_MOVE(Plain);
+
+    uint32_t Read(HttpTransport* transport,
+                  char* buffer,
+                  uint32_t buffer_size) override;
+
+private:
+    Plain() = default;
+
+public:
+    static Plain& Instance() noexcept;
+};
+
+class HttpRxEncoder::Chunked final : public RxEncoder {
+public:
+    PREVENT_COPY_ALLOW_MOVE(Chunked);
+    Chunked() = default;
+
+    uint32_t Read(HttpTransport* transport,
+                  char* buffer,
+                  uint32_t buffer_size) override;
+
+    void Reset() noexcept;
+
+private:
+    uint32_t _current_chunk_size = 0;
+};
+
+inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
                                         char chr)
 const { transport->RawWrite(chr); }
 
-inline void HttpEncoder::Plain::Write(HttpTransport* const transport,
+inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
                                       const char* const buffer,
-                                      const uint32_t buffer_size) const
-{ transport->RawWrite(buffer, buffer_size); }
+                                      const uint32_t buffer_size)
+const { transport->RawWrite(buffer, buffer_size); }
 
-inline void HttpEncoder::Plain::Finish(HttpTransport* const transport) const
-noexcept { }
+inline void HttpTxEncoder::Plain::Finish(HttpTransport* const transport)
+const noexcept { }
 
-inline HttpEncoder::Plain& HttpEncoder::Plain::Instance() noexcept {
+inline HttpTxEncoder::Plain& HttpTxEncoder::Plain::Instance() noexcept {
     static Plain instance;
     return instance;
 }
 
-inline void HttpEncoder::Chunked::Write(HttpTransport* const transport,
+inline void HttpTxEncoder::Chunked::Write(HttpTransport* const transport,
                                         char chr) const {
     transport->RawWrite("1\r\n");
     transport->RawWrite(chr);
     transport->RawWrite("\r\n");
 }
 
-inline void HttpEncoder::Chunked::Write(HttpTransport* const transport,
+inline void HttpTxEncoder::Chunked::Write(HttpTransport* const transport,
                                         const char* const buffer,
                                         const uint32_t buffer_size) const {
     /* Check for an empty chunk */
@@ -159,7 +219,7 @@ inline void HttpEncoder::Chunked::Write(HttpTransport* const transport,
 
     /* Send the chunk size */
     transport->RawWrite(chunk_size_ptr,
-                       sizeof(chunk_size) - (chunk_size_ptr - chunk_size));
+                        sizeof(chunk_size) - (chunk_size_ptr - chunk_size));
     transport->RawWrite("\r\n");
 
     /* Send the body */
@@ -167,27 +227,41 @@ inline void HttpEncoder::Chunked::Write(HttpTransport* const transport,
     transport->RawWrite("\r\n");
 }
 
-inline void
-HttpEncoder::Chunked::Finish(HttpTransport* const transport)
-const { transport->RawWrite("0\r\n\r\n");  }
+inline void HttpTxEncoder::Chunked::Finish(HttpTransport* const transport)
+const { transport->RawWrite("0\r\n\r\n"); }
 
-inline HttpEncoder::Chunked& HttpEncoder::Chunked::Instance() noexcept {
+inline HttpTxEncoder::Chunked& HttpTxEncoder::Chunked::Instance() noexcept {
     static Chunked instance;
     return instance;
 }
 
-inline HttpTransport::HttpTransport(const uint32_t addr,
-                                    const uint16_t port) noexcept : _addr({
+inline uint32_t HttpRxEncoder::Plain::Read(HttpTransport* const transport,
+                                           char* const buffer,
+                                           const uint32_t buffer_size)
+{ return transport->RawRead(buffer, buffer_size); }
+
+inline HttpRxEncoder::Plain& HttpRxEncoder::Plain::Instance() noexcept {
+    static Plain instance;
+    return instance;
+}
+
+inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
+                                             char* const buffer,
+                                             const uint32_t buffer_size) {
+}
+
+inline void HttpRxEncoder::Chunked::Reset()
+noexcept { _current_chunk_size = 0; }
+
+inline HttpTransport::HttpTransport(TxEncoder* const& tx_encoder,
+                                    RxEncoder* const& rx_encoder,
+                                    const uint32_t addr,
+                                    const uint16_t port)
+noexcept : _tx_encoder(tx_encoder), _rx_encoder(rx_encoder), _addr({
     .sin_family = AF_INET,
     .sin_port = port,
     .sin_addr { addr }
 }) { }
-
-inline void HttpTransport::SetTxEncoder(const Encoder& encoder)
-noexcept { _tx_encoder = &encoder; }
-
-inline void HttpTransport::SetRxEncoder(const Encoder& encoder)
-noexcept { _rx_encoder = &encoder; }
 
 inline void HttpTransport::Connect() {
     /* Set options */
@@ -215,29 +289,51 @@ inline void HttpTransport::Flush() { _tx_encoder->Finish(this); RawFlush(); }
 
 inline uint32_t HttpTransport::Read(char* const buffer,
                                     const uint32_t buffer_size)
-{ return _socket.Receive(buffer, buffer_size); }
+{ return _rx_encoder->Read(this, buffer, buffer_size); }
+
+inline void HttpTransport::Unread(const char* const buffer,
+                                  const uint32_t buffer_size) noexcept {
+    /* Calc the pending data size */
+    const uint32_t pending = _rx_end - _rx_ptr;
+    const uint32_t front = _rx_ptr - _rx_buffer;
+
+    /* Check for the free space */
+    assert(buffer_size <= sizeof(_rx_buffer) - pending &&
+           "No enough room to unread the data");
+
+    /* There is enough room before the pending data: just step back */
+    if (front >= buffer_size)
+        _rx_ptr -= buffer_size;
+
+    /* Else shift the pending data to the right to free up the front */
+    else {
+        memmove(_rx_buffer + buffer_size, _rx_ptr, pending);
+        _rx_ptr = _rx_buffer;
+        _rx_end = _rx_buffer + buffer_size + pending;
+    }
+
+    /* Put the data in front of the pending data */
+    memcpy(_rx_ptr, buffer, buffer_size);
+}
 
 inline void HttpTransport::Abort() {
     /* Open a new TCP socket */
     _socket = TcpSocket();
 
-    /* Reset the buffer pointer */
-    _buffer_ptr = _buffer;
-
-    /* Reset the encoders */
-    _tx_encoder = nullptr;
-    _rx_encoder = nullptr;
+    /* Reset the buffer pointers */
+    _tx_ptr = _tx_buffer;
+    _rx_ptr = _rx_end = _rx_buffer;
 }
 
 inline void HttpTransport::RawWrite(const char chr) {
     /* Check for a free space */
-    if (_buffer_ptr >= _buffer_end) RawFlush();
+    if (_tx_ptr >= _tx_end) RawFlush();
 
     /* Write the char */
-    *_buffer_ptr = chr;
+    *_tx_ptr = chr;
 
     /* Update the pointer */
-    ++_buffer_ptr;
+    ++_tx_ptr;
 }
 
 inline void HttpTransport::RawWrite(const char* buffer,
@@ -245,18 +341,18 @@ inline void HttpTransport::RawWrite(const char* buffer,
     /* While we have the data to write */
     while (buffer_size > 0) {
         /* Check for a free space */
-        if (_buffer_ptr >= _buffer_end) RawFlush();
+        if (_tx_ptr >= _tx_end) RawFlush();
 
         /* Calculate the chunk size */
-        const uint32_t free_space = _buffer_end - _buffer_ptr;
+        const uint32_t free_space = _tx_end - _tx_ptr;
         const uint32_t chunk_size = buffer_size < free_space ?
             buffer_size : free_space;
 
         /* Write the chunk */
-        memcpy(_buffer_ptr, buffer, chunk_size);
+        memcpy(_tx_ptr, buffer, chunk_size);
 
         /* Update the pointers and sizes */
-        _buffer_ptr += chunk_size;
+        _tx_ptr += chunk_size;
         buffer      += chunk_size;
         buffer_size -= chunk_size;
     }
@@ -271,11 +367,50 @@ inline void HttpTransport::RawWrite(const char (&string)[N])
 
 inline void HttpTransport::RawFlush() {
     /* Check for an empty buffer */
-    if (_buffer_ptr == _buffer) return;
+    if (_tx_ptr == _tx_buffer) return;
 
     /* Write the data to the socket */
-    _socket.Send(_buffer, _buffer_ptr - _buffer);
+    _socket.Send(_tx_buffer, _tx_ptr - _tx_buffer);
 
     /* Reset the buffer pointer */
-    _buffer_ptr = _buffer;
+    _tx_ptr = _tx_buffer;
+}
+
+inline uint32_t HttpTransport::RawRead(char* const buffer,
+                                       const uint32_t buffer_size) {
+    /* Save the total received size */
+    uint32_t total_received = 0;
+
+    /* Firstly, return the data that has been received earlier */
+    if (_rx_ptr != _rx_end) {
+        /* Calc the chunk size */
+        const uint32_t pending_size = _rx_end - _rx_ptr;
+        const uint32_t chunk_size = buffer_size < pending_size ?
+                                    buffer_size : pending_size;
+
+        /* Copy the pending data from the buffer */
+        memcpy(buffer, _rx_ptr, chunk_size);
+        total_received = chunk_size;
+
+        /* Update the buffer pointer */
+        _rx_ptr += chunk_size;
+    }
+
+    /* Receive directly to the user buffer fomr the socket */
+    while (total_received < buffer_size) {
+        /* Get the data from the socket */
+        const uint32_t currently_received =
+            _socket.Receive(buffer + total_received,
+                            buffer_size - total_received);
+
+        /* If the connection has been closed,
+         * Return the result and exit */
+        if (currently_received == 0) return total_received;
+
+        /* Update the total received size */
+        total_received += currently_received;
+    }
+
+    /* Return the result */
+    return total_received;
 }

@@ -37,7 +37,7 @@ public:
 
     void Send(const char* buffer, uint32_t buffer_size) const;
 
-    int32_t Receive(char* buffer, uint32_t buffer_size) const noexcept;
+    int32_t Receive(char* buffer, uint32_t buffer_size) const;
 
 private:
     int32_t _socket_fd = -1;
@@ -111,7 +111,7 @@ inline void TcpSocket::Send(const char* buffer,
         const int32_t result = send(_socket_fd, buffer, buffer_size, 0);
 
         /* Print the log */
-#if LOG_LEVEL == 0
+#if LOG_LEVEL <= 3
         sockaddr_in address;
         socklen_t address_len = sizeof(address);
         getpeername(_socket_fd, (sockaddr*)&address, &address_len);
@@ -123,7 +123,7 @@ inline void TcpSocket::Send(const char* buffer,
                      buffer_size,
                      inet_ntoa(address.sin_addr),
                      ntohs(address.sin_port));
-            throw SocketException("Failed to send data");
+            throw SocketException("Failed to send the data");
         }
 
         TRACE_LOG("Send %d bytes to %s:%hu",
@@ -137,31 +137,34 @@ inline void TcpSocket::Send(const char* buffer,
     }
 }
 
-inline int32_t TcpSocket::Receive(char* buffer,
-                                  const uint32_t buffer_size) const noexcept {
+inline int32_t TcpSocket::Receive(char* const buffer,
+                                  const uint32_t buffer_size) const {
     /* Receive the data */
     const int32_t result = recv(_socket_fd, buffer, buffer_size, 0);
 
     /* Print the log */
-#if LOG_LEVEL == 0
+#if LOG_LEVEL <= 2
     sockaddr_in from;
     socklen_t from_len = sizeof(from);
     getpeername(_socket_fd, (sockaddr*)&from, &from_len);
-    if (result == -1) {
-        WARN_LOG("Failed to get data from %s:%hu",
-                 inet_ntoa(from.sin_addr),
-                 ntohs(from.sin_port));
-    } else if (result > 0) {
+    if (result > 0) {
         TRACE_LOG("Get %d bytes from %s:%hu",
                   result,
                   inet_ntoa(from.sin_addr),
                   ntohs(from.sin_port));
-    } else {
+    } else if (result == 0) {
         INFO_LOG("The connection closed by %s:%hu",
                  inet_ntoa(from.sin_addr),
                  ntohs(from.sin_port));
     }
 #endif
+
+    if (result == -1) {
+        WARN_LOG("Failed to get data from %s:%hu",
+                 inet_ntoa(from.sin_addr),
+                 ntohs(from.sin_port));
+        throw SocketException("Failed to receive the data");
+    }
 
     /* Return the result */
     return result;
