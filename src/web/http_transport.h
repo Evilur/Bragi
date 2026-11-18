@@ -3,6 +3,7 @@
 #include "socket/tcp_socket.h"
 #include "type/string.h"
 #include "util/class.h"
+#include "util/minmax.h"
 
 #include <cassert>
 #include <cstdint>
@@ -68,12 +69,20 @@ public:
     uint32_t Read(char* buffer, uint32_t buffer_size);
 
     /**
-     * Push the data back to the front of the receive stream:
-     * the next RawRead() will return these bytes first.
-     * Several calls are allowed, the last pushed block is read first.
-     * The data must not point into _rx_buffer.
+     * Get a pointer to the received (but not consumed) data without consuming
+     * it. If less than `min_size` bytes are buffered, reads more from the
+     * socket. The pointer is valid until the next
+     * Peek()/Consume()/Read()/Abort() call.
+     * @param buffer   Receives the pointer to the buffered data
+     * @param min_size Min amount of bytes to wait for (<= buffer capacity).
+     *                 0 means: don't touch the socket,
+     *                 just return what we have
+     * @return Number of available bytes. It is less than `min_size`
+     *         only if the connection has been closed (0 = EOF)
      */
-    void Unread(const char* buffer, uint32_t buffer_size) noexcept;
+    uint32_t Peek(const char*& buffer, uint32_t min_size = 0);
+
+    void Consume(uint32_t size);
 
     void Abort();
 
@@ -101,6 +110,9 @@ private:
     void RawFlush();
 
     uint32_t RawRead(char* buffer, uint32_t buffer_size);
+
+public:
+    static constexpr const uint32_t PEEK_MAX = sizeof(_rx_buffer);
 };
 
 using HttpTxEncoder = HttpTransport::TxEncoder;
@@ -291,29 +303,61 @@ inline uint32_t HttpTransport::Read(char* const buffer,
                                     const uint32_t buffer_size)
 { return _rx_encoder->Read(this, buffer, buffer_size); }
 
-inline void HttpTransport::Unread(const char* const buffer,
-                                  const uint32_t buffer_size) noexcept {
-    /* Calc the pending data size */
-    const uint32_t pending = _rx_end - _rx_ptr;
-    const uint32_t front = _rx_ptr - _rx_buffer;
+inline uint32_t HttpTransport::Peek(const char*& buffer,
+                                    const uint32_t min_size) {
+    assert(min_size <= sizeof(_rx_buffer));
 
-    /* Check for the free space */
-    assert(buffer_size <= sizeof(_rx_buffer) - pending &&
-           "No enough room to unread the data");
+    /* Get the available data size */
+    uint32_t available = _rx_end - _rx_ptr;
 
-    /* There is enough room before the pending data: just step back */
-    if (front >= buffer_size)
-        _rx_ptr -= buffer_size;
+    /* If we have not enough data, get the rest */
+    if (available < min_size) {
+        const char* const rx_limit = _rx_buffer + sizeof(_rx_buffer);
 
-    /* Else shift the pending data to the right to free up the front */
-    else {
-        memmove(_rx_buffer + buffer_size, _rx_ptr, pending);
-        _rx_ptr = _rx_buffer;
-        _rx_end = _rx_buffer + buffer_size + pending;
+        /* The buffer is empty: just rewind the pointers
+         * to make the whole buffer free again */
+        if (available == 0)
+            _rx_ptr = _rx_end = _rx_buffer;
+
+        /* Not enough room after the read pointer:
+         * move the pending data to the beginning of the buffer */
+        else if (rx_limit - _rx_ptr < min_size) {
+            memmove(_rx_buffer, _rx_ptr, available);
+            _rx_ptr = _rx_buffer;
+            _rx_end = _rx_buffer + available;
+        }
+
+        /* Receive until we have enough data.
+         * Here we always have free space after _rx_end,
+         * because available < min_size <= rx_limit - _rx_ptr */
+        do {
+            /* Receive the data from the socket */
+            const uint32_t received =
+                _socket.Receive(_rx_end, rx_limit - _rx_end);
+
+            /* The connection has been closed */
+            if (received == 0) break;
+
+            /* Update the pointer and the size */
+            _rx_end   += received;
+            available += received;
+        } while (available < min_size);
     }
 
-    /* Put the data in front of the pending data */
-    memcpy(_rx_ptr, buffer, buffer_size);
+    /* Return the result */
+    buffer = _rx_ptr;
+    return available;
+}
+
+inline void HttpTransport::Consume(const uint32_t size) {
+    assert(size <= _rx_end - _rx_ptr);
+
+    /* Increase the pointer */
+    _rx_ptr += size;
+
+    /* If there is no pending data, rewind the pointers
+     * to make the whole buffer free again */
+    if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
 }
 
 inline void HttpTransport::Abort() {
@@ -344,9 +388,7 @@ inline void HttpTransport::RawWrite(const char* buffer,
         if (_tx_ptr >= _tx_end) RawFlush();
 
         /* Calculate the chunk size */
-        const uint32_t free_space = _tx_end - _tx_ptr;
-        const uint32_t chunk_size = buffer_size < free_space ?
-            buffer_size : free_space;
+        const uint32_t chunk_size = min(buffer_size, _tx_end - _tx_ptr);
 
         /* Write the chunk */
         memcpy(_tx_ptr, buffer, chunk_size);
@@ -384,9 +426,7 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
     /* Firstly, return the data that has been received earlier */
     if (_rx_ptr != _rx_end) {
         /* Calc the chunk size */
-        const uint32_t pending_size = _rx_end - _rx_ptr;
-        const uint32_t chunk_size = buffer_size < pending_size ?
-                                    buffer_size : pending_size;
+        const uint32_t chunk_size = min(buffer_size, _rx_end - _rx_ptr);
 
         /* Copy the pending data from the buffer */
         memcpy(buffer, _rx_ptr, chunk_size);
@@ -394,6 +434,9 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
 
         /* Update the buffer pointer */
         _rx_ptr += chunk_size;
+
+        /* If we have drained the buffer, rewind the pointers */
+        if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
     }
 
     /* Receive directly to the user buffer fomr the socket */
