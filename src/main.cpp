@@ -1,4 +1,5 @@
 #include "main.h"
+#include "type/constexpr_radix_trie.h"
 #include "web/http_client.h"
 
 /*
@@ -12,6 +13,13 @@
 int main() {
     /* Bind the 'on_terminate' handler */
     std::set_terminate(on_terminate);
+
+    static ConstexprRadixTrie<uint32_t, 2> trie({
+        { "test0", 0 },
+        { "test1", 1 }
+    });
+
+    return 0;
 
     HttpClient client("google.com", "/", "GET");
     client.Flush();
