@@ -14,10 +14,16 @@ int main() {
     /* Bind the 'on_terminate' handler */
     std::set_terminate(on_terminate);
 
-    static ConstexprRadixTrie<uint32_t, 2> trie({
-        { "test0", 0 },
-        { "test1", 1 }
+    constexpr static const ConstexprRadixTrie<uint32_t, 5> trie({
+        { "Content-Length", 0 },
+        { "Transfer-Encoding", 1 },
+        { "Connection", 2 },
+        { "Content-Encoding", 3 },
+        { "Trailer", 4 }
     });
+
+    const uint32_t one = trie.Get("test1");
+    printf("%u\n", one);
 
     return 0;
 

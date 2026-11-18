@@ -8,11 +8,11 @@
  * @author Evilur <the.evilur@gmail.com>
  */
 template <typename T, typename U>
-class ContexprKeyValuePair final {
+class ConstexprKeyValuePair final {
 public:
-    PREVENT_COPY_AND_MOVE(ContexprKeyValuePair);
+    PREVENT_COPY_AND_MOVE(ConstexprKeyValuePair);
 
-    consteval ContexprKeyValuePair(T&& key, U&& value) noexcept;
+    consteval ConstexprKeyValuePair(T&& key, U&& value) noexcept;
 
     [[nodiscard]]
     consteval T& Key() noexcept;
@@ -33,21 +33,21 @@ public:
 
 template <typename T, typename U>
 consteval inline
-ContexprKeyValuePair<T, U>::ContexprKeyValuePair(T&& key, U&& value)
+ConstexprKeyValuePair<T, U>::ConstexprKeyValuePair(T&& key, U&& value)
 noexcept : _key(key), _value(value) { }
 
 template <typename T, typename U>
-consteval inline T& ContexprKeyValuePair<T, U>::Key()
+consteval inline T& ConstexprKeyValuePair<T, U>::Key()
 noexcept { return _key; }
 
 template <typename T, typename U>
-consteval inline const T& ContexprKeyValuePair<T, U>::Key() const
+consteval inline const T& ConstexprKeyValuePair<T, U>::Key() const
 noexcept { return _key; }
 
 template <typename T, typename U>
-consteval inline U& ContexprKeyValuePair<T, U>::Value()
+consteval inline U& ConstexprKeyValuePair<T, U>::Value()
 noexcept { return _value; }
 
 template <typename T, typename U>
-consteval inline const U& ContexprKeyValuePair<T, U>::Value() const
+consteval inline const U& ConstexprKeyValuePair<T, U>::Value() const
 noexcept { return _value; }
