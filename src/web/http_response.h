@@ -35,10 +35,12 @@ private:
                                        uint32_t& buffer_size) noexcept;
 
     const char* ReadHttp11ResponseHeader(const char* buffer,
-                                         uint32_t& buffer_size) noexcept;
+                                         uint32_t& buffer_size,
+                                         bool& readingLongHeader) noexcept;
 
     const char* ReadHttp11LongHeader(const char* buffer,
-                                     uint32_t& buffer_size) noexcept;
+                                     uint32_t& buffer_size,
+                                     bool& readingLongHeader) noexcept;
 };
 
 inline bool HttpResponse::IsValid() const noexcept { return _is_valid; }
@@ -63,18 +65,17 @@ noexcept {
     if (buffer == nullptr) return;
 
     /* Create e enum to save the reading state */
-    enum : uint8_t {
-        RESPONSE_HEADERS,
-        LONG_HEADER
-    } state = RESPONSE_HEADERS;
+    bool readingLongHeader = false;
 
     /* While the connection is alive */
     do
         do
-            if (state == RESPONSE_HEADERS)
-                buffer = ReadHttp11ResponseLine(buffer, buffer_size);
+            if (!readingLongHeader)
+                buffer = ReadHttp11ResponseHeader(buffer, buffer_size,
+                                                  readingLongHeader);
             else
-                buffer = ReadHttp11LongHeader(buffer, buffer_size);
+                buffer = ReadHttp11LongHeader(buffer, buffer_size,
+                                              readingLongHeader);
         while(buffer != nullptr);
     while ((buffer_size = transport.Peek(buffer, HttpTransport::PEEK_MAX)) ==
            HttpTransport::PEEK_MAX);
@@ -84,16 +85,18 @@ inline const char* HttpResponse::ReadHttp11ResponseLine(
     const char* buffer, uint32_t& buffer_size
 ) noexcept {
     /* Http v1.1 first bytes */
-    constexpr static const char http11_header[] = "HTTP/1.1";
+    constexpr static const char http11_header[] = "HTTP/1.1 ";
+
+    /* Check the min response line size */
+    if (buffer_size < sizeof(http11_header) - 1 + 4 + 2) return nullptr;
 
     /* Check for the right http version */
-    if (strncmp(buffer, http11_header,
-                min(sizeof(http11_header) - 1, buffer_size)) != 0)
+    if (strncmp(buffer, http11_header, sizeof(http11_header) - 1) != 0)
         return nullptr;
 
     /* Skip the http version */
-    buffer += sizeof(http11_header);
-    buffer_size -= sizeof(http11_header);
+    buffer += sizeof(http11_header) - 1;
+    buffer_size -= sizeof(http11_header) - 1;
 
     /* Read the response status code */
     _status_code = String::ToInt<uint16_t>(buffer);
@@ -103,9 +106,9 @@ inline const char* HttpResponse::ReadHttp11ResponseLine(
     }
 
     /* Check for the space char */
-    buffer += 3;
-    buffer_size -= 3;
-    if (*buffer != ' ') return nullptr;
+    buffer += 4;
+    buffer_size -= 4;
+    if (buffer[-1] != ' ') return nullptr;
 
     /* Skip the rest of the response line */
     const char* buffer_eof =
@@ -113,17 +116,18 @@ inline const char* HttpResponse::ReadHttp11ResponseLine(
     if (buffer_eof == nullptr) return nullptr;
 
     /* Return the pointer to the next line */
-    return buffer + 2;
+    buffer_size -= (buffer_eof - buffer) + 2;
+    return buffer_eof + 2;
 }
 
 inline const char* HttpResponse::ReadHttp11ResponseHeader(
-    const char* buffer, uint32_t& buffer_size
+    const char* buffer, uint32_t& buffer_size, bool& readingLongHeader
 ) noexcept {
     return nullptr;
 }
 
 inline const char* HttpResponse::ReadHttp11LongHeader(
-    const char* buffer, uint32_t& buffer_size
+    const char* buffer, uint32_t& buffer_size, bool& readingLongHeader
 ) noexcept {
     return nullptr;
 }

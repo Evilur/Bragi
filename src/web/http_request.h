@@ -156,67 +156,67 @@ noexcept { return _contentLength.IsEmpty(); }
 inline void HttpRequest::SendHttp11Headers(HttpTransport& transport)
 noexcept {
     /* Send the request line */
-    transport.Write(_method);
-    transport.Write(' ');
-    transport.Write(_path);
-    transport.Write(' ');
-    transport.Write("HTTP/1.1\r\n");
+    transport.RawWrite(_method);
+    transport.RawWrite(' ');
+    transport.RawWrite(_path);
+    transport.RawWrite(' ');
+    transport.RawWrite("HTTP/1.1\r\n");
 
     /* Send a host header */
-    transport.Write("Host: ");
-    transport.Write(domain);
-    transport.Write("\r\n");
+    transport.RawWrite("Host: ");
+    transport.RawWrite(domain);
+    transport.RawWrite("\r\n");
 
     /* Set the 'Content-Length' or 'Transfer-Encoding' header */
     if (IsChunkedEncoding())
-        transport.Write("Transfer-Encoding: chunked\r\n");
+        transport.RawWrite("Transfer-Encoding: chunked\r\n");
     else {
-        transport.Write("Content-Length: ");
-        transport.Write(_contentLength);
-        transport.Write("\r\n");
+        transport.RawWrite("Content-Length: ");
+        transport.RawWrite(_contentLength);
+        transport.RawWrite("\r\n");
     }
 
     /* Set the 'Connection' header according to the 'closeConnection' flag */
-    transport.Write("Connection: ");
-    if (closeConnection) transport.Write("close\r\n");
-    else transport.Write("keep-alive\r\n");
+    transport.RawWrite("Connection: ");
+    if (closeConnection) transport.RawWrite("close\r\n");
+    else transport.RawWrite("keep-alive\r\n");
 
     /* Send cookies */
     if (!_cookies.IsEmpty()) {
         /* Send the cookie header name */
-        transport.Write("Cookie: ");
+        transport.RawWrite("Cookie: ");
 
         /* Send all the cookies */
         for (uint32_t i = 0; i < _cookies.Size();) {
             Cookie& cookie = _cookies[i];
-            transport.Write(cookie.key);
-            transport.Write('=');
-            transport.Write(cookie.value);
+            transport.RawWrite(cookie.key);
+            transport.RawWrite('=');
+            transport.RawWrite(cookie.value);
 
             /* Send the delimeter */
-            if (++i < _cookies.Size()) transport.Write("; ");
+            if (++i < _cookies.Size()) transport.RawWrite("; ");
         }
 
         /* Send the EOF sequence */
-        transport.Write("\r\n");
+        transport.RawWrite("\r\n");
     }
 
     /* Send the other headers */
     if (!_headers.IsEmpty()) {
         for (uint32_t i = 0; i < _headers.Size(); ++i) {
             Header& header = _headers[i];
-            transport.Write(header.name);
-            transport.Write(": ");
-            transport.Write(header.value);
+            transport.RawWrite(header.name);
+            transport.RawWrite(": ");
+            transport.RawWrite(header.value);
 
             /* Send the EOF sequence */
-            transport.Write("\r\n");
+            transport.RawWrite("\r\n");
         }
     }
 
     /* Send yet another one EOF sequence (an empty line )
      * for the end of the headers */
-    transport.Write("\r\n");
+    transport.RawWrite("\r\n");
 }
 
 inline HttpRequest::Header::Header(const char* const name,

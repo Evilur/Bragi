@@ -64,9 +64,17 @@ public:
     template <uint32_t N> void Write(const char (&string)[N]);
     template <typename T> void Write(T) noexcept = delete;
 
+    void RawWrite(char chr);
+    void RawWrite(const char* buffer, uint32_t buffer_size);
+    void RawWrite(const String& string);
+    template <uint32_t N> void RawWrite(const char (&string)[N]);
+    template <typename T> void RawWrite(T) noexcept = delete;
+
     void Flush();
 
     uint32_t Read(char* buffer, uint32_t buffer_size);
+
+    uint32_t RawRead(char* buffer, uint32_t buffer_size);
 
     /**
      * Get a pointer to the received (but not consumed) data without consuming
@@ -101,15 +109,7 @@ private:
     char* _rx_ptr = _rx_buffer;
     char* _rx_end = _rx_buffer;
 
-    void RawWrite(char chr);
-    void RawWrite(const char* buffer, uint32_t buffer_size);
-    void RawWrite(const String& string);
-    template <uint32_t N> void RawWrite(const char (&string)[N]);
-    template <typename T> void RawWrite(T) noexcept = delete;
-
     void RawFlush();
-
-    uint32_t RawRead(char* buffer, uint32_t buffer_size);
 
 public:
     static constexpr const uint32_t PEEK_MAX = sizeof(_rx_buffer);
@@ -297,11 +297,89 @@ inline void HttpTransport::Write(const String& string)
 template <uint32_t N> inline void HttpTransport::Write(const char (&string)[N])
 { Write(string, N - 1); }
 
+inline void HttpTransport::RawWrite(const char chr) {
+    /* Check for a free space */
+    if (_tx_ptr >= _tx_end) RawFlush();
+
+    /* Write the char */
+    *_tx_ptr = chr;
+
+    /* Update the pointer */
+    ++_tx_ptr;
+}
+
+inline void HttpTransport::RawWrite(const char* buffer,
+                                    uint32_t buffer_size) {
+    /* While we have the data to write */
+    while (buffer_size > 0) {
+        /* Check for a free space */
+        if (_tx_ptr >= _tx_end) RawFlush();
+
+        /* Calculate the chunk size */
+        const uint32_t chunk_size = min(buffer_size, _tx_end - _tx_ptr);
+
+        /* Write the chunk */
+        memcpy(_tx_ptr, buffer, chunk_size);
+
+        /* Update the pointers and sizes */
+        _tx_ptr += chunk_size;
+        buffer      += chunk_size;
+        buffer_size -= chunk_size;
+    }
+}
+
+inline void HttpTransport::RawWrite(const String& string)
+{ RawWrite(string.CStr(), string.Length()); }
+
+template <uint32_t N>
+inline void HttpTransport::RawWrite(const char (&string)[N])
+{ RawWrite(string, N - 1); }
+
 inline void HttpTransport::Flush() { _tx_encoder->Finish(this); RawFlush(); }
 
 inline uint32_t HttpTransport::Read(char* const buffer,
                                     const uint32_t buffer_size)
 { return _rx_encoder->Read(this, buffer, buffer_size); }
+
+inline uint32_t HttpTransport::RawRead(char* const buffer,
+                                       const uint32_t buffer_size) {
+    /* Save the total received size */
+    uint32_t total_received = 0;
+
+    /* Firstly, return the data that has been received earlier */
+    if (_rx_ptr != _rx_end) {
+        /* Calc the chunk size */
+        const uint32_t chunk_size = min(buffer_size, _rx_end - _rx_ptr);
+
+        /* Copy the pending data from the buffer */
+        memcpy(buffer, _rx_ptr, chunk_size);
+        total_received = chunk_size;
+
+        /* Update the buffer pointer */
+        _rx_ptr += chunk_size;
+
+        /* If we have drained the buffer, rewind the pointers */
+        if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
+    }
+
+    /* Receive directly to the user buffer fomr the socket */
+    while (total_received < buffer_size) {
+        /* Get the data from the socket */
+        const uint32_t currently_received =
+            _socket.Receive(buffer + total_received,
+                            buffer_size - total_received);
+
+        /* If the connection has been closed,
+         * Return the result and exit */
+        if (currently_received == 0) return total_received;
+
+        /* Update the total received size */
+        total_received += currently_received;
+    }
+
+    /* Return the result */
+    return total_received;
+}
 
 inline uint32_t HttpTransport::Peek(const char*& buffer,
                                     const uint32_t min_size) {
@@ -369,44 +447,6 @@ inline void HttpTransport::Abort() {
     _rx_ptr = _rx_end = _rx_buffer;
 }
 
-inline void HttpTransport::RawWrite(const char chr) {
-    /* Check for a free space */
-    if (_tx_ptr >= _tx_end) RawFlush();
-
-    /* Write the char */
-    *_tx_ptr = chr;
-
-    /* Update the pointer */
-    ++_tx_ptr;
-}
-
-inline void HttpTransport::RawWrite(const char* buffer,
-                                    uint32_t buffer_size) {
-    /* While we have the data to write */
-    while (buffer_size > 0) {
-        /* Check for a free space */
-        if (_tx_ptr >= _tx_end) RawFlush();
-
-        /* Calculate the chunk size */
-        const uint32_t chunk_size = min(buffer_size, _tx_end - _tx_ptr);
-
-        /* Write the chunk */
-        memcpy(_tx_ptr, buffer, chunk_size);
-
-        /* Update the pointers and sizes */
-        _tx_ptr += chunk_size;
-        buffer      += chunk_size;
-        buffer_size -= chunk_size;
-    }
-}
-
-inline void HttpTransport::RawWrite(const String& string)
-{ RawWrite(string.CStr(), string.Length()); }
-
-template <uint32_t N>
-inline void HttpTransport::RawWrite(const char (&string)[N])
-{ RawWrite(string, N - 1); }
-
 inline void HttpTransport::RawFlush() {
     /* Check for an empty buffer */
     if (_tx_ptr == _tx_buffer) return;
@@ -416,44 +456,4 @@ inline void HttpTransport::RawFlush() {
 
     /* Reset the buffer pointer */
     _tx_ptr = _tx_buffer;
-}
-
-inline uint32_t HttpTransport::RawRead(char* const buffer,
-                                       const uint32_t buffer_size) {
-    /* Save the total received size */
-    uint32_t total_received = 0;
-
-    /* Firstly, return the data that has been received earlier */
-    if (_rx_ptr != _rx_end) {
-        /* Calc the chunk size */
-        const uint32_t chunk_size = min(buffer_size, _rx_end - _rx_ptr);
-
-        /* Copy the pending data from the buffer */
-        memcpy(buffer, _rx_ptr, chunk_size);
-        total_received = chunk_size;
-
-        /* Update the buffer pointer */
-        _rx_ptr += chunk_size;
-
-        /* If we have drained the buffer, rewind the pointers */
-        if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
-    }
-
-    /* Receive directly to the user buffer fomr the socket */
-    while (total_received < buffer_size) {
-        /* Get the data from the socket */
-        const uint32_t currently_received =
-            _socket.Receive(buffer + total_received,
-                            buffer_size - total_received);
-
-        /* If the connection has been closed,
-         * Return the result and exit */
-        if (currently_received == 0) return total_received;
-
-        /* Update the total received size */
-        total_received += currently_received;
-    }
-
-    /* Return the result */
-    return total_received;
 }

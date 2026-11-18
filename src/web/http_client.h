@@ -85,7 +85,6 @@ inline bool HttpClient::Write(const char* const buffer,
         { throw HttpException("Failed to connect to the server"); }
 
         /* Send the request headers */
-        _tx_encoder = &HttpTxEncoder::Plain::Instance();
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
         { Abort(); return false; }
@@ -122,13 +121,15 @@ inline bool HttpClient::Flush() {
 
         /* Set the 'Content-Length' to 0 and send the request headers */
         _request.SetContentLength(0);
-        _tx_encoder = &HttpTxEncoder::Plain::Instance();
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
         { Abort(); return false; }
 
         /* Reset the Content-Length */
         _request.ResetContentLength();
+
+        /* Set the right encoder */
+        _tx_encoder = &HttpTxEncoder::Plain::Instance();
     }
 
     /* Flush the request */
@@ -143,7 +144,6 @@ inline bool HttpClient::Flush() {
     _response = HttpResponse();
 
     /* Read the response headers */
-    _rx_encoder = &HttpRxEncoder::Plain::Instance();
     try { _response->ReadHttp11Headers(_transport); }
     catch (const SocketException& e)
     { Abort(); return false; }
