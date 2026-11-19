@@ -1,5 +1,5 @@
 #include "main.h"
-#include "type/constexpr_radix_trie.h"
+#include "type/radix_trie.h"
 #include "web/http_client.h"
 
 /*
@@ -14,7 +14,7 @@ int main() {
     /* Bind the 'on_terminate' handler */
     std::set_terminate(on_terminate);
 
-    constexpr static const ConstexprRadixTrie<uint32_t, 5> trie({
+    constexpr static const RadixTrie<uint32_t, 5> trie({
         { "Content-Length", 0 },
         { "Transfer-Encoding", 1 },
         { "Connection", 2 },

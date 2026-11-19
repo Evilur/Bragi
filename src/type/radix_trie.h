@@ -1,6 +1,6 @@
 #pragma once
 
-#include "type/constexpr_key_value_pair.h"
+#include "type/key_value_pair.h"
 
 #include <cstdint>
 #include <type_traits>
@@ -10,19 +10,13 @@
  * @author Evilur <the.evilur@gmail.com>
  */
 template <typename T, uint32_t N>
-class ConstexprRadixTrie final {
+class RadixTrie final {
 public:
-    using ReturnType = std::conditional_t<
-        std::is_trivially_copyable_v<T> && sizeof(T) <= 2 * sizeof(void*),
-        T,
-        const T&
-    >;
-
-    consteval ConstexprRadixTrie(
-        const ConstexprKeyValuePair<const char*, T> (&entries)[N]
+    consteval RadixTrie(
+        const KeyValuePair<const char*, T> (&entries)[N]
     ) noexcept;
 
-    constexpr ReturnType Get(const char* key) const noexcept;
+    constexpr access_t<T> Get(const char* key) const noexcept;
 
 private:
     struct Node {
@@ -48,8 +42,8 @@ public:
 };
 
 template <typename T, uint32_t N>
-inline consteval ConstexprRadixTrie<T, N>::ConstexprRadixTrie(
-    const ConstexprKeyValuePair<const char*, T> (&entries)[N]
+inline consteval RadixTrie<T, N>::RadixTrie(
+    const KeyValuePair<const char*, T> (&entries)[N]
 ) noexcept {
     /* Insert every pair straight into its sorted position.
      * Invariant: keys[0..i) and values[0..i) are already sorted,
@@ -74,7 +68,7 @@ inline consteval ConstexprRadixTrie<T, N>::ConstexprRadixTrie(
 
 template <typename T, uint32_t N>
 inline constexpr
-ConstexprRadixTrie<T, N>::ReturnType ConstexprRadixTrie<T, N>::Get(
+access_t<T> RadixTrie<T, N>::Get(
     const char* const key
 ) const noexcept {
     for (uint32_t i = 0; i < N; ++i) {
