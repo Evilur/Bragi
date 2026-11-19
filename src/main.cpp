@@ -1,5 +1,5 @@
 #include "main.h"
-#include "type/radix_trie.h"
+#include "type/radix_tree.h"
 #include "web/http_client.h"
 
 /*
@@ -14,7 +14,7 @@ int main() {
     /* Bind the 'on_terminate' handler */
     std::set_terminate(on_terminate);
 
-    constexpr static const RadixTrie<uint32_t, 5> trie({
+    constexpr static const RadixTree<uint32_t, 5> trie({
         { "Content-Length", 0 },
         { "Transfer-Encoding", 1 },
         { "Connection", 2 },

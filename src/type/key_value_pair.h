@@ -8,46 +8,49 @@
  * A simple key->value pair representation
  * @author Evilur <the.evilur@gmail.com>
  */
-template <typename T, typename U>
+template <typename TKey, typename TValue>
 class KeyValuePair final {
 public:
     ALLOW_COPY_ALLOW_MOVE(KeyValuePair);
 
-    constexpr KeyValuePair(const T& key, const T& value);
+    constexpr KeyValuePair(const TKey& key, const TValue& value) noexcept;
 
-    constexpr KeyValuePair(T&& key, U&& value);
-
-    [[nodiscard]]
-    constexpr const access_t<T> Key() const noexcept;
+    constexpr KeyValuePair(TKey&& key, TValue&& value) noexcept;
 
     [[nodiscard]]
-    U& Value() noexcept;
+    constexpr const access_t<TKey> Key() const noexcept;
 
     [[nodiscard]]
-    constexpr const access_t<U> Value() const noexcept;
+    TValue& Value() noexcept;
+
+    [[nodiscard]]
+    constexpr const access_t<TValue> Value() const noexcept;
 
 private:
-    T _key;
-    U _value;
+    TKey _key;
+    TValue _value;
 };
 
-template <typename T, typename U>
-constexpr inline KeyValuePair<T, U>::KeyValuePair(const T& key, const T& value)
-: _key(key), _value(value) { }
+template <typename TKey, typename TValue>
+constexpr inline KeyValuePair<TKey, TValue>::KeyValuePair(
+    const TKey& key, const TValue& value
+) noexcept : _key(key), _value(value) { }
 
-template <typename T, typename U>
+template <typename TKey, typename TValue>
 constexpr inline
-KeyValuePair<T, U>::KeyValuePair(T&& key, U&& value)
-: _key(move(key)), _value(move(value)) { }
+KeyValuePair<TKey, TValue>::KeyValuePair(TKey&& key, TValue&& value)
+noexcept : _key(move(key)), _value(move(value)) { }
 
-template <typename T, typename U>
-constexpr inline const access_t<T> KeyValuePair<T, U>::Key() const
+template <typename TKey, typename TValue>
+constexpr inline
+const access_t<TKey> KeyValuePair<TKey, TValue>::Key() const
 noexcept { return _key; }
 
-template <typename T, typename U>
-inline U& KeyValuePair<T, U>::Value()
+template <typename TKey, typename TValue>
+inline TValue& KeyValuePair<TKey, TValue>::Value()
 noexcept { return _value; }
 
-template <typename T, typename U>
-constexpr inline const access_t<U> KeyValuePair<T, U>::Value() const
+template <typename TKey, typename TValue>
+constexpr inline
+const access_t<TValue> KeyValuePair<TKey, TValue>::Value() const
 noexcept { return _value; }

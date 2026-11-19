@@ -260,6 +260,7 @@ inline HttpRxEncoder::Plain& HttpRxEncoder::Plain::Instance() noexcept {
 inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
                                              char* const buffer,
                                              const uint32_t buffer_size) {
+    return 0;
 }
 
 inline void HttpRxEncoder::Chunked::Reset()
