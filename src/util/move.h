@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename T>
-T&& move(T& obj) noexcept;
+constexpr T&& move(T& obj) noexcept;
 
 template<typename T>
-inline T&& move(T& obj) noexcept { return (T&&)obj; }
+constexpr inline T&& move(T& obj) noexcept { return (T&&)obj; }
