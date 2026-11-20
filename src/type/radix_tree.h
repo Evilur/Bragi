@@ -3,15 +3,12 @@
 #include "type/queue.h"
 #include "util/class.h"
 #include "type/key_value_pair.h"
+#include "type/string.h"
 
 #include <cassert>
 #include <cstdint>
 #include <meta>
 #include <span>
-
-namespace radix_detail {
-constexpr int32_t StrCmp(const char* x1, const char* x2) noexcept;
-} // namespace radix_detail
 
 /**
  * A compile-time Radix (Compressed) Tree implementation
@@ -44,13 +41,6 @@ private:
     const Node* _nodes;
 };
 
-inline constexpr int32_t radix_detail::StrCmp(
-    const char* x1, const char* x2
-) noexcept {
-    while (*x1 != '\0' && *x1 == *x2) { ++x1; ++x2; }
-    return (uint8_t)*x1 - (uint8_t)*x2;
-}
-
 template <typename T>
 template <uint32_t N>
 inline constexpr RadixTree<T>::RadixTree(
@@ -76,7 +66,7 @@ inline constexpr RadixTree<T>::RadixTree(
 
         /* Shift every greater key one slot to the right */
         uint32_t j = i;
-        while (j > 0 && radix_detail::StrCmp(keys[j - 1], key) > 0) {
+        while (j > 0 && String::Equal(keys[j - 1], key)) {
             keys[j] = keys[j - 1];
             values[j] = values[j - 1];
             --j;

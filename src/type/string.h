@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 #include <string_view>
 
 class String final {
@@ -79,6 +80,19 @@ public:
 
     template <typename T>
     static constexpr T ToInt(const char* string) noexcept;
+
+    static constexpr bool Equal(const char* x1, const char* x2) noexcept;
+
+    static constexpr bool Equal(
+        const char* x1, const char* x2, uint32_t len
+    ) noexcept;
+
+    static constexpr uint32_t Length(const char* string) noexcept;
+
+private:
+    static constexpr void Copy(
+        char* const dest, const char* const src, const uint32_t size
+    ) noexcept;
 };
 
 inline constexpr String::String() noexcept : _string(nullptr), _len(0) { }
@@ -92,8 +106,7 @@ template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr String::String(const T string)
-    : String(string, string != nullptr ?
-                     std::char_traits<char>::length(string) : 0) { }
+    : String(string, string != nullptr ? Length(string) : 0) { }
 
 template <uint32_t N>
 inline constexpr String::String(const char (&string)[N])
@@ -101,14 +114,13 @@ inline constexpr String::String(const char (&string)[N])
 
 inline constexpr String::String(const char* string, const uint64_t string_len)
     : String(string_len) {
-    if (string != nullptr)
-        std::char_traits<char>::copy(_string, string, string_len);
+    if (string != nullptr) Copy(_string, string, string_len);
 }
 
 inline constexpr String::String(const String& other) :
     _string(new char[other._len + 1]), _len(other._len) {
     /* Assign a new data */
-    std::char_traits<char>::copy(_string, other._string, other._len);
+    Copy(_string, other._string, other._len);
     _string[_len] = '\0';
 }
 
@@ -128,7 +140,7 @@ inline constexpr String& String::operator=(const String& other) {
     } else {
         /* Assign a new data */
         _string = new char[other._len + 1];
-        std::char_traits<char>::copy(_string, other._string, other._len + 1);
+        Copy(_string, other._string, other._len + 1);
         _len = other._len;
     }
 
@@ -168,48 +180,40 @@ inline constexpr String String::operator+(const char* const other) const {
     /* Nullptr check */
     if (other == nullptr) return String(_string, _len);
 
-    const uint64_t other_len = std::char_traits<char>::length(other);
+    const uint64_t other_len = Length(other);
     String result(_len + other_len);
-    std::char_traits<char>::copy(result._string, _string, _len);
-    std::char_traits<char>::copy(result._string + _len, other, other_len);
+    Copy(result._string, _string, _len);
+    Copy(result._string + _len, other, other_len);
     return result;
 }
 
 inline constexpr bool String::operator==(const String& other) const noexcept {
-    return _len == other._len &&
-        std::char_traits<char>::compare(_string, other._string, _len) == 0;
+    return _len == other._len && Equal(_string, other._string, _len) == 0;
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr bool String::operator==(const T other) const
-noexcept { return std::char_traits<char>::compare(_string, other) == 0; }
+noexcept { return Equal(_string, other) == 0; }
 
 template <uint32_t N>
 inline constexpr bool String::operator==(const char (&other)[N]) const
-noexcept {
-    return _len == N - 1 &&
-        std::char_traits<char>::compare(_string, other, N - 1) == 0;
-}
+noexcept { return _len == N - 1 && Equal(_string, other, N - 1) == 0; }
 
 inline constexpr bool String::operator!=(const String& other) const noexcept {
-    return _len != other._len ||
-        std::char_traits<char>::compare(_string, other._string, _len) != 0;
+    return _len != other._len || Equal(_string, other._string, _len) != 0;
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr bool String::operator!=(const T other) const
-noexcept { return std::char_traits<char>::compare(_string, other) != 0; }
+noexcept { return Equal(_string, other) != 0; }
 
 template <uint32_t N>
 inline constexpr bool String::operator!=(const char (&other)[N]) const
-noexcept {
-    return _len != N - 1 ||
-        std::char_traits<char>::compare(_string, other, N - 1) != 0;
-}
+noexcept { return _len != N - 1 || Equal(_string, other, N - 1) != 0; }
 
 inline constexpr String::operator const char*() const
 noexcept { return _string; }
@@ -271,4 +275,43 @@ inline String String::Format(
     String result((uint64_t)snprintf(nullptr, 0, format, args...));
     sprintf(result._string, format, args...);
     return result;
+}
+
+inline constexpr bool String::Equal(
+    const char* x1, const char* x2
+) noexcept {
+    if constexpr (std::is_constant_evaluated()) {
+        while (*x1 && *x1 == *x2) ++x1, ++x2;
+        return (unsigned char)*x1 - (unsigned char)*x2;
+    } else
+        return strcmp(x1, x2) == 0;
+}
+
+inline constexpr bool String::Equal(
+    const char* x1, const char* x2, uint32_t len
+) noexcept {
+    if constexpr (std::is_constant_evaluated()) {
+        while (len && *x1 && *x1 == *x2) ++x1, ++x2, --len;
+        return len ? (unsigned char)*x1 - (unsigned char)*x2 : 0;
+    } else
+        return strncmp(x1, x2, len) == 0;
+}
+
+inline constexpr uint32_t String::Length(const char* string) noexcept {
+    if constexpr (std::is_constant_evaluated()) {
+        uint32_t len = 0;
+        while (string[len]) ++len;
+        return len;
+    } else
+        return strlen(string);
+}
+
+inline constexpr void String::Copy(
+    char* const dest, const char* const src, const uint32_t size
+) noexcept {
+    if constexpr (std::is_constant_evaluated())
+        for (uint32_t i = 0; i < size; ++i)
+            dest[i] = src[i];
+    else
+        memcpy(dest, src, size);
 }
