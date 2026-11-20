@@ -4,11 +4,10 @@
 #include "util/class.h"
 #include "type/key_value_pair.h"
 
+#include <cassert>
 #include <cstdint>
-#include <cstdio>
 #include <meta>
 #include <span>
-#include <ranges>
 
 namespace radix_detail {
 constexpr int32_t StrCmp(const char* x1, const char* x2) noexcept;
@@ -29,7 +28,7 @@ public:
         const KeyValuePair<const char*, T> (&entries)[N]
     ) noexcept;
 
-    constexpr access_t<T> Get(const char* key) const noexcept;
+    constexpr T* Get(const char* key) const noexcept;
 
 private:
     struct Node {
@@ -177,50 +176,75 @@ inline consteval RadixTree<T, N>::RadixTree(
     }
 
     /* Save the static array of Nodes */
-    const std::span penis =
-        std::define_static_array(std::span(nodes, nodes_num));
-    _nodes = penis.data();
+    _nodes = std::define_static_array(std::span(nodes, nodes_num)).data();
 }
 
 template <typename T, uint32_t N>
 inline constexpr
-access_t<T> RadixTree<T, N>::Get(
-    const char* const key
-) const noexcept {
-    struct Frame {
-        uint32_t node;
-        uint32_t level;
-        bool is_last;
-    };
+T* RadixTree<T, N>::Get(const char* key) const noexcept {
+    /* A null key can never match anything */
+    assert(key != nullptr && "nullptr key can't match anything");
 
-    Frame stack[2 * N] { };
-    bool last[2 * N + 1] { };
-    uint32_t top = 0;
+    /* Start from the root. It has an empty label and consumes no chars */
+    const Node* node = _nodes;
 
-    stack[top++] = Frame{ 0, 0, true };
+    /* Descend one node per iteration, consuming the label of the node
+     * we go into. Ends when the key is fully consumed or the path breaks */
+    while (true) {
+        /* --- Key end check --- */
 
-    while (top > 0) {
-        const Frame frame = stack[--top];
-        const Node& node = _nodes[frame.node];
+        /* The whole key has been consumed. It exists in the tree
+         * only if the current node is terminal */
+        if (*key == '\0')
+            return node->is_terminal
+                ? (T*)(&_values[node->value_index])
+                : nullptr;
 
-        last[frame.level] = frame.is_last;
+        /* --- Child search --- */
 
-        for (uint32_t i = 1; i < frame.level; ++i)
-            printf("%s", last[i] ? "   " : "│  ");
-        if (frame.level > 0)
-            printf("%s", frame.is_last ? "└─ " : "├─ ");
+        /* The children are contiguous in _nodes and sorted by the first
+         * char of their labels (compared as unsigned, same as in StrCmp).
+         * All the first chars are distinct, so a binary search is enough */
+        const Node* const children = _nodes + node->first_child;
+        const uint8_t chr = (uint8_t)*key;
+        const Node* next = nullptr;
 
-        if (frame.level == 0) printf("(root)");
-        else printf("\"%s\"", node.label);
-        if (node.is_terminal) printf(" [%u]", node.value_index);
-        printf("\n");
+        uint32_t left = 0;
+        uint32_t right = node->childs_num;
+        while (left < right) {
+            const uint32_t mid = left + (right - left) / 2;
+            const uint8_t mid_chr = (uint8_t)*children[mid].label;
 
-        for (uint32_t i = node.childs_num; i > 0; --i)
-            stack[top++] = Frame{
-                node.first_child + i - 1,
-                frame.level + 1,
-                i == node.childs_num
-            };
+            /* Found the child that starts with the current char */
+            if (mid_chr == chr) {
+                next = &children[mid];
+                break;
+            }
+
+            /* Narrow the search range */
+            if (mid_chr < chr) left = mid + 1;
+            else right = mid;
+        }
+
+        /* No child starts with this char (or the node is a leaf) */
+        if (next == nullptr) return nullptr;
+
+        /* --- Label match --- */
+
+        /* The label must be fully contained in the rest of the key.
+         * The first char is already known to match, but it is cheaper
+         * to compare the whole label in one loop. If the key ends earlier,
+         * '\0' will not match a label char, so the loop stops with nullptr */
+        const char* label = next->label;
+        while (*label != '\0') {
+            if (*label != *key) return nullptr;
+            ++label;
+            ++key;
+        }
+
+        /* --- Descend --- */
+
+        /* The label is consumed, continue from the child */
+        node = next;
     }
-    return 666;
 }
