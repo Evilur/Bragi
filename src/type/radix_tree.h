@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <cstdio>
 #include <meta>
 #include <span>
 
@@ -14,8 +15,13 @@
  * A compile-time Radix (Compressed) Tree implementation
  * @author Evilur <the.evilur@gmail.com>
  */
-template <typename T>
+template <typename T = void>
 class RadixTree final {
+private:
+    using NextCharFunc = char (*)(const char*&);
+
+    static constexpr char NextChar(const char*& key) noexcept;
+
 public:
     PREVENT_COPY_ALLOW_MOVE(RadixTree);
 
@@ -26,6 +32,7 @@ public:
 
     constexpr ~RadixTree() noexcept = default;
 
+    template <NextCharFunc NextChar = NextChar>
     constexpr const T* Get(const char* key) const noexcept;
 
 private:
@@ -40,6 +47,10 @@ private:
     const T* _values;
     const Node* _nodes;
 };
+
+template <typename T>
+inline constexpr char RadixTree<T>::NextChar(const char*& key)
+noexcept { return *key++; }
 
 template <typename T>
 template <uint32_t N>
@@ -66,7 +77,7 @@ inline constexpr RadixTree<T>::RadixTree(
 
         /* Shift every greater key one slot to the right */
         uint32_t j = i;
-        while (j > 0 && String::Equal(keys[j - 1], key)) {
+        while (j > 0 && String::Compare(keys[j - 1], key) > 0) {
             keys[j] = keys[j - 1];
             values[j] = values[j - 1];
             --j;
@@ -176,24 +187,25 @@ inline constexpr RadixTree<T>::RadixTree(
 }
 
 template <typename T>
-inline constexpr
-const T* RadixTree<T>::Get(const char* key) const noexcept {
+template <RadixTree<T>::NextCharFunc FNextChar>
+inline constexpr const T* RadixTree<T>::Get(const char* key) const noexcept {
     /* A null key can never match anything */
     assert(key != nullptr && "nullptr key can't match anything");
 
     /* Start from the root. It has an empty label and consumes no chars */
     const Node* node = _nodes;
+    char key_chr = FNextChar(key);
 
     /* Descend one node per iteration, consuming the label of the node
      * we go into. Ends when the key is fully consumed or the path breaks */
-    while (true) {
+    for (;;) {
         /* --- Key end check --- */
 
         /* The whole key has been consumed. It exists in the tree
          * only if the current node is terminal */
-        if (*key == '\0')
+        if (key_chr == '\0')
             return node->is_terminal
-                ? (T*)(&_values[node->value_index])
+                ? &_values[node->value_index]
                 : nullptr;
 
         /* --- Child search --- */
@@ -202,14 +214,14 @@ const T* RadixTree<T>::Get(const char* key) const noexcept {
          * char of their labels (compared as unsigned, same as in StrCmp).
          * All the first chars are distinct, so a binary search is enough */
         const Node* const children = _nodes + node->first_child;
-        const uint8_t chr = (uint8_t)*key;
+        const unsigned char chr = (unsigned char)key_chr;
         const Node* next = nullptr;
 
         uint32_t left = 0;
         uint32_t right = node->childs_num;
         while (left < right) {
             const uint32_t mid = left + (right - left) / 2;
-            const uint8_t mid_chr = (uint8_t)*children[mid].label;
+            const unsigned char mid_chr = (unsigned char)*children[mid].label;
 
             /* Found the child that starts with the current char */
             if (mid_chr == chr) {
@@ -233,9 +245,9 @@ const T* RadixTree<T>::Get(const char* key) const noexcept {
          * '\0' will not match a label char, so the loop stops with nullptr */
         const char* label = next->label;
         while (*label != '\0') {
-            if (*label != *key) return nullptr;
+            if (*label != key_chr) return nullptr;
             ++label;
-            ++key;
+            key_chr = FNextChar(key);
         }
 
         /* --- Descend --- */

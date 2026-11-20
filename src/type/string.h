@@ -81,6 +81,12 @@ public:
     template <typename T>
     static constexpr T ToInt(const char* string) noexcept;
 
+    static constexpr int32_t Compare(const char* x1, const char* x2) noexcept;
+
+    static constexpr int32_t Compare(
+        const char* x1, const char* x2, uint32_t len
+    ) noexcept;
+
     static constexpr bool Equal(const char* x1, const char* x2) noexcept;
 
     static constexpr bool Equal(
@@ -277,27 +283,35 @@ inline String String::Format(
     return result;
 }
 
-inline constexpr bool String::Equal(
+inline constexpr int32_t String::Compare(
     const char* x1, const char* x2
 ) noexcept {
     if constexpr (std::is_constant_evaluated()) {
         while (*x1 && *x1 == *x2) ++x1, ++x2;
         return (unsigned char)*x1 - (unsigned char)*x2;
     } else
-        return strcmp(x1, x2) == 0;
+        return strcmp(x1, x2);
 }
 
-inline constexpr bool String::Equal(
+inline constexpr int32_t String::Compare(
     const char* x1, const char* x2, uint32_t len
 ) noexcept {
     if constexpr (std::is_constant_evaluated()) {
         while (len && *x1 && *x1 == *x2) ++x1, ++x2, --len;
         return len ? (unsigned char)*x1 - (unsigned char)*x2 : 0;
     } else
-        return strncmp(x1, x2, len) == 0;
+        return strncmp(x1, x2, len);
 }
 
-inline constexpr uint32_t String::Length(const char* string) noexcept {
+inline constexpr bool String::Equal(
+    const char* x1, const char* x2
+) noexcept { return Compare(x1, x2) == 0; }
+
+inline constexpr bool String::Equal(
+    const char* x1, const char* x2, uint32_t len
+) noexcept { return Compare(x1, x2, len) == 0; }
+
+inline constexpr uint32_t String::Length(const char* const string) noexcept {
     if constexpr (std::is_constant_evaluated()) {
         uint32_t len = 0;
         while (string[len]) ++len;

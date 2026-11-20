@@ -45,20 +45,23 @@ private:
                                      bool& readingLongHeader) noexcept;
 
 private:
-    enum Header {
-        CONTENT_LENGTH,
-        TRANSFER_ENCODING,
+    enum Header : uint8_t {
         CONNECTION,
-        CONTENT_ENCODING
+        CONTENT_ENCODING,
+        CONTENT_LENGTH,
+        TRAILER,
+        TRANSFER_ENCODING,
     };
-
-    static const RadixTree<Header> _headers;
 
     template <uint32_t N>
     static constexpr auto HeadersToLower(
         KeyValuePair<const char*, Header> (&&entries)[N],
         String (&&scratches)[N] = { }
     ) noexcept -> const KeyValuePair<const char*, Header> (&)[N];
+
+    static constexpr char LazyValidateHeader(const char*& buffer) noexcept;
+
+    static const RadixTree<Header> _headers;
 };
 
 inline bool HttpResponse::IsValid() const noexcept { return _is_valid; }
@@ -141,7 +144,16 @@ inline const char* HttpResponse::ReadHttp11ResponseLine(
 inline const char* HttpResponse::ReadHttp11ResponseHeader(
     const char* buffer, uint32_t& buffer_size, bool& readingLongHeader
 ) noexcept {
-    fwrite(buffer, 1, buffer_size, stdout);
+    /* Check for the empty line (headers end) */
+    if (memcmp(buffer, "\r\n", 2) == 0) return nullptr;
+
+    /* Try to read the header */
+    const Header* const header = _headers.Get<LazyValidateHeader>(buffer);
+
+    /* If it is supported header */
+    if (header != nullptr) {
+    }
+
     return nullptr;
 }
 
@@ -168,11 +180,30 @@ inline constexpr auto HttpResponse::HeadersToLower(
     return entries;
 }
 
+inline constexpr char HttpResponse::LazyValidateHeader(const char*& buffer)
+noexcept {
+    /* Get the char and increase the pointer */
+    char chr = *buffer;
+    ++buffer;
+
+    /* Cast to lowercase */
+    if (chr >= 'A' && chr <= 'Z')
+        chr += 'a' - 'A';
+
+    /* Use a colon as a terminate char */
+    else if (chr == ':')
+        chr = '\0';
+
+    /* Return the result */
+    return chr;
+}
+
 inline constexpr RadixTree<HttpResponse::Header> HttpResponse::_headers {
     HeadersToLower({
-        { "Content-Length"    , CONTENT_LENGTH      },
-        { "Transfer-Encoding" , TRANSFER_ENCODING   },
         { "Connection"        , CONNECTION          },
-        { "Content-Encoding"  , CONTENT_ENCODING    }
+        { "Content-Encoding"  , CONTENT_ENCODING    },
+        { "Content-Length"    , CONTENT_LENGTH      },
+        { "Trailer"           , TRAILER             },
+        { "Transfer-Encoding" , TRANSFER_ENCODING   },
     })
 };
