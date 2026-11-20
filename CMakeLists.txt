@@ -1,6 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.25)
-SET(CMAKE_CXX_STANDARD 26)
 PROJECT(Bragi)
+
+# Setting the compiler
+SET(CMAKE_CXX_STANDARD 26)
+SET(CXX_STANDARD_REQUIRED ON)
+SET(CXX_EXTENSIONS OFF)
 
 # Set compile options
 IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -25,6 +29,7 @@ ELSE ()
         --param max-inline-insns-auto=2147483647 \
         -flto=128")
 ENDIF ()
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -freflection")
 
 # Search header files in the 'src' directory
 INCLUDE_DIRECTORIES(src)

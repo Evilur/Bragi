@@ -6,6 +6,9 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <meta>
+#include <span>
+#include <ranges>
 
 namespace radix_detail {
 constexpr int32_t StrCmp(const char* x1, const char* x2) noexcept;
@@ -31,19 +34,15 @@ public:
 private:
     struct Node {
         const char* label = nullptr;
-        uint32_t label_len = 0;
-
         uint32_t first_child = 0;
         uint16_t childs_num = 0;
-
         bool is_terminal = false;
         uint32_t value_index = 0;
     };
 
     T _values[N];
 
-    Node _nodes[2 * N] { };
-    Node* _root = _nodes;
+    const Node* _nodes = nullptr;
 };
 
 inline constexpr int32_t radix_detail::StrCmp(
@@ -61,7 +60,7 @@ inline consteval RadixTree<T, N>::RadixTree(
 
     /* Sorted keys. Local: labels point into the string literals,
      * so the array is not needed after the construction */
-    const char* keys[N]{};
+    const char* keys[N];
 
     /* Insertion sort of the pairs by key. Keys with a common prefix
      * become contiguous, so every subtree is a range [lo, hi).
@@ -86,6 +85,11 @@ inline consteval RadixTree<T, N>::RadixTree(
 
     /* ---------- Step 2. Building the tree ---------- */
 
+    /* An array to store the nodes to make
+     * The static array from it in the future */
+    Node nodes[2 * N] { };
+    uint32_t nodes_num = 1;
+
     /* A node waiting to be built. Lives only during the construction */
     struct Task {
         uint32_t node_index = 0;
@@ -93,13 +97,6 @@ inline consteval RadixTree<T, N>::RadixTree(
         uint32_t hi = 0;
         uint32_t depth = 0;
     };
-
-    /* The root: empty label, covers all the keys, nothing consumed.
-     * Its Task is pushed below */
-    _nodes[0].label = "";
-
-    /* Number of created nodes */
-    uint32_t count = 1;
 
     /* The queue of nodes to build. Capacity N is enough: queued nodes
      * are never ancestors of each other, so their key ranges
@@ -112,7 +109,7 @@ inline consteval RadixTree<T, N>::RadixTree(
     while (!queue.IsEmpty()) {
         /* Take the next node and unpack its task */
         const Task task = queue.Pop();
-        Node& node = _nodes[task.node_index];
+        Node& node = nodes[task.node_index];
 
         /* Get the values from the task */
         uint32_t lo = task.lo;
@@ -140,7 +137,7 @@ inline consteval RadixTree<T, N>::RadixTree(
 
         /* All the children are created in the loop below without nested
          * processing, so they are contiguous in _nodes */
-        node.first_child = count;
+        node.first_child = nodes_num;
         uint32_t groups = 0;
 
         /* One iteration = one group of keys = one child */
@@ -155,20 +152,20 @@ inline consteval RadixTree<T, N>::RadixTree(
              * For sorted strings it equals the common prefix of the first
              * and the last one. The first chars match by the definition
              * of the group, so the length is at least 1 */
-            const char* const a = keys[lo] + depth;
-            const char* const b = keys[end - 1] + depth;
+            const char* const string1 = keys[lo] + depth;
+            const char* const string2 = keys[end - 1] + depth;
             uint32_t len = 1;
-            while (a[len] != '\0' && a[len] == b[len]) ++len;
+            while (string1[len] != '\0' && string1[len] == string2[len]) ++len;
 
             /* Create the child with its label. Its own subtree is deferred:
              * the task goes to the queue with the depth increased
              * by the label length */
-            _nodes[count].label = a;
-            _nodes[count].label_len = len;
-            queue.Push(Task{ count, lo, end, depth + len });
+            nodes[nodes_num].label =
+                std::define_static_string(std::span(string1, len));
+            queue.Push(Task{ nodes_num, lo, end, depth + len });
 
             /* Update the values */
-            ++count;
+            ++nodes_num;
             ++groups;
 
             /* Go to the next group */
@@ -178,6 +175,11 @@ inline consteval RadixTree<T, N>::RadixTree(
         /* The number of the children is known only now */
         node.childs_num = (uint16_t)groups;
     }
+
+    /* Save the static array of Nodes */
+    const std::span penis =
+        std::define_static_array(std::span(nodes, nodes_num));
+    _nodes = penis.data();
 }
 
 template <typename T, uint32_t N>
@@ -185,7 +187,7 @@ inline constexpr
 access_t<T> RadixTree<T, N>::Get(
     const char* const key
 ) const noexcept {
-        struct Frame {
+    struct Frame {
         uint32_t node;
         uint32_t level;
         bool is_last;
@@ -209,7 +211,7 @@ access_t<T> RadixTree<T, N>::Get(
             printf("%s", frame.is_last ? "└─ " : "├─ ");
 
         if (frame.level == 0) printf("(root)");
-        else printf("\"%.*s\"", (int)node.label_len, node.label);
+        else printf("\"%s\"", node.label);
         if (node.is_terminal) printf(" [%u]", node.value_index);
         printf("\n");
 
