@@ -21,7 +21,7 @@ public:
     constexpr const access_t<TKey> Key() const noexcept;
 
     [[nodiscard]]
-    TValue& Value() noexcept;
+    constexpr TValue& Value() noexcept;
 
     [[nodiscard]]
     constexpr const access_t<TValue> Value() const noexcept;
@@ -47,7 +47,7 @@ const access_t<TKey> KeyValuePair<TKey, TValue>::Key() const
 noexcept { return _key; }
 
 template <typename TKey, typename TValue>
-inline TValue& KeyValuePair<TKey, TValue>::Value()
+inline constexpr TValue& KeyValuePair<TKey, TValue>::Value()
 noexcept { return _value; }
 
 template <typename TKey, typename TValue>

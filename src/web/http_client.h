@@ -1,6 +1,7 @@
 #pragma once
 
 #include "type/nullable.h"
+#include "type/uniq_ptr.h"
 #include "util/class.h"
 #include "web/dns.h"
 #include "web/http_request.h"

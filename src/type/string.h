@@ -1,74 +1,73 @@
 #pragma once
 
 #include <cstdint>
-#include <cstring>
 #include <string_view>
 
 class String final {
 public:
-    String() = delete;
+    constexpr String() noexcept;
 
-    explicit String(uint64_t string_len);
-
-    template <typename T,
-        std::enable_if_t<std::is_same_v<T, const char*> ||
-        std::is_same_v<T, char*>, int> = 0>
-    String(T string);
-
-    template <uint32_t N>
-    String(const char (&string)[N]);
-
-    String(const char* string, uint64_t string_len);
-
-    String(const String& other);
-
-    String& operator=(const String& other);
-
-    String(String&& other) noexcept;
-
-    String& operator=(String&& other) noexcept;
-
-    String operator+(char symbol) const;
-
-    String operator+(const char* string) const;
-
-    bool operator==(const String& other) const noexcept;
+    constexpr explicit String(uint64_t string_len);
 
     template <typename T,
         std::enable_if_t<std::is_same_v<T, const char*> ||
         std::is_same_v<T, char*>, int> = 0>
-    bool operator==(T other) const noexcept;
+    constexpr String(T string);
 
     template <uint32_t N>
-    bool operator==(const char (&other)[N]) const noexcept;
+    constexpr String(const char (&string)[N]);
 
-    bool operator!=(const String& other) const noexcept;
+    constexpr String(const char* string, uint64_t string_len);
+
+    constexpr String(const String& other);
+
+    constexpr String& operator=(const String& other);
+
+    constexpr String(String&& other) noexcept;
+
+    constexpr String& operator=(String&& other) noexcept;
+
+    constexpr ~String() noexcept;
+
+    constexpr String operator+(char symbol) const;
+
+    constexpr String operator+(const char* string) const;
+
+    constexpr bool operator==(const String& other) const noexcept;
 
     template <typename T,
         std::enable_if_t<std::is_same_v<T, const char*> ||
         std::is_same_v<T, char*>, int> = 0>
-    bool operator!=(T other) const noexcept;
+    constexpr bool operator==(T other) const noexcept;
 
     template <uint32_t N>
-    bool operator!=(const char (&other)[N]) const noexcept;
+    constexpr bool operator==(const char (&other)[N]) const noexcept;
 
-    operator const char*() const noexcept;
+    constexpr bool operator!=(const String& other) const noexcept;
 
-    operator char*() const noexcept;
+    template <typename T,
+        std::enable_if_t<std::is_same_v<T, const char*> ||
+        std::is_same_v<T, char*>, int> = 0>
+    constexpr bool operator!=(T other) const noexcept;
 
-    operator std::string_view() const noexcept;
+    template <uint32_t N>
+    constexpr bool operator!=(const char (&other)[N]) const noexcept;
 
-    ~String() noexcept;
+    constexpr operator const char*() const noexcept;
 
-    uint32_t Length() const noexcept;
+    constexpr operator char*() const noexcept;
 
-    bool IsEmpty() const noexcept;
+    constexpr operator std::string_view() const noexcept;
 
-    void ToLower() noexcept;
+    constexpr uint32_t Length() const noexcept;
 
-    void ToUpper() noexcept;
+    constexpr bool IsEmpty() const noexcept;
 
-    [[nodiscard]] const char* CStr() const noexcept;
+    constexpr void ToLower() noexcept;
+
+    constexpr void ToUpper() noexcept;
+
+    [[nodiscard]] constexpr const char* CStr() const noexcept;
 
 private:
     char* _string;
@@ -79,10 +78,12 @@ public:
     static String Format(const char* format, Args... args);
 
     template <typename T>
-    static T ToInt(const char* string) noexcept;
+    static constexpr T ToInt(const char* string) noexcept;
 };
 
-inline String::String(const uint64_t string_len) :
+inline constexpr String::String() noexcept : _string(nullptr), _len(0) { }
+
+inline constexpr String::String(const uint64_t string_len) :
     _string(new char[string_len + 1]), _len(string_len) {
     _string[string_len] = '\0';
 }
@@ -90,24 +91,28 @@ inline String::String(const uint64_t string_len) :
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
-inline String::String(const T string)
-    : String(string, string != nullptr ? strlen(string) : 0) { }
+inline constexpr String::String(const T string)
+    : String(string, string != nullptr ?
+                     std::char_traits<char>::length(string) : 0) { }
 
 template <uint32_t N>
-inline String::String(const char (&string)[N]) : String(string, N - 1) { }
+inline constexpr String::String(const char (&string)[N])
+: String(string, N - 1) { }
 
-inline String::String(const char* string, const uint64_t string_len) :
-    String(string_len) {
-    if (string != nullptr) memcpy(_string, string, string_len);
+inline constexpr String::String(const char* string, const uint64_t string_len)
+    : String(string_len) {
+    if (string != nullptr)
+        std::char_traits<char>::copy(_string, string, string_len);
 }
 
-inline String::String(const String& other) :
+inline constexpr String::String(const String& other) :
     _string(new char[other._len + 1]), _len(other._len) {
     /* Assign a new data */
-    memcpy(_string, other._string, other._len + 1);
+    std::char_traits<char>::copy(_string, other._string, other._len);
+    _string[_len] = '\0';
 }
 
-inline String& String::operator=(const String& other) {
+inline constexpr String& String::operator=(const String& other) {
     /* Self-assignment check */
     if (this == &other) return *this;
 
@@ -123,20 +128,20 @@ inline String& String::operator=(const String& other) {
     } else {
         /* Assign a new data */
         _string = new char[other._len + 1];
-        memcpy(_string, other._string, other._len + 1);
+        std::char_traits<char>::copy(_string, other._string, other._len + 1);
         _len = other._len;
     }
 
     return *this;
 }
 
-inline String::String(String&& other) noexcept :
+inline constexpr String::String(String&& other) noexcept :
     _string(other._string), _len(other._len) {
     other._string = nullptr;
     other._len = 0;
 }
 
-inline String& String::operator=(String&& other) noexcept {
+inline constexpr String& String::operator=(String&& other) noexcept {
     /* Self-move check */
     if (this == &other) return *this;
 
@@ -153,66 +158,74 @@ inline String& String::operator=(String&& other) noexcept {
     return *this;
 }
 
-inline String String::operator+(const char symbol) const {
+inline constexpr String String::operator+(const char symbol) const {
     String result(_string, _len + 1);
     result._string[_len] = symbol;
     return result;
 }
 
-inline String String::operator+(const char* const other) const {
+inline constexpr String String::operator+(const char* const other) const {
     /* Nullptr check */
     if (other == nullptr) return String(_string, _len);
 
-    const uint64_t other_len = strlen(other);
+    const uint64_t other_len = std::char_traits<char>::length(other);
     String result(_len + other_len);
-    memcpy(result._string, _string, _len);
-    memcpy(result._string + _len, other, other_len);
+    std::char_traits<char>::copy(result._string, _string, _len);
+    std::char_traits<char>::copy(result._string + _len, other, other_len);
     return result;
 }
 
-inline bool String::operator==(const String& other) const noexcept {
-    return _len == other._len && memcmp(_string, other._string, _len) == 0;
+inline constexpr bool String::operator==(const String& other) const noexcept {
+    return _len == other._len &&
+        std::char_traits<char>::compare(_string, other._string, _len) == 0;
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
-inline bool String::operator==(const T other) const
-noexcept { return strcmp(_string, other) == 0; }
+inline constexpr bool String::operator==(const T other) const
+noexcept { return std::char_traits<char>::compare(_string, other) == 0; }
 
 template <uint32_t N>
-inline bool String::operator==(const char (&other)[N]) const
-noexcept { return _len == N - 1 && memcmp(_string, other, N - 1) == 0; }
+inline constexpr bool String::operator==(const char (&other)[N]) const
+noexcept {
+    return _len == N - 1 &&
+        std::char_traits<char>::compare(_string, other, N - 1) == 0;
+}
 
-inline bool String::operator!=(const String& other) const noexcept {
-    return _len != other._len || memcmp(_string, other._string, _len) != 0;
+inline constexpr bool String::operator!=(const String& other) const noexcept {
+    return _len != other._len ||
+        std::char_traits<char>::compare(_string, other._string, _len) != 0;
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
-inline bool String::operator!=(const T other) const
-noexcept { return strcmp(_string, other) != 0; }
+inline constexpr bool String::operator!=(const T other) const
+noexcept { return std::char_traits<char>::compare(_string, other) != 0; }
 
 template <uint32_t N>
-inline bool String::operator!=(const char (&other)[N]) const
-noexcept { return _len != N - 1 || memcmp(_string, other, N - 1) != 0; }
+inline constexpr bool String::operator!=(const char (&other)[N]) const
+noexcept {
+    return _len != N - 1 ||
+        std::char_traits<char>::compare(_string, other, N - 1) != 0;
+}
 
-inline String::operator const char*() const noexcept { return _string; }
+inline constexpr String::operator const char*() const
+noexcept { return _string; }
 
-inline String::operator char*() const noexcept { return _string; }
+inline constexpr String::operator char*() const noexcept { return _string; }
 
-inline
-String::operator std::string_view()
+inline constexpr String::operator std::string_view()
 const noexcept { return { _string, _len }; }
 
-inline String::~String() noexcept { delete[] _string; }
+inline constexpr String::~String() noexcept { delete[] _string; }
 
-inline uint32_t String::Length() const noexcept { return _len; }
+inline constexpr uint32_t String::Length() const noexcept { return _len; }
 
-inline bool String::IsEmpty() const noexcept { return _len == 0; }
+inline constexpr bool String::IsEmpty() const noexcept { return _len == 0; }
 
-inline void String::ToLower() noexcept {
+inline constexpr void String::ToLower() noexcept {
     for (char* string_ptr = _string,
          * const string_end = _string + _len;
          string_ptr < string_end; ++string_ptr)
@@ -220,7 +233,7 @@ inline void String::ToLower() noexcept {
             *string_ptr += 'a' - 'A';
 }
 
-inline void String::ToUpper() noexcept {
+inline constexpr void String::ToUpper() noexcept {
     for (char* string_ptr = _string,
          * const string_end = _string + _len;
          string_ptr < string_end; ++string_ptr)
@@ -228,10 +241,10 @@ inline void String::ToUpper() noexcept {
             *string_ptr -= 'a' - 'A';
 }
 
-inline const char* String::CStr() const noexcept { return _string; }
+inline constexpr const char* String::CStr() const noexcept { return _string; }
 
 template <typename T>
-inline T String::ToInt(const char* string) noexcept {
+inline constexpr T String::ToInt(const char* string) noexcept {
     /* Check for integer */
     static_assert(std::is_integral_v<T>, "<T> must be the integer");
 
@@ -252,7 +265,9 @@ inline T String::ToInt(const char* string) noexcept {
 }
 
 template <typename... Args>
-inline String String::Format(const char* const format, Args... args) {
+inline String String::Format(
+    const char* const format, Args... args
+) {
     String result((uint64_t)snprintf(nullptr, 0, format, args...));
     sprintf(result._string, format, args...);
     return result;

@@ -23,9 +23,11 @@ public:
     PREVENT_COPY_ALLOW_MOVE(RadixTree);
 
     template <uint32_t N>
-    consteval RadixTree(
+    constexpr RadixTree(
         const KeyValuePair<const char*, T> (&entries)[N]
     ) noexcept;
+
+    constexpr ~RadixTree() noexcept = default;
 
     constexpr const T* Get(const char* key) const noexcept;
 
@@ -51,7 +53,7 @@ inline constexpr int32_t radix_detail::StrCmp(
 
 template <typename T>
 template <uint32_t N>
-inline consteval RadixTree<T>::RadixTree(
+inline constexpr RadixTree<T>::RadixTree(
     const KeyValuePair<const char*, T> (&entries)[N]
 ) noexcept {
     static_assert(N > 0, "RadixTrie must contain at least one entry");
