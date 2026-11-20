@@ -17,18 +17,17 @@ constexpr int32_t StrCmp(const char* x1, const char* x2) noexcept;
  * A compile-time Radix (Compressed) Tree implementation
  * @author Evilur <the.evilur@gmail.com>
  */
-template <typename T, uint32_t N>
+template <typename T>
 class RadixTree final {
 public:
-    static_assert(N > 0, "RadixTrie must contain at least one entry");
-
     PREVENT_COPY_ALLOW_MOVE(RadixTree);
 
+    template <uint32_t N>
     consteval RadixTree(
         const KeyValuePair<const char*, T> (&entries)[N]
     ) noexcept;
 
-    constexpr T* Get(const char* key) const noexcept;
+    constexpr const T* Get(const char* key) const noexcept;
 
 private:
     struct Node {
@@ -39,9 +38,8 @@ private:
         uint32_t value_index = 0;
     };
 
-    T _values[N];
-
-    const Node* _nodes = nullptr;
+    const T* _values;
+    const Node* _nodes;
 };
 
 inline constexpr int32_t radix_detail::StrCmp(
@@ -51,15 +49,20 @@ inline constexpr int32_t radix_detail::StrCmp(
     return (uint8_t)*x1 - (uint8_t)*x2;
 }
 
-template <typename T, uint32_t N>
-inline consteval RadixTree<T, N>::RadixTree(
+template <typename T>
+template <uint32_t N>
+inline consteval RadixTree<T>::RadixTree(
     const KeyValuePair<const char*, T> (&entries)[N]
 ) noexcept {
+    static_assert(N > 0, "RadixTrie must contain at least one entry");
+
     /* ---------- Step 1. Sorting ---------- */
 
-    /* Sorted keys. Local: labels point into the string literals,
+    /* Sorted keys and values.
+     * Local: labels point into the static string literals,
      * so the array is not needed after the construction */
     const char* keys[N];
+    T values[N];
 
     /* Insertion sort of the pairs by key. Keys with a common prefix
      * become contiguous, so every subtree is a range [lo, hi).
@@ -73,13 +76,13 @@ inline consteval RadixTree<T, N>::RadixTree(
         uint32_t j = i;
         while (j > 0 && radix_detail::StrCmp(keys[j - 1], key) > 0) {
             keys[j] = keys[j - 1];
-            _values[j] = _values[j - 1];
+            values[j] = values[j - 1];
             --j;
         }
 
         /* Put the pair into the freed slot */
         keys[j] = key;
-        _values[j] = entries[i].Value();
+        values[j] = entries[i].Value();
     }
 
     /* ---------- Step 2. Building the tree ---------- */
@@ -175,13 +178,14 @@ inline consteval RadixTree<T, N>::RadixTree(
         node.childs_num = (uint16_t)groups;
     }
 
-    /* Save the static array of Nodes */
-    _nodes = std::define_static_array(std::span(nodes, nodes_num)).data();
+    /* Save static arrays of Nodes and Values */
+    _values = std::define_static_array(values).data();
+    _nodes  = std::define_static_array(std::span(nodes, nodes_num)).data();
 }
 
-template <typename T, uint32_t N>
+template <typename T>
 inline constexpr
-T* RadixTree<T, N>::Get(const char* key) const noexcept {
+const T* RadixTree<T>::Get(const char* key) const noexcept {
     /* A null key can never match anything */
     assert(key != nullptr && "nullptr key can't match anything");
 
