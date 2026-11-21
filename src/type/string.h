@@ -95,8 +95,6 @@ public:
 
     static constexpr uint32_t Length(const char* string) noexcept;
 
-    static constexpr const char* Trim(const char* string) noexcept;
-
 private:
     static constexpr void Copy(
         char* const dest, const char* const src, const uint32_t size
@@ -320,11 +318,6 @@ inline constexpr uint32_t String::Length(const char* const string) noexcept {
         return len;
     } else
         return strlen(string);
-}
-
-inline constexpr const char* String::Trim(const char* string) noexcept {
-    while (*string == ' ') ++string;
-    return string;
 }
 
 inline constexpr void String::Copy(
