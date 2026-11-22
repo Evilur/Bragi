@@ -39,12 +39,13 @@ ADD_EXECUTABLE(Bragi src/main.cpp)
 
 # Link libraries
 TARGET_LINK_LIBRARIES(Bragi
-        avcodec
-        avformat
-        avutil
-        crypto
-        dpp
-        opus
-        ssl
-        swresample
-        swscale)
+    avcodec
+    avformat
+    avutil
+    crypto
+    dpp
+    opus
+    ssl
+    swresample
+    swscale
+)
