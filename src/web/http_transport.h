@@ -365,6 +365,9 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
 
     /* Receive directly to the user buffer fomr the socket */
     while (total_received < buffer_size) {
+        /* Check for the socket */
+        if (_socket.IsClosed()) return total_received;
+
         /* Get the data from the socket */
         const uint32_t currently_received =
             _socket.Receive(buffer + total_received,
@@ -372,7 +375,7 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
 
         /* If the connection has been closed,
          * Return the result and exit */
-        if (currently_received == 0) return total_received;
+        if (currently_received == 0) { _socket.Close(); return total_received; }
 
         /* Update the total received size */
         total_received += currently_received;
@@ -395,8 +398,7 @@ inline uint32_t HttpTransport::Peek(const char*& buffer,
 
         /* The buffer is empty: just rewind the pointers
          * to make the whole buffer free again */
-        if (available == 0)
-            _rx_ptr = _rx_end = _rx_buffer;
+        if (available == 0) _rx_ptr = _rx_end = _rx_buffer;
 
         /* Not enough room after the read pointer:
          * move the pending data to the beginning of the buffer */
@@ -410,12 +412,15 @@ inline uint32_t HttpTransport::Peek(const char*& buffer,
          * Here we always have free space after _rx_end,
          * because available < min_size <= rx_limit - _rx_ptr */
         do {
+            /* Check for the socket */
+            if (_socket.IsClosed()) break;
+
             /* Receive the data from the socket */
             const uint32_t received =
                 _socket.Receive(_rx_end, rx_limit - _rx_end);
 
             /* The connection has been closed */
-            if (received == 0) break;
+            if (received == 0) { _socket.Close(); break; }
 
             /* Update the pointer and the size */
             _rx_end   += received;

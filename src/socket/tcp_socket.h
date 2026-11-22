@@ -30,6 +30,8 @@ public:
 
     void Close() noexcept;
 
+    bool IsClosed() const noexcept;
+
     void SetOption(int32_t level,
                    int32_t optname,
                    const void* optval,
@@ -88,6 +90,9 @@ inline void TcpSocket::Close() noexcept {
 #endif
     _socket_fd = -1;
 }
+
+inline bool TcpSocket::IsClosed() const
+noexcept { return _socket_fd == -1; }
 
 inline
 void TcpSocket::SetOption(const int32_t level,
