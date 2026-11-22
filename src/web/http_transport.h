@@ -80,7 +80,7 @@ public:
      * Get a pointer to the received (but not consumed) data without consuming
      * it. If less than `min_size` bytes are buffered, reads more from the
      * socket. The pointer is valid until the next
-     * Peek()/Consume()/Read()/Abort() call.
+     * Peek()/Consume()/Read()/Reset() call.
      * @param buffer   Receives the pointer to the buffered data
      * @param min_size Min amount of bytes to wait for (<= buffer capacity).
      *                 0 means: don't touch the socket,
@@ -92,7 +92,7 @@ public:
 
     void Consume(uint32_t size);
 
-    void Abort();
+    void Reset();
 
 private:
     TxEncoder* const& _tx_encoder;
@@ -444,7 +444,7 @@ inline void HttpTransport::Consume(const uint32_t size) {
     if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
 }
 
-inline void HttpTransport::Abort() {
+inline void HttpTransport::Reset() {
     /* Open a new TCP socket */
     _socket = TcpSocket();
 
@@ -456,6 +456,9 @@ inline void HttpTransport::Abort() {
 inline void HttpTransport::RawFlush() {
     /* Check for an empty buffer */
     if (_tx_ptr == _tx_buffer) return;
+
+    /* Check for the socket state */
+    if (_socket.IsClosed()) { Reset(); return; }
 
     /* Write the data to the socket */
     _socket.Send(_tx_buffer, _tx_ptr - _tx_buffer);

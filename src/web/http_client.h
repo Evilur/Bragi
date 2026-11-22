@@ -52,7 +52,7 @@ private:
 
     bool _headersSent = false;
 
-    void Abort();
+    void Reset();
 };
 
 inline HttpClient::HttpClient(const char* const domain,
@@ -88,7 +88,7 @@ inline bool HttpClient::Write(const char* const buffer,
         /* Send the request headers */
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
-        { Abort(); return false; }
+        { Reset(); return false; }
 
         /* Set the right encoder */
         if (_request.IsChunkedEncoding())
@@ -106,7 +106,7 @@ inline bool HttpClient::Write(const char* const buffer,
     /* Send the body */
     try { _transport.Write(buffer, buffer_size); }
     catch (const SocketException& e)
-    { Abort(); return false; }
+    { Reset(); return false; }
 
     /* Return the success code */
     return true;
@@ -124,7 +124,7 @@ inline bool HttpClient::Flush() {
         _request.SetContentLength(0);
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
-        { Abort(); return false; }
+        { Reset(); return false; }
 
         /* Reset the Content-Length */
         _request.ResetContentLength();
@@ -136,7 +136,7 @@ inline bool HttpClient::Flush() {
     /* Flush the request */
     try { _transport.Flush(); }
     catch (const SocketException& e)
-    { Abort(); return false; }
+    { Reset(); return false; }
 
     /* Reset the request state */
     _headersSent = false;
@@ -147,10 +147,10 @@ inline bool HttpClient::Flush() {
     /* Read the response headers */
     try { _response->ReadHttp11Headers(_transport); }
     catch (const SocketException& e)
-    { Abort(); return false; }
+    { Reset(); return false; }
 
     /* Check for the response validity */
-    if (!_response->IsValid()) { Abort(); return false; }
+    if (!_response->IsValid()) { Reset(); return false; }
 
     /* Set the right rx encoder */
     if (_response->IsChunkedEncoding()) {
@@ -169,9 +169,9 @@ inline uint32_t HttpClient::Read(char* const buffer,
 
 inline uint16_t HttpClient::Port() const noexcept { return htons(80); }
 
-inline void HttpClient::Abort() {
-    /* Abort the current connection */
-    _transport.Abort();
+inline void HttpClient::Reset() {
+    /* Reset the current connection */
+    _transport.Reset();
 
     /* Reset the states */
     _headersSent = false;
