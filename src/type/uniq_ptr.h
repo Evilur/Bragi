@@ -28,6 +28,10 @@ public:
 
     const BaseType* Get() const noexcept;
 
+    BaseType* const& Ref() noexcept;
+
+    const BaseType* const& Ref() const noexcept;
+
     void Release() noexcept;
 
     BaseType& operator*() noexcept;
@@ -94,6 +98,14 @@ inline UniqPtr<T>::BaseType* UniqPtr<T>::Get() noexcept { return _ptr; }
 
 template<typename T>
 inline const UniqPtr<T>::BaseType* UniqPtr<T>::Get() const
+noexcept { return _ptr; }
+
+template<typename T>
+inline UniqPtr<T>::BaseType* const& UniqPtr<T>::Ref()
+noexcept { return _ptr; }
+
+template<typename T>
+inline const UniqPtr<T>::BaseType* const& UniqPtr<T>::Ref() const
 noexcept { return _ptr; }
 
 template<typename T>

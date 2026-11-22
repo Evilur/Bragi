@@ -83,7 +83,7 @@ public:
 
     template <typename T>
     static constexpr T ToInt(
-        const char* string, const char*& end_ptr
+        const char* string, const char*& after_ptr
     ) noexcept;
 
     template <typename T>
@@ -93,7 +93,25 @@ public:
 
     template <typename T>
     static constexpr T ToInt(
-        const char* string, uint32_t len, const char*& end_ptr
+        const char* string, uint32_t len, const char*& after_ptr
+    ) noexcept;
+
+    template <typename T>
+    static constexpr T HexToInt(const char* string) noexcept;
+
+    template <typename T>
+    static constexpr T HexToInt(
+        const char* string, const char*& after_ptr
+    ) noexcept;
+
+    template <typename T>
+    static constexpr T HexToInt(
+        const char* string, uint32_t len
+    ) noexcept;
+
+    template <typename T>
+    static constexpr T HexToInt(
+        const char* string, uint32_t len, const char*& after_ptr
     ) noexcept;
 
     static constexpr int32_t Compare(const char* x1, const char* x2) noexcept;
@@ -286,7 +304,8 @@ inline constexpr T String::ToInt(const char* string) noexcept {
         T result = 0;
         while (*string >= '0' && *string <= '9') {
             result *= 10;
-            result += *string++ - '0';
+            result += *string - '0';
+            ++string;
         }
         return result;
     /* If the integer type is signed */
@@ -299,7 +318,7 @@ inline constexpr T String::ToInt(const char* string) noexcept {
 
 template <typename T>
 inline constexpr T String::ToInt(
-    const char* string, const char*& end_ptr
+    const char* string, const char*& after_ptr
 ) noexcept {
     /* Check for integer */
     static_assert(std::is_integral_v<T>, "<T> must be the integer");
@@ -309,15 +328,16 @@ inline constexpr T String::ToInt(
         T result = 0;
         while (*string >= '0' && *string <= '9') {
             result *= 10;
-            result += *string++ - '0';
+            result += *string - '0';
+            ++string;
         }
-        end_ptr = string;
+        after_ptr = string;
         return result;
     /* If the integer type is signed */
     } else {
         using unsigned_t = std::make_unsigned_t<T>;
-        if (*string == '-') return -ToInt<unsigned_t>(string + 1, end_ptr);
-        return ToInt<unsigned_t>(string, end_ptr);
+        if (*string == '-') return -ToInt<unsigned_t>(string + 1, after_ptr);
+        return ToInt<unsigned_t>(string, after_ptr);
     }
 }
 
@@ -333,21 +353,22 @@ inline constexpr T String::ToInt(
         T result = 0;
         while (*string >= '0' && *string <= '9') {
             result *= 10;
-            result += *string++ - '0';
+            result += *string - '0';
+            ++string;
             if (--len == 0) break;
         }
         return result;
     /* If the integer type is signed */
     } else {
         using unsigned_t = std::make_unsigned_t<T>;
-        if (*string == '-') return -ToInt<unsigned_t>(string + 1, len);
+        if (*string == '-') return -ToInt<unsigned_t>(string + 1, len - 1);
         return ToInt<unsigned_t>(string, len);
     }
 }
 
 template <typename T>
 inline constexpr T String::ToInt(
-    const char* string, uint32_t len, const char*& end_ptr
+    const char* string, uint32_t len, const char*& after_ptr
 ) noexcept {
     /* Check for integer */
     static_assert(std::is_integral_v<T>, "<T> must be the integer");
@@ -357,17 +378,141 @@ inline constexpr T String::ToInt(
         T result = 0;
         while (*string >= '0' && *string <= '9') {
             result *= 10;
-            result += *string++ - '0';
+            result += *string - '0';
+            ++string;
             if (--len == 0) break;
         }
-        end_ptr = string;
+        after_ptr = string;
         return result;
     /* If the integer type is signed */
     } else {
         using unsigned_t = std::make_unsigned_t<T>;
         if (*string == '-')
-            return -ToInt<unsigned_t>(string + 1, len, end_ptr);
-        return ToInt<unsigned_t>(string, len, end_ptr);
+            return -ToInt<unsigned_t>(string + 1, len - 1, after_ptr);
+        return ToInt<unsigned_t>(string, len, after_ptr);
+    }
+}
+
+template <typename T>
+inline constexpr T String::HexToInt(const char* string) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        for (;;) {
+            char c = *string;
+            if (c >= '0' && c <= '9') {
+                result *= 16;
+                result += c - '0';
+            } else if ((c |= 0x20) >= 'a' && c <= 'f') {
+                result *= 16;
+                result += c - 'a' + 10;
+            } else break;
+            ++string;
+        }
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-') return -HexToInt<unsigned_t>(string + 1);
+        return HexToInt<unsigned_t>(string);
+    }
+}
+
+template <typename T>
+inline constexpr T String::HexToInt(
+    const char* string, const char*& after_ptr
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        for (;;) {
+            char c = *string;
+            if (c >= '0' && c <= '9') {
+                result *= 16;
+                result += c - '0';
+            } else if ((c |= 0x20) >= 'a' && c <= 'f') {
+                result *= 16;
+                result += c - 'a' + 10;
+            } else break;
+            ++string;
+        }
+        after_ptr = string;
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-') return -HexToInt<unsigned_t>(string + 1, after_ptr);
+        return HexToInt<unsigned_t>(string, after_ptr);
+    }
+}
+
+template <typename T>
+inline constexpr T String::HexToInt(
+    const char* string, uint32_t len
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        for (;;) {
+            char c = *string;
+            if (c >= '0' && c <= '9') {
+                result *= 16;
+                result += c - '0';
+            } else if ((c |= 0x20) >= 'a' && c <= 'f') {
+                result *= 16;
+                result += c - 'a' + 10;
+            } else break;
+            ++string;
+            if (--len == 0) break;
+        }
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-') return -HexToInt<unsigned_t>(string + 1, len - 1);
+        return HexToInt<unsigned_t>(string, len);
+    }
+}
+
+template <typename T>
+inline constexpr T String::HexToInt(
+    const char* string, uint32_t len, const char*& after_ptr
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        for (;;) {
+            char c = *string;
+            if (c >= '0' && c <= '9') {
+                result *= 16;
+                result += c - '0';
+            } else if ((c |= 0x20) >= 'a' && c <= 'f') {
+                result *= 16;
+                result += c - 'a' + 10;
+            } else break;
+            ++string;
+            if (--len == 0) break;
+        }
+        after_ptr = string;
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-')
+            return -HexToInt<unsigned_t>(string + 1, len - 1, after_ptr);
+        return HexToInt<unsigned_t>(string, len, after_ptr);
     }
 }
 

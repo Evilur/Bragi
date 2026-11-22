@@ -130,7 +130,7 @@ public:
     void Finish(HttpTransport* transport) const noexcept override;
 
 private:
-    Plain() = default;
+    Plain() noexcept = default;
 
 public:
     static Plain& Instance() noexcept;
@@ -148,7 +148,7 @@ public:
     void Finish(HttpTransport* transport) const override;
 
 private:
-    Chunked() = default;
+    Chunked() noexcept = default;
 
 public:
     static Chunked& Instance() noexcept;
@@ -158,15 +158,14 @@ class HttpRxEncoder::Plain final : public RxEncoder {
 public:
     PREVENT_COPY_ALLOW_MOVE(Plain);
 
+    Plain(uint64_t content_length) noexcept;
+
     uint32_t Read(HttpTransport* transport,
                   char* buffer,
                   uint32_t buffer_size) override;
 
 private:
-    Plain() = default;
-
-public:
-    static Plain& Instance() noexcept;
+    uint64_t _content_length;
 };
 
 class HttpRxEncoder::Chunked final : public RxEncoder {
@@ -181,7 +180,8 @@ public:
     void Reset() noexcept;
 
 private:
-    uint32_t _current_chunk_size = 0;
+    uint64_t _current_chunk_size = 0;
+    bool _end = false;
 };
 
 inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
@@ -247,20 +247,98 @@ inline HttpTxEncoder::Chunked& HttpTxEncoder::Chunked::Instance() noexcept {
     return instance;
 }
 
+inline HttpRxEncoder::Plain::Plain(const uint64_t content_length)
+noexcept : _content_length(content_length) { }
+
 inline uint32_t HttpRxEncoder::Plain::Read(HttpTransport* const transport,
                                            char* const buffer,
-                                           const uint32_t buffer_size)
-{ return transport->RawRead(buffer, buffer_size); }
-
-inline HttpRxEncoder::Plain& HttpRxEncoder::Plain::Instance() noexcept {
-    static Plain instance;
-    return instance;
+                                           const uint32_t buffer_size) {
+    if (_content_length == 0) return 0;
+    const uint32_t received =
+        transport->RawRead(buffer, min(buffer_size, _content_length));
+    _content_length -= received;
+    return received;
 }
 
 inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
-                                             char* const buffer,
+                                             char* buffer,
                                              const uint32_t buffer_size) {
-    return 0;
+    /* Check for the end */
+    if (_end) return 0;
+
+    /* Save total bytes received here */
+    uint32_t total_received = 0;
+
+    /* Save the end of the buffer */
+    const char* const buffer_end = buffer + buffer_size;
+
+    /* Read chunk by chunk */
+    while (total_received < buffer_size) {
+        /* Read the chunk size */
+        if (_current_chunk_size == 0) {
+            /* Peek the chunk size */
+            const char* chunk_size;
+            const uint32_t peeked =
+                transport->Peek(chunk_size, sizeof(uint64_t) * 2 + 2);
+            if (peeked == 0) { _end = true; return total_received; }
+
+            /* Get the current chunk size */
+            const char* after_chunk_size;
+            _current_chunk_size = String::HexToInt<uint64_t>(
+                chunk_size, peeked, after_chunk_size
+            );
+
+            /* Check for the \r\n sequence */
+            if (after_chunk_size == chunk_size ||
+                after_chunk_size + 1 >= chunk_size + peeked ||
+                after_chunk_size[0] != '\r' ||
+                after_chunk_size[1] != '\n') {
+                _end = true;
+                return total_received;
+            }
+
+            /* Check for the last chunk */
+            if (_current_chunk_size == 0) {
+                /* Consume the last chunk from the buffer */
+                transport->Consume(sizeof("0\r\n\r\n") - 1);
+                _end = true;
+                return total_received;
+            }
+
+            /* Consume the peeked buffer */
+            transport->Consume(after_chunk_size + 2 - chunk_size);
+        }
+
+        /* Read the chunk */
+        const uint32_t received = transport->RawRead(
+            buffer, min(buffer_end - buffer, _current_chunk_size)
+        );
+
+        if (received == 0) { _end = true; return total_received; }
+
+        /* Update the values */
+        total_received      += received;
+        _current_chunk_size -= received;
+        buffer              += received;
+
+        /* Check if we reach the end of the chunk */
+        if (_current_chunk_size == 0) {
+            /* Peek the \r\n sequence after the chunk */
+            const char* end_seq;
+            const uint32_t end_seq_peeked = transport->Peek(end_seq, 2);
+            if (end_seq_peeked < 2) { _end = true; return total_received; }
+
+            /* Check for the \r\n sequence */
+            if (end_seq[0] != '\r' ||
+                end_seq[1] != '\n') { _end = true; return total_received; }
+
+            /* Consume the peeked buffer */
+            transport->Consume(2);
+        }
+    }
+
+    /* Return the total received bytes number */
+    return total_received;
 }
 
 inline void HttpRxEncoder::Chunked::Reset()

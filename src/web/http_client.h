@@ -43,12 +43,12 @@ protected:
 
 private:
     HttpRequest _request;
-    HttpTransport _transport;
     Nullable<HttpResponse> _response;
 
     HttpTxEncoder* _tx_encoder = nullptr;
-    HttpRxEncoder* _rx_encoder = nullptr;
-    UniqPtr<HttpRxEncoder> _rx_chunked_encoder = nullptr;
+    UniqPtr<HttpRxEncoder> _rx_encoder = nullptr;
+
+    HttpTransport _transport;
 
     bool _headersSent = false;
 
@@ -59,12 +59,13 @@ inline HttpClient::HttpClient(const char* const domain,
                               const char* const path,
                               const char* const method) noexcept
 : _request(domain, path, method),
-  _transport(_tx_encoder, _rx_encoder, DNS::Resolve(domain), Port()) { }
+  _transport(_tx_encoder, _rx_encoder.Ref(), DNS::Resolve(domain), Port()) { }
 
 inline HttpClient::HttpClient(const HttpRequest& request) noexcept
 : _request(request),
-  _transport(_tx_encoder, _rx_encoder,
-             DNS::Resolve(request.domain), Port()) { }
+  _transport(
+      _tx_encoder, _rx_encoder.Ref(), DNS::Resolve(request.domain), Port()
+  ) { }
 
 inline HttpRequest& HttpClient::Request() noexcept { return _request; }
 
@@ -153,10 +154,10 @@ inline bool HttpClient::Flush() {
     if (!_response->IsValid()) { Reset(); return false; }
 
     /* Set the right rx encoder */
-    if (_response->IsChunkedEncoding()) {
-        _rx_chunked_encoder = new HttpRxEncoder::Chunked();
-        _rx_encoder = _rx_chunked_encoder;
-    } else _rx_encoder = &HttpRxEncoder::Plain::Instance();
+    if (_response->IsChunkedEncoding())
+        _rx_encoder = new HttpRxEncoder::Chunked();
+    else
+        _rx_encoder = new HttpRxEncoder::Plain(_response->ContentLength());
 
     /* If all is OK, return the success code */
     return true;
