@@ -35,6 +35,9 @@ public:
     template <NextCharFunc NextChar = NextChar>
     constexpr const T* Get(const char* key) const noexcept;
 
+    template <NextCharFunc NextChar = NextChar>
+    constexpr const T* Get(const char* key, uint32_t len) const noexcept;
+
 private:
     struct Node {
         const char* label = nullptr;
@@ -204,9 +207,7 @@ inline constexpr const T* RadixTree<T>::Get(const char* key) const noexcept {
         /* The whole key has been consumed. It exists in the tree
          * only if the current node is terminal */
         if (key_chr == '\0')
-            return node->is_terminal
-                ? &_values[node->value_index]
-                : nullptr;
+            return node->is_terminal ? &_values[node->value_index] : nullptr;
 
         /* --- Child search --- */
 
@@ -253,6 +254,67 @@ inline constexpr const T* RadixTree<T>::Get(const char* key) const noexcept {
         /* --- Descend --- */
 
         /* The label is consumed, continue from the child */
+        node = next;
+    }
+}
+
+template <typename T>
+template <RadixTree<T>::NextCharFunc FNextChar>
+inline constexpr const T* RadixTree<T>::Get(
+    const char* key, uint32_t len
+) const noexcept {
+    assert(key != nullptr && "nullptr key can't match anything");
+
+    const Node* node = _nodes;
+    char key_chr = len > 0 ? FNextChar(key) : '\0';
+
+    for (;;) {
+        /* --- Key end check --- */
+
+        if (len == 0 || key_chr == '\0')
+            return node->is_terminal ? &_values[node->value_index] : nullptr;
+
+        /* --- Child search --- */
+
+        const Node* const children = _nodes + node->first_child;
+        const unsigned char chr = (unsigned char)key_chr;
+        const Node* next = nullptr;
+
+        uint32_t left = 0;
+        uint32_t right = node->childs_num;
+
+        while (left < right) {
+            const uint32_t mid = left + (right - left) / 2;
+            const unsigned char mid_chr =
+                (unsigned char)*children[mid].label;
+
+            if (mid_chr == chr) {
+                next = &children[mid];
+                break;
+            }
+
+            if (mid_chr < chr) left = mid + 1;
+            else right = mid;
+        }
+
+        if (next == nullptr) return nullptr;
+
+        /* --- Label match --- */
+
+        const char* label = next->label;
+
+        while (*label != '\0') {
+            if (len == 0 || key_chr == '\0' || *label != key_chr)
+                return nullptr;
+
+            ++label;
+            --len;
+
+            if (len > 0) key_chr = FNextChar(key);
+        }
+
+        /* --- Descend --- */
+
         node = next;
     }
 }

@@ -81,6 +81,21 @@ public:
     template <typename T>
     static constexpr T ToInt(const char* string) noexcept;
 
+    template <typename T>
+    static constexpr T ToInt(
+        const char* string, const char*& end_ptr
+    ) noexcept;
+
+    template <typename T>
+    static constexpr T ToInt(
+        const char* string, uint32_t len
+    ) noexcept;
+
+    template <typename T>
+    static constexpr T ToInt(
+        const char* string, uint32_t len, const char*& end_ptr
+    ) noexcept;
+
     static constexpr int32_t Compare(const char* x1, const char* x2) noexcept;
 
     static constexpr int32_t Compare(
@@ -90,6 +105,14 @@ public:
     static constexpr bool Equal(const char* x1, const char* x2) noexcept;
 
     static constexpr bool Equal(
+        const char* x1, const char* x2, uint32_t len
+    ) noexcept;
+
+    static constexpr bool EqualIgnoreCase(
+        const char* x1, const char* x2
+    ) noexcept;
+
+    static constexpr bool EqualIgnoreCase(
         const char* x1, const char* x2, uint32_t len
     ) noexcept;
 
@@ -274,6 +297,80 @@ inline constexpr T String::ToInt(const char* string) noexcept {
     }
 }
 
+template <typename T>
+inline constexpr T String::ToInt(
+    const char* string, const char*& end_ptr
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        while (*string >= '0' && *string <= '9') {
+            result *= 10;
+            result += *string++ - '0';
+        }
+        end_ptr = string;
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-') return -ToInt<unsigned_t>(string + 1, end_ptr);
+        return ToInt<unsigned_t>(string, end_ptr);
+    }
+}
+
+template <typename T>
+inline constexpr T String::ToInt(
+    const char* string, uint32_t len
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        while (*string >= '0' && *string <= '9') {
+            result *= 10;
+            result += *string++ - '0';
+            if (--len == 0) break;
+        }
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-') return -ToInt<unsigned_t>(string + 1, len);
+        return ToInt<unsigned_t>(string, len);
+    }
+}
+
+template <typename T>
+inline constexpr T String::ToInt(
+    const char* string, uint32_t len, const char*& end_ptr
+) noexcept {
+    /* Check for integer */
+    static_assert(std::is_integral_v<T>, "<T> must be the integer");
+
+    /* If the integer type is unsigned */
+    if constexpr (std::is_unsigned_v<T>) {
+        T result = 0;
+        while (*string >= '0' && *string <= '9') {
+            result *= 10;
+            result += *string++ - '0';
+            if (--len == 0) break;
+        }
+        end_ptr = string;
+        return result;
+    /* If the integer type is signed */
+    } else {
+        using unsigned_t = std::make_unsigned_t<T>;
+        if (*string == '-')
+            return -ToInt<unsigned_t>(string + 1, len, end_ptr);
+        return ToInt<unsigned_t>(string, len, end_ptr);
+    }
+}
+
 template <typename... Args>
 inline String String::Format(
     const char* const format, Args... args
@@ -310,6 +407,43 @@ inline constexpr bool String::Equal(
 inline constexpr bool String::Equal(
     const char* x1, const char* x2, uint32_t len
 ) noexcept { return Compare(x1, x2, len) == 0; }
+
+inline constexpr bool String::EqualIgnoreCase(
+    const char* x1, const char* x2
+) noexcept {
+    if (x1 == x2) return true;
+    if (x1 == nullptr || x2 == nullptr) return false;
+
+    for(;; ++x1, ++x2) {
+        const unsigned char c1 = (unsigned char)*x1;
+        const unsigned char c2 = (unsigned char)*x2;
+
+        if (c1 == c2) {
+            if (c1 == '\0') return true;
+        } else if (!(((c1 ^ c2) == 0x20) &
+                 ((unsigned char)((c1 | 0x20) - 'a') < 26)))
+            return false;
+    }
+}
+
+inline constexpr bool String::EqualIgnoreCase(
+    const char* x1, const char* x2, uint32_t len
+) noexcept {
+    if (len == 0 || x1 == x2) return true;
+    if (x1 == nullptr || x2 == nullptr) return false;
+
+    for(; len > 0; ++x1, ++x2, --len) {
+        const unsigned char c1 = (unsigned char)*x1;
+        const unsigned char c2 = (unsigned char)*x2;
+
+        if (c1 == c2) {
+            if (c1 == '\0') return true;
+        } else if (!(((c1 ^ c2) == 0x20) &
+                 ((unsigned char)((c1 | 0x20) - 'a') < 26)))
+            return false;
+    }
+    return true;
+}
 
 inline constexpr uint32_t String::Length(const char* const string) noexcept {
     if constexpr (std::is_constant_evaluated()) {

@@ -23,14 +23,15 @@ public:
 
     bool IsChunkedEncoding() const noexcept;
 
-    void ReadHttp11Headers(HttpTransport& transport) noexcept;
+    uint64_t ContentLength() const noexcept;
+
+    void ReadHttp11Headers(HttpTransport& transport);
 
 private:
     enum Header : uint8_t {
         CONNECTION,
         CONTENT_ENCODING,
         CONTENT_LENGTH,
-        TRAILER,
         TRANSFER_ENCODING
     };
 
@@ -50,8 +51,8 @@ private:
     bool _is_connection_close = false;
 
     [[nodiscard]]
-    const char* ReadHttp11ResponseLine(
-        const char* buffer, const char* buffer_end
+    ParseResult ReadHttp11ResponseLine(
+        const char*& buffer, const char* buffer_end
     ) noexcept;
 
     [[nodiscard]]
@@ -64,41 +65,41 @@ private:
         const char*& buffer, const char* buffer_end, bool& readingLongHeader
     ) noexcept;
 
+    [[nodiscard]]
+    ParseResult HandleHeaderValue(
+        Header header, const char*& buffer,
+        const char* buffer_end, bool& readingLongHeader
+    ) noexcept;
+
 private:
+    [[nodiscard]]
+    static char LazyValidateHeader(const char*& buffer) noexcept;
+
+    [[nodiscard]]
+    static bool IsTextChar(unsigned char chr) noexcept;
+
+    [[nodiscard]]
+    static bool IsObsTextChar(unsigned char chr) noexcept;
+
+    [[nodiscard]]
+    static bool IsTokenChar(unsigned char chr) noexcept;
+
+    [[nodiscard]]
+    static ParseResult SkipHeaderName(
+        const char*& buffer, const char* buffer_end
+    ) noexcept;
+
+    [[nodiscard]]
+    static ParseResult SkipHeaderValue(
+        const char*& buffer, const char* buffer_end, bool& readingLongHeader
+    ) noexcept;
+
     template <uint32_t N>
     [[nodiscard]]
     static constexpr auto HeadersToLower(
         KeyValuePair<const char*, Header> (&&entries)[N],
         String (&&scratches)[N] = { }
     ) noexcept -> const KeyValuePair<const char*, Header> (&)[N];
-
-    [[nodiscard]]
-    static constexpr char LazyValidateHeader(const char*& buffer) noexcept;
-
-    [[nodiscard]]
-    static constexpr bool IsTextChar(unsigned char chr) noexcept;
-
-    [[nodiscard]]
-    static constexpr bool IsObsTextChar(unsigned char chr) noexcept;
-
-    [[nodiscard]]
-    static constexpr bool IsTokenChar(unsigned char chr) noexcept;
-
-    [[nodiscard]]
-    static constexpr ParseResult SkipHeaderName(
-        const char*& buffer, const char* buffer_end
-    ) noexcept;
-
-    [[nodiscard]]
-    static constexpr ParseResult SkipHeaderValue(
-        const char*& buffer, const char* buffer_end, bool& readingLongHeader
-    ) noexcept;
-
-    [[nodiscard]]
-    static constexpr ParseResult HandleHeaderValue(
-        Header header, const char*& buffer,
-        const char* buffer_end, bool& readingLongHeader
-    ) noexcept;
 
     static const RadixTree<Header> _headers;
 };
@@ -111,31 +112,47 @@ noexcept { return _status_code; }
 inline bool HttpResponse::IsChunkedEncoding() const
 noexcept { return _is_chunked_encoding; }
 
-inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport)
-noexcept {
-    /* Save the buffer pointer */
-    const char* buffer;
-    uint32_t peeked = transport.Peek(buffer, HttpTransport::PEEK_MAX);
-    if (peeked == 0) return;
-    const char* buffer_end = buffer + peeked;
+inline uint64_t HttpResponse::ContentLength() const
+noexcept { return _content_length; }
 
-    /* Read the response line and check it */
-    buffer = ReadHttp11ResponseLine(buffer, buffer_end);
-    if (buffer == nullptr) return;
+inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
+    /* Store the peeked size here */
+    uint32_t peeked;
+
+    /* To parse the response main line */
+    bool readingResponseLine = true;
 
     /* To read long headers below */
     bool readingLongHeader = false;
 
-    /* Read the headers */
-    for (;;) {
-        /* While we have what to read, read it (headers) */
+    do {
+        /* Store results here */
         ParseResult result;
-        do result = readingLongHeader
-            ? ReadHttp11LongHeader(buffer, buffer_end, readingLongHeader)
-            : ReadHttp11ResponseHeader(buffer, buffer_end, readingLongHeader);
-        while (result == ParseResult::VALID);
+
+        /* Peek a new data */
+        const char* buffer;
+        peeked = transport.Peek(buffer, HttpTransport::PEEK_MAX);
+        if (peeked == 0) return;
+        const char* const buffer_end = buffer + peeked;
+
+        /* Read the response line */
+        if (readingResponseLine) {
+            result = ReadHttp11ResponseLine(buffer, buffer_end);
+            switch (result) {
+                case VALID: readingResponseLine = false; break;
+                case NEED_MORE: goto check_handled;
+                case INVALID: default: return;
+            }
+        }
+
+        /* While we have what to read, read it (headers) */
+        do result = readingLongHeader ?
+            ReadHttp11LongHeader(buffer, buffer_end, readingLongHeader) :
+            ReadHttp11ResponseHeader(buffer, buffer_end, readingLongHeader);
+        while (result == VALID);
 
         /* Consume the handled data from the buffer */
+    check_handled:
         const uint32_t handled = peeked - (buffer_end - buffer);
         transport.Consume(handled);
 
@@ -148,64 +165,75 @@ noexcept {
 
         /* If we've NOT handled any bytes, and the buffer is full */
         if (handled == 0 && peeked == HttpTransport::PEEK_MAX) return;
-
-        /* Peek a new data */
-        peeked = transport.Peek(buffer, HttpTransport::PEEK_MAX);
-        if (peeked == 0) return;
-        buffer_end = buffer + peeked;
-    }
+    } while (peeked == HttpTransport::PEEK_MAX);
 }
 
-inline const char* HttpResponse::ReadHttp11ResponseLine(
-    const char* buffer, const char* const buffer_end
+inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
+    const char*& buffer, const char* const buffer_end
 ) noexcept {
     /* Http v1.1 first bytes */
     constexpr static const char http11_header[] = "HTTP/1.1 ";
 
     /* Check the min response line size */
-    if (buffer_end - buffer < sizeof(http11_header) - 1 + 4 + 2)
-        return nullptr;
+    if (buffer_end - buffer < sizeof(http11_header) - 1 + 3 + 2)
+        return NEED_MORE;
+
+    /* Create a buffer pointer */
+    const char* buffer_ptr = buffer;
 
     /* Check for the right http version */
-    if (!String::Equal(buffer, http11_header, sizeof(http11_header) - 1))
-        return nullptr;
+    if (!String::Equal(buffer_ptr, http11_header, sizeof(http11_header) - 1))
+        return INVALID;
 
     /* Skip the http version */
-    buffer += sizeof(http11_header) - 1;
+    buffer_ptr += sizeof(http11_header) - 1;
 
     /* Read the response status code */
-    _status_code = String::ToInt<uint16_t>(buffer);
-    if (_status_code < 100 || _status_code > 599) {
+    const char* after_status_code;
+    _status_code = String::ToInt<uint16_t>(
+        buffer_ptr, buffer_end - buffer_ptr, after_status_code
+    );
+    if (after_status_code - buffer_ptr != 3 ||
+        _status_code < 100 || _status_code > 599) {
         _status_code = 0;
-        return nullptr;
+        return INVALID;
     }
 
     /* Skip the response status code */
-    buffer += 3;
+    buffer_ptr = after_status_code;
 
     /* Check for the right end of the status code */
-    if (*buffer != ' ' && *buffer != '\r') return nullptr;
+    if (*buffer_ptr != ' ') {
+        if (buffer_ptr[0] == '\r' && buffer_ptr[1] == '\n') {
+            buffer = buffer_ptr + 2; return VALID;
+        }
+        else return INVALID;
+    }
 
     /* Read and check the rest of the response line */
-    while (buffer < buffer_end) {
-        if (buffer[0] == '\r') {
-            /* If there is \r\n seq, return the new pointer to the new line */
-            if (buffer + 1 < buffer_end && buffer[1] == '\n')
-                return buffer + 2;
+    while (buffer_ptr < buffer_end) {
+        if (buffer_ptr[0] == '\r') {
+            /* If there is an end of the buffer_ptr */
+            if (buffer_ptr + 1 >= buffer_end) return NEED_MORE;
 
-            /* If there is only \r char, return nullptr */
-            else return nullptr;
+            /* If there is \r\n seq, return the new pointer to the new line */
+            if (buffer_ptr[1] == '\n') {
+                buffer = buffer_ptr + 2; return VALID;
+            }
+
+            /* If there is only \r char, return INVALID */
+            else return INVALID;
         }
 
         /* Check for the acceptable chars */
-        if (!IsTextChar(*buffer)) return nullptr;
+        if (!IsTextChar(*buffer_ptr)) return INVALID;
 
         /* Update the pointer */
-        ++buffer;
+        ++buffer_ptr;
     }
 
     /* If there is no line eof */
-    return nullptr;
+    return NEED_MORE;
 }
 
 inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
@@ -223,7 +251,8 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
     }
 
     /* Try to read the header */
-    const Header* const header = _headers.Get<LazyValidateHeader>(buffer);
+    const Header* const header =
+        _headers.Get<LazyValidateHeader>(buffer, buffer_end - buffer);
 
     /* Create a buffer pointer */
     const char* buffer_ptr = buffer;
@@ -236,8 +265,8 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
         /* Set the buffer pointer after the colon char */
         buffer_ptr += get_enum_label_length(*header) + 1;
 
-        /* Check for the remaining space */
-        if (buffer_end - buffer_ptr < sizeof("0\r\n") - 1) return NEED_MORE;
+        /* Check for the buffer end */
+        if (buffer_ptr >= buffer_end) return NEED_MORE;
 
         /* Check for the colon */
         if (buffer_ptr[-1] != ':') return INVALID;
@@ -246,6 +275,8 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
         result =  HandleHeaderValue(
             *header, buffer_ptr, buffer_end, readingLongHeader
         );
+
+        /* Check for not valid result */
         if (result != VALID) return result;
     }
 
@@ -255,12 +286,11 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
         result = SkipHeaderName(buffer_ptr, buffer_end);
         if (result != VALID) return result;
 
-        /* Check for the remaining space */
-        if (buffer_end - buffer_ptr < sizeof("0\r\n") - 1) return NEED_MORE;
-
         /* Skip the header value */
         result = SkipHeaderValue(buffer_ptr, buffer_end, readingLongHeader);
-        if (result != VALID) return result;
+
+        /* Check for invalid result */
+        if (result == INVALID) return INVALID;
     }
 
     /* Update the buffer and return the result */
@@ -272,24 +302,103 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11LongHeader(
     const char*& buffer, const char* buffer_end, bool& readingLongHeader
 ) noexcept { return SkipHeaderValue(buffer, buffer_end, readingLongHeader); }
 
-template <uint32_t N>
-inline constexpr auto HttpResponse::HeadersToLower(
-    KeyValuePair<const char*, Header> (&&entries)[N],
-    String (&&scratches)[N]
-) noexcept -> const KeyValuePair<const char*, Header> (&)[N] {
-    for (uint32_t i = 0; i < N; ++i) {
-        /* Save the entry key to the scratches and cast to the lowercase */
-        (scratches[i] = entries[i].Key()).ToLower();
+inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
+    const Header header, const char*& buffer,
+    const char* const buffer_end, bool& readingLongHeader
+) noexcept {
+    /* Trim the buffer from the left */
+    while (
+        buffer < buffer_end && (*buffer == ' ' || *buffer == '\t')
+    ) ++buffer;
 
-        /* Update the entry */
-        entries[i] = { scratches[i].CStr(), entries[i].Value() };
+    /* Check for the end of buffer */
+    if (buffer >= buffer_end) return NEED_MORE;
+
+    /* Handle the header */
+    switch (header) {
+        case CONNECTION: {
+            constexpr const char close_value[] = "Close";
+            constexpr const char keep_alive_value[] = "Keep-Alive";
+
+            /* Get the buffer size */
+            const uint32_t buffer_size = buffer_end - buffer;
+
+            /* Check for the header value
+             * If it starts with invalid bytes, return INVALID,
+             * If it statts with right bytes
+             * But it is not a full string, return NEED_MORE
+             * If all is OK, go next */
+            if (String::EqualIgnoreCase(
+                    buffer, close_value,
+                    min(sizeof(close_value) - 1, buffer_size)
+                )) {
+                if (buffer_size < sizeof(close_value) - 1 + 2)
+                    return NEED_MORE;
+
+                _is_connection_close = true;
+                buffer += sizeof(close_value) - 1;
+            } else if (String::EqualIgnoreCase(
+                buffer, keep_alive_value,
+                min(sizeof(keep_alive_value) - 1, buffer_size)
+            )) {
+                if (buffer_size < sizeof(keep_alive_value) - 1 + 2)
+                    return NEED_MORE;
+
+                _is_connection_close = false;
+                buffer += sizeof(keep_alive_value) - 1;
+            } else return INVALID;
+            break;
+        }
+        case CONTENT_ENCODING: {
+            /* TEMPORARY UNSUPPORTED */
+            return SkipHeaderValue(buffer, buffer_end, readingLongHeader);
+        }
+        case CONTENT_LENGTH: {
+            const char* end_ptr;
+            _content_length =
+                String::ToInt<uint64_t>(buffer, buffer_end - buffer, end_ptr);
+            if (end_ptr == buffer) return INVALID;
+            buffer = end_ptr;
+            break;
+        }
+        case TRANSFER_ENCODING: {
+            constexpr const char chunked_value[] = "Chunked";
+
+            /* Get the buffer size */
+            const uint32_t buffer_size = buffer_end - buffer;
+
+            /* Check for the header value
+             * If it starts with invalid bytes, return INVALID,
+             * If it statts with right bytes
+             * But it is not a full string, return NEED_MORE
+             * If all is OK, go next */
+            if (String::EqualIgnoreCase(
+                    buffer, chunked_value,
+                    min(sizeof(chunked_value) - 1, buffer_size)
+                )) {
+                if (buffer_size < sizeof(chunked_value) - 1 + 2)
+                    return NEED_MORE;
+
+                _is_chunked_encoding = true;
+                buffer += sizeof(chunked_value) - 1;
+                break;
+            } else return INVALID;
+        }
     }
 
-    /* Return the result */
-    return entries;
+    /* Trim the buffer from the right */
+    while (
+        buffer < buffer_end && (*buffer == ' ' || *buffer == '\t')
+    ) ++buffer;
+
+    /* Check for the line eof (\r\n sequence) */
+    if (buffer + 1 >= buffer_end) return NEED_MORE;
+    if (buffer[0] != '\r' || buffer[1] != '\n') return INVALID;
+    buffer += 2;
+    return VALID;
 }
 
-inline constexpr char HttpResponse::LazyValidateHeader(const char*& buffer)
+inline char HttpResponse::LazyValidateHeader(const char*& buffer)
 noexcept {
     /* Get the char and increase the pointer */
     char chr = *buffer;
@@ -307,13 +416,13 @@ noexcept {
     return chr;
 }
 
-inline constexpr bool HttpResponse::IsTextChar(const unsigned char chr)
+inline bool HttpResponse::IsTextChar(const unsigned char chr)
 noexcept { return (chr >= 0x20 && chr <= 0x7e) || chr == '\t'; }
 
-inline constexpr bool HttpResponse::IsObsTextChar(const unsigned char chr)
+inline bool HttpResponse::IsObsTextChar(const unsigned char chr)
 noexcept { return chr >= 0x80; }
 
-inline constexpr bool HttpResponse::IsTokenChar(const unsigned char chr)
+inline bool HttpResponse::IsTokenChar(const unsigned char chr)
 noexcept {
     if ((chr >= 'a' && chr <= 'z') ||
         (chr >= 'A' && chr <= 'Z') ||
@@ -328,7 +437,7 @@ noexcept {
     }
 }
 
-inline constexpr HttpResponse::ParseResult HttpResponse::SkipHeaderName(
+inline HttpResponse::ParseResult HttpResponse::SkipHeaderName(
     const char*& buffer, const char* const buffer_end
 ) noexcept {
     /* Skip all the token chars */
@@ -349,7 +458,7 @@ inline constexpr HttpResponse::ParseResult HttpResponse::SkipHeaderName(
     return VALID;
 }
 
-inline constexpr HttpResponse::ParseResult HttpResponse::SkipHeaderValue(
+inline HttpResponse::ParseResult HttpResponse::SkipHeaderValue(
     const char*& buffer, const char* const buffer_end, bool& readingLongHeader
 ) noexcept {
     /* Check all the header value bytes in a loop */
@@ -386,18 +495,21 @@ inline constexpr HttpResponse::ParseResult HttpResponse::SkipHeaderValue(
     return NEED_MORE;
 }
 
-inline constexpr HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
-    const Header header, const char*& buffer,
-    const char* const buffer_end, bool& readingLongHeader
-) noexcept {
-    switch (header) {
-        case CONNECTION:
-        case CONTENT_ENCODING:
-        case CONTENT_LENGTH:
-        case TRAILER:
-        case TRANSFER_ENCODING:
-            return SkipHeaderValue(buffer, buffer_end, readingLongHeader);
+template <uint32_t N>
+inline constexpr auto HttpResponse::HeadersToLower(
+    KeyValuePair<const char*, Header> (&&entries)[N],
+    String (&&scratches)[N]
+) noexcept -> const KeyValuePair<const char*, Header> (&)[N] {
+    for (uint32_t i = 0; i < N; ++i) {
+        /* Save the entry key to the scratches and cast to the lowercase */
+        (scratches[i] = entries[i].Key()).ToLower();
+
+        /* Update the entry */
+        entries[i] = { scratches[i].CStr(), entries[i].Value() };
     }
+
+    /* Return the result */
+    return entries;
 }
 
 inline constexpr RadixTree<HttpResponse::Header> HttpResponse::_headers {
@@ -405,7 +517,6 @@ inline constexpr RadixTree<HttpResponse::Header> HttpResponse::_headers {
         { "Connection"        , CONNECTION          },
         { "Content-Encoding"  , CONTENT_ENCODING    },
         { "Content-Length"    , CONTENT_LENGTH      },
-        { "Trailer"           , TRAILER             },
         { "Transfer-Encoding" , TRANSFER_ENCODING   },
     })
 };

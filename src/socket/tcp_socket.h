@@ -139,6 +139,11 @@ inline void TcpSocket::Send(const char* buffer,
 
 inline int32_t TcpSocket::Receive(char* const buffer,
                                   const uint32_t buffer_size) const {
+    if (buffer_size == 0) {
+        DEBUG_LOG("FUCK");
+        return 0;
+    }
+
     /* Receive the data */
     const int32_t result = recv(_socket_fd, buffer, buffer_size, 0);
 

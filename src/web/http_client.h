@@ -149,6 +149,15 @@ inline bool HttpClient::Flush() {
     catch (const SocketException& e)
     { Abort(); return false; }
 
+    /* Check for the response validity */
+    if (!_response->IsValid()) { Abort(); return false; }
+
+    /* Set the right rx encoder */
+    if (_response->IsChunkedEncoding()) {
+        _rx_chunked_encoder = new HttpRxEncoder::Chunked();
+        _rx_encoder = _rx_chunked_encoder;
+    } else _rx_encoder = &HttpRxEncoder::Plain::Instance();
+
     /* If all is OK, return the success code */
     return true;
 }

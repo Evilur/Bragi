@@ -16,15 +16,24 @@ int main() {
     HttpClient client("google.com", "/", "GET");
     client.Flush();
 
-    //const HttpResponse& response = client.Response();
+    const HttpResponse& response = client.Response();
+    if (!response.IsValid()) {
+        INFO_LOG("The response is not valid");
+        return 0;
+    }
 
-    /*
+    INFO_LOG("Status code: %hu", response.StatusCode());
+    if (response.IsChunkedEncoding())
+        INFO_LOG("Transfer-Encoding: chunked");
+    else
+        INFO_LOG("Content-Length: %llu", response.ContentLength());
+
     char penis[2048];
     const uint32_t sz = client.Read(penis, sizeof(penis));
+    INFO_LOG("Read %u bytes from the client", sz);
     fwrite("\033[0m", 1, sizeof("\033[0m") - 1, stdout);
     fwrite(penis, 1, sz, stdout);
     fflush(stdout);
-    */
 
     return 0;
 
