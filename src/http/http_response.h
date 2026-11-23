@@ -116,22 +116,22 @@ inline uint64_t HttpResponse::ContentLength() const
 noexcept { return _content_length; }
 
 inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
-    /* Store the peeked size here */
-    uint32_t peeked;
-
     /* To parse the response main line */
     bool readingResponseLine = true;
 
     /* To read long headers below */
     bool readingLongHeader = false;
 
+    /* Store results here */
+    ParseResult result;
+
     do {
-        /* Store results here */
-        ParseResult result;
+        /* Check for the end of the connection */
+        if (transport.IsClosed()) return;
 
         /* Peek a new data */
         const char* buffer;
-        peeked = transport.Peek(buffer, HttpTransport::PEEK_MAX);
+        const uint32_t peeked = transport.Peek(buffer);
         if (peeked == 0) return;
         const char* const buffer_end = buffer + peeked;
 
@@ -158,14 +158,14 @@ inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
 
         /* Check the result */
         switch (result) {
-            case ParseResult::HEADERS_END: _is_valid = true; return;
-            case ParseResult::INVALID: return;
+            case HEADERS_END: _is_valid = true; return;
+            case INVALID: return;
             default: break;
         }
 
         /* If we've NOT handled any bytes, and the buffer is full */
         if (handled == 0 && peeked == HttpTransport::PEEK_MAX) return;
-    } while (peeked == HttpTransport::PEEK_MAX);
+    } while (result == NEED_MORE);
 }
 
 inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
@@ -317,8 +317,8 @@ inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
     /* Handle the header */
     switch (header) {
         case CONNECTION: {
-            constexpr const char close_value[] = "Close";
-            constexpr const char keep_alive_value[] = "Keep-Alive";
+            constexpr static const char close_value[] = "Close";
+            constexpr static const char keep_alive_value[] = "Keep-Alive";
 
             /* Get the buffer size */
             const uint32_t buffer_size = buffer_end - buffer;
@@ -362,7 +362,7 @@ inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
             break;
         }
         case TRANSFER_ENCODING: {
-            constexpr const char chunked_value[] = "Chunked";
+            constexpr static const char chunked_value[] = "Chunked";
 
             /* Get the buffer size */
             const uint32_t buffer_size = buffer_end - buffer;

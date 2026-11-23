@@ -76,21 +76,22 @@ public:
 
     uint32_t RawRead(char* buffer, uint32_t buffer_size);
 
+    uint32_t RxBufferedSize() const noexcept;
+
     /**
      * Get a pointer to the received (but not consumed) data without consuming
-     * it. If less than `min_size` bytes are buffered, reads more from the
-     * socket. The pointer is valid until the next
+     * it. The pointer is valid until the next
      * Peek()/Consume()/Read()/Reset() call.
      * @param buffer   Receives the pointer to the buffered data
-     * @param min_size Min amount of bytes to wait for (<= buffer capacity).
-     *                 0 means: don't touch the socket,
-     *                 just return what we have
-     * @return Number of available bytes. It is less than `min_size`
-     *         only if the connection has been closed (0 = EOF)
+     * @return Number of available bytes.
      */
-    uint32_t Peek(const char*& buffer, uint32_t min_size = 0);
+    uint32_t Peek(const char*& buffer, bool use_socket = true);
 
     void Consume(uint32_t size);
+
+    void Close() noexcept;
+
+    bool IsClosed() const noexcept;
 
     void Reset();
 
@@ -102,10 +103,12 @@ private:
     TcpSocket _socket;
 
     char _tx_buffer[1460];
-    char* _tx_ptr = _tx_buffer;
-    const char* const _tx_end = _tx_buffer + sizeof(_tx_buffer);
+    const char* const _tx_buffer_end = _tx_buffer + sizeof(_tx_buffer);
 
     char _rx_buffer[1460];
+    const char* const _rx_buffer_end = _rx_buffer + sizeof(_rx_buffer);
+
+    char* _tx_ptr = _tx_buffer;
     char* _rx_ptr = _rx_buffer;
     char* _rx_end = _rx_buffer;
 
@@ -275,38 +278,70 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
     /* Read chunk by chunk */
     while (total_received < buffer_size) {
         /* Read the chunk size */
-        if (_current_chunk_size == 0) {
+        for (bool use_socket = false;
+             _current_chunk_size == 0;
+             use_socket = true) {
+            /* Get the rx buffer data size */
+            const uint32_t rx_buffer_size = transport->RxBufferedSize();
+
+            /* If the transport is closed
+             * And the buffer has not enough data */
+            if (transport->IsClosed() && rx_buffer_size < sizeof("0\r\n") - 1)
+                return total_received;
+
             /* Peek the chunk size */
-            const char* chunk_size;
+            const char* chunk_size_str;
             const uint32_t peeked =
-                transport->Peek(chunk_size, sizeof(uint64_t) * 2 + 2);
-            if (peeked == 0) { _end = true; return total_received; }
+                transport->Peek(chunk_size_str, use_socket);
+            if (peeked < sizeof("0\r\n") - 1) {
+                if (use_socket && peeked == rx_buffer_size)
+                    return total_received;
+                else continue;
+            }
 
             /* Get the current chunk size */
             const char* after_chunk_size;
-            _current_chunk_size = String::HexToInt<uint64_t>(
-                chunk_size, peeked, after_chunk_size
+            const uint64_t current_chunk_size = String::HexToInt<uint64_t>(
+                chunk_size_str,
+                min(peeked, sizeof(uint64_t) * 2),
+                after_chunk_size
             );
 
-            /* Check for the \r\n sequence */
-            if (after_chunk_size == chunk_size ||
-                after_chunk_size + 1 >= chunk_size + peeked ||
-                after_chunk_size[0] != '\r' ||
-                after_chunk_size[1] != '\n') {
-                _end = true;
+            /* Check for the empty size value */
+            if (after_chunk_size == chunk_size_str) {
+                transport->Close();
                 return total_received;
             }
 
-            /* Check for the last chunk */
-            if (_current_chunk_size == 0) {
-                /* Consume the last chunk from the buffer */
-                transport->Consume(sizeof("0\r\n\r\n") - 1);
-                _end = true;
+            /* If we have not enough data to read the \r\n seq */
+            if (after_chunk_size + 1 - chunk_size_str >= peeked) continue;
+
+            /* Check for the \r\n seq */
+            if (after_chunk_size[0] != '\r' ||
+                after_chunk_size[1] != '\n') {
+                transport->Close();
                 return total_received;
+            }
+            after_chunk_size += 2;
+
+            /* Check for the end (zero) chunk */
+            if (current_chunk_size == 0) {
+                /* Check the buffer size */
+                if (after_chunk_size + 1 - chunk_size_str >= peeked) continue;
+
+                /* Check for the \r\n seq */
+                if (after_chunk_size[0] != '\r' ||
+                    after_chunk_size[1] != '\n') {
+                    transport->Close();
+                    return total_received;
+                }
+                after_chunk_size += 2;
+                _end = true;
             }
 
             /* Consume the peeked buffer */
-            transport->Consume(after_chunk_size + 2 - chunk_size);
+            transport->Consume(after_chunk_size - chunk_size_str);
+            _current_chunk_size = current_chunk_size;
         }
 
         /* Read the chunk */
@@ -314,26 +349,45 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             buffer, min(buffer_end - buffer, _current_chunk_size)
         );
 
-        if (received == 0) { _end = true; return total_received; }
+        /* If the connection has been closed */
+        if (received == 0) { return total_received; }
 
         /* Update the values */
-        total_received      += received;
         _current_chunk_size -= received;
+        total_received      += received;
         buffer              += received;
 
         /* Check if we reach the end of the chunk */
         if (_current_chunk_size == 0) {
-            /* Peek the \r\n sequence after the chunk */
-            const char* end_seq;
-            const uint32_t end_seq_peeked = transport->Peek(end_seq, 2);
-            if (end_seq_peeked < 2) { _end = true; return total_received; }
+            for (bool use_socket = false;; use_socket = true) {
+                /* Get the rx buffer data size */
+                const uint32_t rx_buffer_size = transport->RxBufferedSize();
 
-            /* Check for the \r\n sequence */
-            if (end_seq[0] != '\r' ||
-                end_seq[1] != '\n') { _end = true; return total_received; }
+                /* If the transport is closed
+                 * And the buffer has not enough data */
+                if (transport->IsClosed() &&
+                    rx_buffer_size < sizeof("\r\n") - 1)
+                    return total_received;
 
-            /* Consume the peeked buffer */
-            transport->Consume(2);
+                /* Peek the \r\n sequence after the chunk */
+                const char* end_seq;
+                const uint32_t peeked = transport->Peek(end_seq, use_socket);
+                if (peeked < sizeof("\r\n") - 1) {
+                    if (use_socket && peeked == rx_buffer_size)
+                        return total_received;
+                    else continue;
+                }
+
+                /* Check for the \r\n sequence */
+                if (end_seq[0] != '\r' ||
+                    end_seq[1] != '\n') {
+                    transport->Close(); return total_received;
+                }
+
+                /* Consume the peeked buffer */
+                transport->Consume(2);
+                break;
+            }
         }
     }
 
@@ -342,7 +396,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
 }
 
 inline void HttpRxEncoder::Chunked::Reset()
-noexcept { _current_chunk_size = 0; }
+noexcept { _current_chunk_size = 0; _end = false; }
 
 inline HttpTransport::HttpTransport(TxEncoder* const& tx_encoder,
                                     RxEncoder* const& rx_encoder,
@@ -378,7 +432,7 @@ template <uint32_t N> inline void HttpTransport::Write(const char (&string)[N])
 
 inline void HttpTransport::RawWrite(const char chr) {
     /* Check for a free space */
-    if (_tx_ptr >= _tx_end) RawFlush();
+    if (_tx_ptr >= _tx_buffer_end) RawFlush();
 
     /* Write the char */
     *_tx_ptr = chr;
@@ -392,10 +446,10 @@ inline void HttpTransport::RawWrite(const char* buffer,
     /* While we have the data to write */
     while (buffer_size > 0) {
         /* Check for a free space */
-        if (_tx_ptr >= _tx_end) RawFlush();
+        if (_tx_ptr >= _tx_buffer_end) RawFlush();
 
         /* Calculate the chunk size */
-        const uint32_t chunk_size = min(buffer_size, _tx_end - _tx_ptr);
+        const uint32_t chunk_size = min(buffer_size, _tx_buffer_end - _tx_ptr);
 
         /* Write the chunk */
         memcpy(_tx_ptr, buffer, chunk_size);
@@ -453,7 +507,9 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
 
         /* If the connection has been closed,
          * Return the result and exit */
-        if (currently_received == 0) { _socket.Close(); return total_received; }
+        if (currently_received == 0) {
+            _socket.Close(); return total_received;
+        }
 
         /* Update the total received size */
         total_received += currently_received;
@@ -463,52 +519,51 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
     return total_received;
 }
 
-inline uint32_t HttpTransport::Peek(const char*& buffer,
-                                    const uint32_t min_size) {
-    assert(min_size <= sizeof(_rx_buffer));
+inline uint32_t HttpTransport::RxBufferedSize() const
+noexcept { return _rx_end - _rx_ptr; }
 
+inline uint32_t HttpTransport::Peek(
+    const char*& buffer, const bool use_socket
+) {
     /* Get the available data size */
-    uint32_t available = _rx_end - _rx_ptr;
+    const uint32_t available = RxBufferedSize();
 
-    /* If we have not enough data, get the rest */
-    if (available < min_size) {
-        const char* const rx_limit = _rx_buffer + sizeof(_rx_buffer);
+    /* The buffer is empty: just rewind the pointers
+     * to make the whole buffer free again */
+    if (available == 0) _rx_ptr = _rx_end = _rx_buffer;
 
-        /* The buffer is empty: just rewind the pointers
-         * to make the whole buffer free again */
-        if (available == 0) _rx_ptr = _rx_end = _rx_buffer;
-
-        /* Not enough room after the read pointer:
-         * move the pending data to the beginning of the buffer */
-        else if (rx_limit - _rx_ptr < min_size) {
-            memmove(_rx_buffer, _rx_ptr, available);
-            _rx_ptr = _rx_buffer;
-            _rx_end = _rx_buffer + available;
-        }
-
-        /* Receive until we have enough data.
-         * Here we always have free space after _rx_end,
-         * because available < min_size <= rx_limit - _rx_ptr */
-        do {
-            /* Check for the socket */
-            if (_socket.IsClosed()) break;
-
-            /* Receive the data from the socket */
-            const uint32_t received =
-                _socket.Receive(_rx_end, rx_limit - _rx_end);
-
-            /* The connection has been closed */
-            if (received == 0) { _socket.Close(); break; }
-
-            /* Update the pointer and the size */
-            _rx_end   += received;
-            available += received;
-        } while (available < min_size);
+    /* Move the pending data to the beginning of the buffer
+     * If there is less than 16 bytes available at the end */
+    else if (_rx_ptr > _rx_buffer &&
+             _rx_buffer_end - _rx_end <= 16) {
+        memmove(_rx_buffer, _rx_ptr, available);
+        _rx_ptr = _rx_buffer;
+        _rx_end = _rx_buffer + available;
     }
 
-    /* Return the result */
+    /* Set the buffer pointer to the rx pointer */
     buffer = _rx_ptr;
-    return available;
+
+    /* If we can't use the socket */
+    /* If we have not enought space */
+    /* If the connection is closed */
+    if (!use_socket ||
+        _rx_end >= _rx_buffer_end ||
+        _socket.IsClosed()) return available;
+
+    /* Receive the data from the socket */
+    const uint32_t received = _socket.Receive(
+        _rx_end, _rx_buffer_end - _rx_end
+    );
+
+    /* If the connection has been closed */
+    if (received == 0) _socket.Close();
+
+    /* Update the rx end pointer */
+    else _rx_end += received;
+
+    /* Return the result */
+    return available + received;
 }
 
 inline void HttpTransport::Consume(const uint32_t size) {
@@ -521,6 +576,11 @@ inline void HttpTransport::Consume(const uint32_t size) {
      * to make the whole buffer free again */
     if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
 }
+
+inline void HttpTransport::Close() noexcept { _socket.Close(); }
+
+inline bool HttpTransport::IsClosed() const
+noexcept { return _socket.IsClosed(); }
 
 inline void HttpTransport::Reset() {
     /* Open a new TCP socket */
@@ -536,7 +596,7 @@ inline void HttpTransport::RawFlush() {
     if (_tx_ptr == _tx_buffer) return;
 
     /* Check for the socket state */
-    if (_socket.IsClosed()) { Reset(); return; }
+    assert(!_socket.IsClosed());
 
     /* Write the data to the socket */
     _socket.Send(_tx_buffer, _tx_ptr - _tx_buffer);
