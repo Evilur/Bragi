@@ -3,10 +3,10 @@
 #include "type/nullable.h"
 #include "type/uniq_ptr.h"
 #include "util/class.h"
-#include "web/dns.h"
-#include "web/http_request.h"
-#include "web/http_response.h"
-#include "web/http_transport.h"
+#include "http/dns.h"
+#include "http/http_request.h"
+#include "http/http_response.h"
+#include "http/http_transport.h"
 
 #include <cstdint>
 
