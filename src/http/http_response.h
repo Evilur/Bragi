@@ -214,7 +214,7 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
     while (buffer_ptr < buffer_end) {
         if (buffer_ptr[0] == '\r') {
             /* If there is an end of the buffer_ptr */
-            if (buffer_ptr + 1 >= buffer_end) return NEED_MORE;
+            if (buffer_end - buffer_ptr <= 1) return NEED_MORE;
 
             /* If there is \r\n seq, return the new pointer to the new line */
             if (buffer_ptr[1] == '\n') {
@@ -244,7 +244,7 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseHeader(
 
     /* Check for the line eof sequence (\r\n) */
     if (buffer[0] == '\r') {
-        if (buffer + 1 >= buffer_end) return NEED_MORE;
+        if (buffer_end - buffer <= 1) return NEED_MORE;
         if (buffer[1] != '\n') return INVALID;
         buffer += 2;
         return HEADERS_END;
@@ -392,7 +392,7 @@ inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
     ) ++buffer;
 
     /* Check for the line eof (\r\n sequence) */
-    if (buffer + 1 >= buffer_end) return NEED_MORE;
+    if (buffer_end - buffer <= 1) return NEED_MORE;
     if (buffer[0] != '\r' || buffer[1] != '\n') return INVALID;
     buffer += 2;
     return VALID;
@@ -466,7 +466,7 @@ inline HttpResponse::ParseResult HttpResponse::SkipHeaderValue(
         /* Check for \r char */
         if (buffer[0] == '\r') {
             /* If it is a last char in the buffer */
-            if (buffer + 1 >= buffer_end) {
+            if (buffer_end - buffer <= 1) {
                 readingLongHeader = true;
                 return NEED_MORE;
             }
