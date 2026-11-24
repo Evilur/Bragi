@@ -105,12 +105,16 @@ inline void HttpTransport::Connect() {
     _socket.Connect(_addr);
 }
 
-inline void HttpTransport::Write(const char chr)
-{ _tx_encoder->Write(this, chr); }
+inline void HttpTransport::Write(const char chr) {
+    assert(_tx_encoder != nullptr);
+    _tx_encoder->Write(this, chr);
+}
 
 inline void HttpTransport::Write(const char* const buffer,
-                                 const uint32_t buffer_size)
-{ _tx_encoder->Write(this, buffer, buffer_size); }
+                                 const uint32_t buffer_size) {
+    assert(_tx_encoder != nullptr);
+    _tx_encoder->Write(this, buffer, buffer_size);
+}
 
 inline void HttpTransport::Write(const String& string)
 { Write(string, string.Length()); }
@@ -163,8 +167,10 @@ inline void HttpTransport::Flush() {
 }
 
 inline uint32_t HttpTransport::Read(char* const buffer,
-                                    const uint32_t buffer_size)
-{ return _rx_encoder->Read(this, buffer, buffer_size); }
+                                    const uint32_t buffer_size) {
+    assert(_rx_encoder != nullptr);
+    return _rx_encoder->Read(this, buffer, buffer_size);
+}
 
 inline uint32_t HttpTransport::RawRead(char* const buffer,
                                        const uint32_t buffer_size) {

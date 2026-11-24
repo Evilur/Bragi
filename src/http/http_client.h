@@ -149,7 +149,7 @@ inline void HttpClient::Flush() {
     _response = HttpResponse();
 
     /* Read the response headers */
-    try { _response->ReadHttp11Headers(_transport); }
+    try { _response->ReadHttp11Headers(_transport, _request.method); }
     catch (const SocketException& e)
     { throw HttpException("Failed to read the http response headers"); }
 

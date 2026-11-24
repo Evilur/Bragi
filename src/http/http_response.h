@@ -25,7 +25,7 @@ public:
 
     uint64_t ContentLength() const noexcept;
 
-    void ReadHttp11Headers(HttpTransport& transport);
+    void ReadHttp11Headers(HttpTransport& transport, const String& method);
 
 private:
     enum Header : uint8_t {
@@ -115,7 +115,9 @@ noexcept { return _is_chunked_encoding; }
 inline uint64_t HttpResponse::ContentLength() const
 noexcept { return _content_length; }
 
-inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
+inline void HttpResponse::ReadHttp11Headers(
+    HttpTransport& transport, const String& method
+) {
     /* To parse the response main line */
     bool readingResponseLine = true;
 
@@ -140,7 +142,7 @@ inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
             result = ReadHttp11ResponseLine(buffer, buffer_end);
             switch (result) {
                 case VALID: readingResponseLine = false; break;
-                case NEED_MORE: goto check_handled;
+                case NEED_MORE: goto consume;
                 case INVALID: default: return;
             }
         }
@@ -152,13 +154,13 @@ inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
         while (result == VALID);
 
         /* Consume the handled data from the buffer */
-    check_handled:
+    consume:
         const uint32_t handled = peeked - (buffer_end - buffer);
         transport.Consume(handled);
 
         /* Check the result */
         switch (result) {
-            case HEADERS_END: _is_valid = true; return;
+            case HEADERS_END: _is_valid = true; goto validate;
             case INVALID: return;
             default: break;
         }
@@ -166,6 +168,15 @@ inline void HttpResponse::ReadHttp11Headers(HttpTransport& transport) {
         /* If we've NOT handled any bytes, and the buffer is full */
         if (handled == 0 && peeked == HttpTransport::PEEK_MAX) return;
     } while (result == NEED_MORE);
+
+    /* Handle the status code and validate the content length */
+validate:
+    if (method == "HEAD"    ||
+        method == "CONNECT" &&
+        _status_code >= 200 && _status_code < 300 ||
+        _status_code >= 100 && _status_code < 200 ||
+        _status_code == 204 || _status_code == 304)
+        _content_length = 0;
 }
 
 inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(

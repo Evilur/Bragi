@@ -15,6 +15,7 @@
 class HttpRequest final {
 public:
     const String domain;
+    const String method;
     bool close_connection = true;
 
     HttpRequest(const char* domain,
@@ -69,7 +70,6 @@ private:
     Nullable<uint64_t> _content_length = nullptr;
 
     const String _path;
-    const String _method;
 
     void SaveHeader(const char* name, const char* value) noexcept;
 };
@@ -77,7 +77,7 @@ private:
 inline HttpRequest::HttpRequest(const char* const domain,
                                 const char* const path,
                                 const char* const method) noexcept
-    : domain(domain), _path(path), _method(method) { }
+    : domain(domain), _path(path), method(method) { }
 
 inline HttpRequest&
 HttpRequest::SetHeaders(const char* const (* const headers)[2],
@@ -158,7 +158,7 @@ noexcept { return _content_length == nullptr; }
 
 inline void HttpRequest::SendHttp11Headers(HttpTransport& transport) {
     /* Send the request line */
-    transport.RawWrite(_method);
+    transport.RawWrite(method);
     transport.RawWrite(' ');
     transport.RawWrite(_path);
     transport.RawWrite(' ');
