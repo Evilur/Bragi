@@ -2,6 +2,7 @@
 
 #include "exception/http_request_exception.h"
 #include "type/dynamic_array.h"
+#include "type/nullable.h"
 #include "type/string.h"
 #include "util/class.h"
 #include "util/logger.h"
@@ -14,7 +15,7 @@
 class HttpRequest final {
 public:
     const String domain;
-    bool closeConnection = true;
+    bool close_connection = true;
 
     HttpRequest(const char* domain,
                 const char* path,
@@ -37,11 +38,17 @@ public:
 
     HttpRequest& SetContentLength(uint64_t length) noexcept;
 
-    HttpRequest& ResetContentLength() noexcept;
+    HttpRequest& SetChunkedEncoding(bool flag) noexcept;
+
+    uint64_t GetContentLength() const noexcept;
+
+    bool IsEndByConnectionClose() const noexcept;
 
     bool IsChunkedEncoding() const noexcept;
 
-    void SendHttp11Headers(HttpTransport& transport) noexcept;
+    void SendHttp11Headers(HttpTransport& transport);
+
+    void PrepareNextRequest() noexcept;
 
 private:
     struct Header final {
@@ -61,7 +68,8 @@ private:
     DynamicArray<Header> _headers { 8 };
     DynamicArray<Cookie> _cookies { 4 };
 
-    String _contentLength { 0 };
+    Nullable<uint64_t> _content_length = nullptr;
+    bool _is_chunked_encoding = false;
 
     const String _path;
     const String _method;
@@ -81,8 +89,8 @@ HttpRequest::SetHeaders(const char* const (* const headers)[2],
     _headers = DynamicArray<Header>(headers_num + 4);
 
     /* Drop special headers to their default values */
-    closeConnection = true;
-    ResetContentLength();
+    close_connection = true;
+    PrepareNextRequest();
 
     /* Loop through the headers */
     for (uint32_t i = 0; i < headers_num; ++i) {
@@ -142,19 +150,22 @@ inline HttpRequest& HttpRequest::AddCookie(const char* const key,
                                            const char* const value)
 noexcept { _cookies.Push({ key, value }); return *this; }
 
-inline HttpRequest& HttpRequest::ResetContentLength() noexcept {
-    if (!_contentLength.IsEmpty()) _contentLength = String(0);
-    return *this;
-}
+inline HttpRequest& HttpRequest::SetContentLength(const uint64_t length)
+noexcept { _content_length = length; return *this; }
 
-inline HttpRequest& HttpRequest::SetContentLength(uint64_t length)
-noexcept { _contentLength = String::Format("%llu", length); return *this; }
+inline HttpRequest& HttpRequest::SetChunkedEncoding(bool flag)
+noexcept { _is_chunked_encoding = flag; return *this; }
+
+inline uint64_t HttpRequest::GetContentLength() const
+noexcept { return *_content_length; }
+
+inline bool HttpRequest::IsEndByConnectionClose() const
+noexcept { return !_is_chunked_encoding && _content_length == nullptr; }
 
 inline bool HttpRequest::IsChunkedEncoding() const
-noexcept { return _contentLength.IsEmpty(); }
+noexcept { return _is_chunked_encoding; }
 
-inline void HttpRequest::SendHttp11Headers(HttpTransport& transport)
-noexcept {
+inline void HttpRequest::SendHttp11Headers(HttpTransport& transport) {
     /* Send the request line */
     transport.RawWrite(_method);
     transport.RawWrite(' ');
@@ -168,18 +179,24 @@ noexcept {
     transport.RawWrite("\r\n");
 
     /* Set the 'Content-Length' or 'Transfer-Encoding' header */
-    if (IsChunkedEncoding())
-        transport.RawWrite("Transfer-Encoding: chunked\r\n");
-    else {
+    bool force_close_connection = false;
+    if (_is_chunked_encoding)
+        transport.RawWrite("Transfer-Encoding: Chunked\r\n");
+    else if (_content_length != nullptr) {
         transport.RawWrite("Content-Length: ");
-        transport.RawWrite(_contentLength);
+        transport.RawWrite(String::Format("%llu", *_content_length));
         transport.RawWrite("\r\n");
     }
 
+    /* Else we must close the connection after we transported the data */
+    else force_close_connection = true;
+
     /* Set the 'Connection' header according to the 'closeConnection' flag */
     transport.RawWrite("Connection: ");
-    if (closeConnection) transport.RawWrite("close\r\n");
-    else transport.RawWrite("keep-alive\r\n");
+    if (force_close_connection || close_connection)
+        transport.RawWrite("Close\r\n");
+    else
+        transport.RawWrite("Keep-Alive\r\n");
 
     /* Send cookies */
     if (!_cookies.IsEmpty()) {
@@ -230,26 +247,45 @@ inline HttpRequest::Cookie::Cookie(const char* const key,
                                    const char* const value) noexcept
     : key(key), value(value) { }
 
+inline void HttpRequest::PrepareNextRequest() noexcept {
+    _content_length = nullptr;
+    _is_chunked_encoding = false;
+}
+
 inline void HttpRequest::SaveHeader(const char* const name,
                                     const char* const value) noexcept {
+    /* Check for injections */
+    assert(!strpbrk(name, "\r\n:") && "Invalid header name");
+    assert(!strpbrk(value, "\r\n") && "Invalid header value");
+
     /* Create a header */
+    /* The header name is in the lower case now */
     Header header(name, value);
+
+    /* Check for the host and cookie headers */
+    assert(header.name != "host" && header.name != "cookie");
 
     /* Check for the 'Connection' header */
     if (header.name == "connection") {
         /* Check the value */
         header.value.ToLower();
-        if (header.value == "close") closeConnection = true;
-        else if (header.value == "keep-alive") closeConnection = false;
+        if (header.value == "close") close_connection = true;
+        else if (header.value == "keep-alive") close_connection = false;
+    }
+
+    /* Check for the Transfer-Encoding */
+    else if (header.name == "transfer-encoding") {
+        /* Check for the value */
+        header.value.ToLower();
+        if (header.value == "chunked") _is_chunked_encoding = true;
     }
 
     /* Check for the 'Content-Length' header
      * Set the content length */
     else if (header.name == "content-length")
-        _contentLength = header.value;
+        _content_length = String::ToInt<uint64_t>(header.value);
 
     /* If there is not a special header
      * Push the header to the array */
-    else
-        _headers.Push(move(header));
+    else _headers.Push(move(header));
 }

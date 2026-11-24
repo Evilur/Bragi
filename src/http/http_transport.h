@@ -186,7 +186,8 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
         if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
     }
 
-    /* Receive directly to the user buffer fomr the socket */
+    /* Receive directly to the user buffer from the socket */
+    assert(!_socket.IsClosed());
     while (total_received < buffer_size) {
         /* Check for the socket */
         if (_socket.IsClosed()) return total_received;

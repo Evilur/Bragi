@@ -9,7 +9,7 @@ template <typename T>
 requires (!std::is_pointer_v<T>)
 class Nullable {
 public:
-    Nullable() noexcept = default;
+    Nullable() noexcept = delete;
     ~Nullable() noexcept;
 
     Nullable(const T& value) noexcept;

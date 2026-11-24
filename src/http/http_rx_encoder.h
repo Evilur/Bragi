@@ -145,6 +145,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             /* Consume the peeked buffer */
             transport->Consume(after_chunk_size - chunk_size_str);
             _current_chunk_size = current_chunk_size;
+            if (_end) return total_received;
         }
 
         /* Read the chunk */
