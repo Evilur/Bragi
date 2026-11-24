@@ -35,7 +35,7 @@ inline sockaddr_in DNS::Resolve(const char* const hostname) {
 
     /* Save the result to the stack */
     sockaddr_in addr = *(sockaddr_in*)info->ai_addr;
-    TRACE_LOG("DNS resolve: %s -> %s", inet_ntoa(addr.sin_addr));
+    TRACE_LOG("DNS resolve: %s -> %s", hostname, inet_ntoa(addr.sin_addr));
 
     /* Free the memory */
     freeaddrinfo(info);
