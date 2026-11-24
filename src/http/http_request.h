@@ -42,13 +42,11 @@ public:
 
     uint64_t GetContentLength() const noexcept;
 
-    bool IsEndByConnectionClose() const noexcept;
-
     bool IsChunkedEncoding() const noexcept;
 
     void SendHttp11Headers(HttpTransport& transport);
 
-    void PrepareNextRequest() noexcept;
+    void ResetContentLength() noexcept;
 
 private:
     struct Header final {
@@ -69,7 +67,6 @@ private:
     DynamicArray<Cookie> _cookies { 4 };
 
     Nullable<uint64_t> _content_length = nullptr;
-    bool _is_chunked_encoding = false;
 
     const String _path;
     const String _method;
@@ -90,7 +87,7 @@ HttpRequest::SetHeaders(const char* const (* const headers)[2],
 
     /* Drop special headers to their default values */
     close_connection = true;
-    PrepareNextRequest();
+    ResetContentLength();
 
     /* Loop through the headers */
     for (uint32_t i = 0; i < headers_num; ++i) {
@@ -153,17 +150,11 @@ noexcept { _cookies.Push({ key, value }); return *this; }
 inline HttpRequest& HttpRequest::SetContentLength(const uint64_t length)
 noexcept { _content_length = length; return *this; }
 
-inline HttpRequest& HttpRequest::SetChunkedEncoding(bool flag)
-noexcept { _is_chunked_encoding = flag; return *this; }
-
 inline uint64_t HttpRequest::GetContentLength() const
 noexcept { return *_content_length; }
 
-inline bool HttpRequest::IsEndByConnectionClose() const
-noexcept { return !_is_chunked_encoding && _content_length == nullptr; }
-
 inline bool HttpRequest::IsChunkedEncoding() const
-noexcept { return _is_chunked_encoding; }
+noexcept { return _content_length == nullptr; }
 
 inline void HttpRequest::SendHttp11Headers(HttpTransport& transport) {
     /* Send the request line */
@@ -179,21 +170,17 @@ inline void HttpRequest::SendHttp11Headers(HttpTransport& transport) {
     transport.RawWrite("\r\n");
 
     /* Set the 'Content-Length' or 'Transfer-Encoding' header */
-    bool force_close_connection = false;
-    if (_is_chunked_encoding)
+    if (_content_length == nullptr)
         transport.RawWrite("Transfer-Encoding: Chunked\r\n");
-    else if (_content_length != nullptr) {
+    else {
         transport.RawWrite("Content-Length: ");
         transport.RawWrite(String::Format("%llu", *_content_length));
         transport.RawWrite("\r\n");
     }
 
-    /* Else we must close the connection after we transported the data */
-    else force_close_connection = true;
-
     /* Set the 'Connection' header according to the 'closeConnection' flag */
     transport.RawWrite("Connection: ");
-    if (force_close_connection || close_connection)
+    if (close_connection)
         transport.RawWrite("Close\r\n");
     else
         transport.RawWrite("Keep-Alive\r\n");
@@ -247,10 +234,8 @@ inline HttpRequest::Cookie::Cookie(const char* const key,
                                    const char* const value) noexcept
     : key(key), value(value) { }
 
-inline void HttpRequest::PrepareNextRequest() noexcept {
-    _content_length = nullptr;
-    _is_chunked_encoding = false;
-}
+inline void HttpRequest::ResetContentLength()
+noexcept { _content_length = nullptr; }
 
 inline void HttpRequest::SaveHeader(const char* const name,
                                     const char* const value) noexcept {
@@ -262,8 +247,10 @@ inline void HttpRequest::SaveHeader(const char* const name,
     /* The header name is in the lower case now */
     Header header(name, value);
 
-    /* Check for the host and cookie headers */
-    assert(header.name != "host" && header.name != "cookie");
+    /* Check for the host, cookie and transfer-encoding headers */
+    assert(header.name != "host" &&
+           header.name != "cookie" &&
+           header.name != "transfer-encoding");
 
     /* Check for the 'Connection' header */
     if (header.name == "connection") {
@@ -271,13 +258,6 @@ inline void HttpRequest::SaveHeader(const char* const name,
         header.value.ToLower();
         if (header.value == "close") close_connection = true;
         else if (header.value == "keep-alive") close_connection = false;
-    }
-
-    /* Check for the Transfer-Encoding */
-    else if (header.name == "transfer-encoding") {
-        /* Check for the value */
-        header.value.ToLower();
-        if (header.value == "chunked") _is_chunked_encoding = true;
     }
 
     /* Check for the 'Content-Length' header

@@ -159,7 +159,11 @@ template <uint32_t N>
 inline void HttpTransport::RawWrite(const char (&string)[N])
 { RawWrite(string, N - 1); }
 
-inline void HttpTransport::Flush() { _tx_encoder->Finish(this); RawFlush(); }
+inline void HttpTransport::Flush() {
+    if (_tx_encoder != nullptr)
+        _tx_encoder->Finish(this);
+    RawFlush();
+}
 
 inline uint32_t HttpTransport::Read(char* const buffer,
                                     const uint32_t buffer_size)
@@ -186,8 +190,11 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
         if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
     }
 
+    /* Check for the socket state */
+    if (_socket.IsClosed())
+        throw HttpException("Trying to read from the closed socket");
+
     /* Receive directly to the user buffer from the socket */
-    assert(!_socket.IsClosed());
     while (total_received < buffer_size) {
         /* Check for the socket */
         if (_socket.IsClosed()) return total_received;
@@ -288,7 +295,8 @@ inline void HttpTransport::RawFlush() {
     if (_tx_ptr == _tx_buffer) return;
 
     /* Check for the socket state */
-    assert(!_socket.IsClosed());
+    if (_socket.IsClosed())
+        throw HttpException("Trying to write to the closed socket");
 
     /* Write the data to the socket */
     _socket.Send(_tx_buffer, _tx_ptr - _tx_buffer);

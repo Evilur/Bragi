@@ -32,9 +32,9 @@ public:
 
     const HttpResponse& Response() const noexcept;
 
-    virtual bool Write(const char* buffer, uint32_t buffer_size);
+    virtual void Write(const char* buffer, uint32_t buffer_size);
 
-    virtual bool Flush();
+    virtual void Flush();
 
     virtual uint32_t Read(char* buffer, uint32_t buffer_size);
 
@@ -46,16 +46,12 @@ private:
     HttpRequest _request;
     Nullable<HttpResponse> _response = nullptr;
 
-    HttpTxEncoder* _tx_encoder = nullptr;
+    UniqPtr<HttpTxEncoder> _tx_encoder = nullptr;
     UniqPtr<HttpRxEncoder> _rx_encoder = nullptr;
 
     HttpTransport _transport;
 
-    Nullable<uint64_t> _content_length = nullptr;
-
     bool _headersSent = false;
-
-    void Abort();
 };
 
 inline HttpClient::HttpClient(const char* const domain,
@@ -63,13 +59,15 @@ inline HttpClient::HttpClient(const char* const domain,
                               const char* const method)
 : _request(domain, path, method),
   _transport(
-      _tx_encoder, _rx_encoder.Ref(), DNS::Resolve(domain), htons(80)
+      _tx_encoder.Ref(), _rx_encoder.Ref(),
+      DNS::Resolve(domain), htons(80)
   ) { }
 
 inline HttpClient::HttpClient(const HttpRequest& request)
 : _request(request),
   _transport(
-      _tx_encoder, _rx_encoder.Ref(), DNS::Resolve(request.domain), htons(80)
+      _tx_encoder.Ref(), _rx_encoder.Ref(),
+      DNS::Resolve(request.domain), htons(80)
   ) { }
 
 inline HttpRequest& HttpClient::Request() noexcept { return _request; }
@@ -82,10 +80,13 @@ inline const HttpResponse& HttpClient::Response() const noexcept {
     return *_response;
 }
 
-inline bool HttpClient::Write(const char* const buffer,
+inline void HttpClient::Write(const char* const buffer,
                               const uint32_t buffer_size) {
     /* If we haven't sent the headers yet, do it now */
     if (!_headersSent) {
+        /* Check for the transport state */
+        if (_transport.IsClosed()) _transport.Reset();
+
         /* Connect the transport to the server */
         try { _transport.Connect(); }
         catch (const SocketException& e)
@@ -94,41 +95,33 @@ inline bool HttpClient::Write(const char* const buffer,
         /* Send the request headers */
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
-        { Abort(); return false; }
+        { throw HttpException("Failed to send the http request headers"); }
 
         /* Set the right encoder */
         if (_request.IsChunkedEncoding())
-            _tx_encoder = &HttpTxEncoder::Chunked::Instance();
+            _tx_encoder = new HttpTxEncoder::Chunked();
         else
-            _tx_encoder = &HttpTxEncoder::Plain::Instance();
-
-        /* Try to save the content length */
-        _content_length = _request.GetContentLength();
+            _tx_encoder = new HttpTxEncoder::Plain(_request.GetContentLength());
 
         /* Else prepare for the next request */
-        _request.PrepareNextRequest();
+        _request.ResetContentLength();
 
         /* Update the state */
         _headersSent = true;
     }
 
-    /* Check for the too large body */
-    if (buffer_size > *_content_length)
-        throw HttpException("The sent body is too large");
-    else *_content_length -= buffer_size;
-
     /* Send the body */
     try { _transport.Write(buffer, buffer_size); }
     catch (const SocketException& e)
-    { Abort(); return false; }
-
-    /* Return the success code */
-    return true;
+    { throw HttpException("Failed to send the http body"); }
 }
 
-inline bool HttpClient::Flush() {
+inline void HttpClient::Flush() {
     /* If we haven't sent the headers yet, do it now */
     if (!_headersSent) {
+        /* Check for the transport state */
+        if (_transport.IsClosed()) _transport.Reset();
+
         /* Connect the transport to the server */
         try { _transport.Connect(); }
         catch (const SocketException& e)
@@ -138,19 +131,16 @@ inline bool HttpClient::Flush() {
         _request.SetContentLength(0);
         try { _request.SendHttp11Headers(_transport); }
         catch (const SocketException& e)
-        { Abort(); return false; }
+        { throw HttpException("Failed to send the http request headers"); }
 
         /* Prepare the request for the next request */
-        _request.PrepareNextRequest();
-
-        /* Set the right encoder */
-        _tx_encoder = &HttpTxEncoder::Plain::Instance();
+        _request.ResetContentLength();
     }
 
     /* Flush the request */
     try { _transport.Flush(); }
     catch (const SocketException& e)
-    { Abort(); return false; }
+    { throw HttpException("Failed to flush the http data"); }
 
     /* Reset the request state */
     _headersSent = false;
@@ -161,24 +151,25 @@ inline bool HttpClient::Flush() {
     /* Read the response headers */
     try { _response->ReadHttp11Headers(_transport); }
     catch (const SocketException& e)
-    { Abort(); return false; }
+    { throw HttpException("Failed to read the http response headers"); }
 
     /* Check for the response validity */
-    if (!_response->IsValid()) { Abort(); return false; }
+    if (!_response->IsValid())
+        throw HttpException("The server returned invalid response");
 
     /* Set the right rx encoder */
     if (_response->IsChunkedEncoding())
         _rx_encoder = new HttpRxEncoder::Chunked();
     else
         _rx_encoder = new HttpRxEncoder::Plain(_response->ContentLength());
-
-    /* If all is OK, return the success code */
-    return true;
 }
 
 inline uint32_t HttpClient::Read(char* const buffer,
                                  const uint32_t buffer_size) {
-    return _transport.Read(buffer, buffer_size);
+    if (_transport.IsClosed()) return 0;
+    try { return _transport.Read(buffer, buffer_size); }
+    catch (const SocketException& e)
+    { throw HttpException("The connection has been closed"); }
 }
 
 inline void HttpClient::Close() noexcept { _transport.Close(); }
@@ -190,12 +181,4 @@ inline void HttpClient::Reset() noexcept {
     /* Reset the encoders */
     _tx_encoder = nullptr;
     _rx_encoder = nullptr;
-}
-
-inline void HttpClient::Abort() {
-    /* Reset the current connection */
-    _transport.Reset();
-
-    /* Reset the client */
-    Reset();
 }
