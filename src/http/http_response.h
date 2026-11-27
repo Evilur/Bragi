@@ -175,8 +175,10 @@ validate:
         method == "CONNECT" &&
         _status_code >= 200 && _status_code < 300 ||
         _status_code >= 100 && _status_code < 200 ||
-        _status_code == 204 || _status_code == 304)
+        _status_code == 204 || _status_code == 304) {
         _content_length = 0;
+        _is_chunked_encoding = false;
+    }
 }
 
 inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
