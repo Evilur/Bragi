@@ -193,10 +193,6 @@ inline uint32_t HttpTransport::RawRead(char* const buffer,
         if (_rx_ptr == _rx_end) _rx_ptr = _rx_end = _rx_buffer;
     }
 
-    /* Check for the socket state */
-    if (_socket.IsClosed())
-        throw HttpException("Trying to read from the closed socket");
-
     /* Receive directly to the user buffer from the socket */
     while (total_received < buffer_size) {
         /* Check for the socket */

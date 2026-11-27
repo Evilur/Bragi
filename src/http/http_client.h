@@ -166,7 +166,11 @@ inline void HttpClient::Flush() {
 
 inline uint32_t HttpClient::Read(char* const buffer,
                                  const uint32_t buffer_size) {
-    if (_transport.IsClosed()) return 0;
+    /* Check for the transport state and the buffer state */
+    if (_transport.IsClosed() &&
+        _transport.RxBufferedSize() == 0) return 0;
+
+    /* Read the data */
     try { return _transport.Read(buffer, buffer_size); }
     catch (const SocketException& e)
     { throw HttpException("The connection has been closed"); }
