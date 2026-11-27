@@ -38,10 +38,6 @@ public:
 
     const BaseType& operator*() const noexcept;
 
-    operator BaseType*() noexcept;
-
-    operator const BaseType*() const noexcept;
-
     BaseType* operator->() noexcept
     requires (!std::is_array_v<T>);
 
@@ -117,13 +113,6 @@ inline UniqPtr<T>::BaseType& UniqPtr<T>::operator*() noexcept { return *_ptr; }
 template<typename T>
 inline const UniqPtr<T>::BaseType& UniqPtr<T>::operator*() const
 noexcept { return *_ptr; }
-
-template<typename T>
-inline UniqPtr<T>::operator UniqPtr<T>::BaseType*() noexcept { return _ptr; }
-
-template<typename T>
-inline UniqPtr<T>::operator const UniqPtr<T>::BaseType*() const
-noexcept { return _ptr; }
 
 template <typename T>
 inline UniqPtr<T>::BaseType* UniqPtr<T>::operator->() noexcept
