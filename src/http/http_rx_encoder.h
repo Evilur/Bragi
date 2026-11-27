@@ -117,7 +117,10 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             }
 
             /* If we have not enough data to read the \r\n seq */
-            if (after_chunk_size + 1 - chunk_size_str >= peeked) continue;
+            if (after_chunk_size + 1 - chunk_size_str >= peeked) {
+                if (transport->IsClosed()) return total_received;
+                continue;
+            }
 
             /* Check for the \r\n seq */
             if (after_chunk_size[0] != '\r' ||
@@ -130,7 +133,10 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             /* Check for the end (zero) chunk */
             if (current_chunk_size == 0) {
                 /* Check the buffer size */
-                if (after_chunk_size + 1 - chunk_size_str >= peeked) continue;
+                if (after_chunk_size + 1 - chunk_size_str >= peeked) {
+                    if (transport->IsClosed()) return total_received;
+                    continue;
+                }
 
                 /* Check for the \r\n seq */
                 if (after_chunk_size[0] != '\r' ||
