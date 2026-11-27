@@ -184,22 +184,31 @@ validate:
 inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
     const char*& buffer, const char* const buffer_end
 ) noexcept {
-    /* Http v1.1 first bytes */
-    constexpr static const char http11_header[] = "HTTP/1.1 ";
+    /* Http first bytes */
+    constexpr static const char http_first_bytes[] = "HTTP/1.";
 
     /* Check the min response line size */
-    if (buffer_end - buffer < sizeof(http11_header) - 1 + 3 + 2)
+    if (buffer_end - buffer < sizeof(http_first_bytes) - 1 + 2 + 3 + 2)
         return NEED_MORE;
 
     /* Create a buffer pointer */
     const char* buffer_ptr = buffer;
 
-    /* Check for the right http version */
-    if (!String::Equal(buffer_ptr, http11_header, sizeof(http11_header) - 1))
+    /* Check for the right http first bytes */
+    if (!String::Equal(buffer_ptr, http_first_bytes,
+                       sizeof(http_first_bytes) - 1))
         return INVALID;
 
-    /* Skip the http version */
-    buffer_ptr += sizeof(http11_header) - 1;
+    /* Skip the http first bytes */
+    buffer_ptr += sizeof(http_first_bytes) - 1;
+
+    /* Check for the http version and the after space */
+    if ((buffer_ptr[0] != '0' ||
+         buffer_ptr[0] != '1') &&
+        buffer_ptr[1] != ' ') return INVALID;
+
+    /* Go to the status code */
+    buffer_ptr += 2;
 
     /* Read the response status code */
     const char* after_status_code;
@@ -359,7 +368,9 @@ inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
 
                 _is_connection_close = false;
                 buffer += sizeof(keep_alive_value) - 1;
-            } else return INVALID;
+            } else return SkipHeaderValue(
+                buffer, buffer_end, readingLongHeader
+            );
             break;
         }
         case CONTENT_ENCODING: {
@@ -395,7 +406,9 @@ inline HttpResponse::ParseResult HttpResponse::HandleHeaderValue(
                 _is_chunked_encoding = true;
                 buffer += sizeof(chunked_value) - 1;
                 break;
-            } else return INVALID;
+            } else return SkipHeaderValue(
+                buffer, buffer_end, readingLongHeader
+            );
         }
     }
 
