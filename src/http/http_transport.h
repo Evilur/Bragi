@@ -22,7 +22,7 @@ public:
 
     HttpTransport(HttpTxEncoder* const& tx_encoder,
                   HttpRxEncoder* const& rx_encoder,
-                  sockaddr_in addr, uint16_t port) noexcept;
+                  sockaddr_in addr, uint16_t port);
 
     void Connect();
 
@@ -90,8 +90,9 @@ inline HttpTransport::HttpTransport(HttpTxEncoder* const& tx_encoder,
                                     HttpRxEncoder* const& rx_encoder,
                                     const sockaddr_in addr,
                                     const uint16_t port)
-noexcept : _tx_encoder(tx_encoder), _rx_encoder(rx_encoder), _addr(addr)
-{ _addr.sin_port = port; }
+: _tx_encoder(tx_encoder), _rx_encoder(rx_encoder), _addr(addr) {
+    _addr.sin_port = port;
+}
 
 #include "http/http_tx_encoder.h"
 #include "http/http_rx_encoder.h"

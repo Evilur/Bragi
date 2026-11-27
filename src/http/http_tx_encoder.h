@@ -35,7 +35,7 @@ public:
                const char* buffer,
                uint32_t buffer_size) override;
 
-    void Finish(HttpTransport* transport) noexcept override;
+    void Finish(HttpTransport* transport) override;
 
 private:
     uint64_t _content_length;
@@ -71,8 +71,12 @@ inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
     transport->RawWrite(buffer, buffer_size);
 }
 
-inline void HttpTxEncoder::Plain::Finish(HttpTransport* const transport)
-noexcept { }
+inline void HttpTxEncoder::Plain::Finish(HttpTransport* const transport) {
+    /* Check for the content length */
+    if (_content_length > 0)
+        throw HttpException("There are less data sent "
+                            "that Content-Length specify");
+}
 
 inline void HttpTxEncoder::Chunked::Write(HttpTransport* const transport,
                                         char chr) {

@@ -40,8 +40,6 @@ public:
 
     void Close() noexcept;
 
-    void Reset() noexcept;
-
 private:
     HttpRequest _request;
     Nullable<HttpResponse> _response = nullptr;
@@ -142,6 +140,9 @@ inline void HttpClient::Flush() {
     catch (const SocketException& e)
     { throw HttpException("Failed to flush the http data"); }
 
+    /* Reset the tx encoder */
+    _tx_encoder = nullptr;
+
     /* Reset the request state */
     _headersSent = false;
 
@@ -177,12 +178,3 @@ inline uint32_t HttpClient::Read(char* const buffer,
 }
 
 inline void HttpClient::Close() noexcept { _transport.Close(); }
-
-inline void HttpClient::Reset() noexcept {
-    /* Reset the states */
-    _headersSent = false;
-
-    /* Reset the encoders */
-    _tx_encoder = nullptr;
-    _rx_encoder = nullptr;
-}
