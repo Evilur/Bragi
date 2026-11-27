@@ -235,32 +235,32 @@ inline constexpr String String::operator+(const char* const other) const {
 }
 
 inline constexpr bool String::operator==(const String& other) const noexcept {
-    return _len == other._len && Equal(_string, other._string, _len) == 0;
+    return _len == other._len && Equal(_string, other._string, _len);
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr bool String::operator==(const T other) const
-noexcept { return Equal(_string, other) == 0; }
+noexcept { return Equal(_string, other); }
 
 template <uint32_t N>
 inline constexpr bool String::operator==(const char (&other)[N]) const
-noexcept { return _len == N - 1 && Equal(_string, other, N - 1) == 0; }
+noexcept { return _len == N - 1 && Equal(_string, other, N - 1); }
 
 inline constexpr bool String::operator!=(const String& other) const noexcept {
-    return _len != other._len || Equal(_string, other._string, _len) != 0;
+    return _len != other._len || Equal(_string, other._string, _len);
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr bool String::operator!=(const T other) const
-noexcept { return Equal(_string, other) != 0; }
+noexcept { return Equal(_string, other); }
 
 template <uint32_t N>
 inline constexpr bool String::operator!=(const char (&other)[N]) const
-noexcept { return _len != N - 1 || Equal(_string, other, N - 1) != 0; }
+noexcept { return _len != N - 1 || Equal(_string, other, N - 1); }
 
 inline constexpr String::operator const char*() const
 noexcept { return _string; }
