@@ -20,9 +20,13 @@
  */
 class TcpSocket final {
 public:
-    PREVENT_COPY_ALLOW_MOVE(TcpSocket);
-
     TcpSocket();
+
+    TcpSocket(const TcpSocket& other) noexcept = delete;
+    TcpSocket& operator=(const TcpSocket& other) noexcept = delete;
+
+    TcpSocket(TcpSocket&& other) noexcept;
+    TcpSocket& operator=(TcpSocket&& other) noexcept;
 
     ~TcpSocket() noexcept;
 
@@ -62,6 +66,19 @@ inline TcpSocket::TcpSocket() {
 #endif
         throw SocketException("Can't create a socket");
     }
+}
+
+inline TcpSocket::TcpSocket(TcpSocket&& other) noexcept {
+    Close();
+    this->_socket_fd = other._socket_fd;
+    other._socket_fd = -1;
+}
+
+inline TcpSocket& TcpSocket::operator=(TcpSocket&& other) noexcept {
+    Close();
+    this->_socket_fd = other._socket_fd;
+    other._socket_fd = -1;
+    return *this;
 }
 
 inline TcpSocket::~TcpSocket() noexcept { Close(); }
