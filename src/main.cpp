@@ -25,8 +25,9 @@ int main() {
     INFO_LOG("Status code: %hu", response.StatusCode());
     if (response.IsChunkedEncoding())
         INFO_LOG("Transfer-Encoding: chunked");
-    else
-        INFO_LOG("Content-Length: %llu", response.ContentLength());
+    else if (const Nullable<uint64_t> content_length =
+             response.ContentLength(); content_length != nullptr)
+        INFO_LOG("Content-Length: %llu", *content_length);
 
     char penis[2048];
     const uint32_t sz = client.Read(penis, sizeof(penis));

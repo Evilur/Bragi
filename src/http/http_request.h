@@ -41,7 +41,7 @@ public:
 
     HttpRequest& SetChunkedEncoding(bool flag) noexcept;
 
-    uint64_t GetContentLength() const noexcept;
+    uint64_t ContentLength() const noexcept;
 
     bool IsChunkedEncoding() const noexcept;
 
@@ -150,8 +150,11 @@ noexcept { _cookies.Push({ key, value }); return *this; }
 inline HttpRequest& HttpRequest::SetContentLength(const uint64_t length)
 noexcept { _content_length = length; return *this; }
 
-inline uint64_t HttpRequest::GetContentLength() const
-noexcept { return *_content_length; }
+inline uint64_t HttpRequest::ContentLength() const
+noexcept {
+    assert(_content_length != nullptr);
+    return *_content_length;
+}
 
 inline bool HttpRequest::IsChunkedEncoding() const
 noexcept { return _content_length == nullptr; }

@@ -74,7 +74,7 @@ inline bool HttpClient::HasResponse() const
 noexcept { return _response != nullptr; }
 
 inline const HttpResponse& HttpClient::Response() const noexcept {
-    assert(HasResponse() && "No response received yet");
+    assert(HasResponse());
     return *_response;
 }
 
@@ -99,7 +99,7 @@ inline void HttpClient::Write(const char* const buffer,
         if (_request.IsChunkedEncoding())
             _tx_encoder = new HttpTxEncoder::Chunked();
         else
-            _tx_encoder = new HttpTxEncoder::Plain(_request.GetContentLength());
+            _tx_encoder = new HttpTxEncoder::Plain(_request.ContentLength());
 
         /* Else prepare for the next request */
         _request.ResetContentLength();
@@ -159,10 +159,13 @@ inline void HttpClient::Flush() {
         throw HttpException("The server returned invalid response");
 
     /* Set the right rx encoder */
-    if (_response->IsChunkedEncoding())
+    else if (_response->IsChunkedEncoding())
         _rx_encoder = new HttpRxEncoder::Chunked();
+    else if (const Nullable<uint64_t>& content_length =
+             _response->ContentLength(); content_length == nullptr)
+        _rx_encoder = new HttpRxEncoder::Plain();
     else
-        _rx_encoder = new HttpRxEncoder::Plain(_response->ContentLength());
+        _rx_encoder = new HttpRxEncoder::Plain(*content_length);
 }
 
 inline uint32_t HttpClient::Read(char* const buffer,

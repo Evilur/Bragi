@@ -1,5 +1,6 @@
 #pragma once
 
+#include "type/nullable.h"
 #include "util/class.h"
 #include "util/minmax.h"
 #include "type/string.h"
@@ -27,6 +28,7 @@ class HttpRxEncoder::Plain final : public HttpRxEncoder {
 public:
     PREVENT_COPY_ALLOW_MOVE(Plain);
 
+    Plain() noexcept = default;
     Plain(uint64_t content_length) noexcept;
 
     uint32_t Read(HttpTransport* transport,
@@ -34,7 +36,7 @@ public:
                   uint32_t buffer_size) override;
 
 private:
-    uint64_t _content_length;
+    Nullable<uint64_t> _content_length = nullptr;
 };
 
 class HttpRxEncoder::Chunked final : public HttpRxEncoder {
@@ -59,11 +61,15 @@ noexcept : _content_length(content_length) { }
 inline uint32_t HttpRxEncoder::Plain::Read(HttpTransport* const transport,
                                            char* const buffer,
                                            const uint32_t buffer_size) {
-    if (_content_length == 0) return 0;
-    const uint32_t received =
-        transport->RawRead(buffer, min(buffer_size, _content_length));
-    _content_length -= received;
-    return received;
+    if (_content_length == nullptr)
+        return transport->RawRead(buffer, buffer_size);
+    else if (*_content_length == 0) return 0;
+    else {
+        const uint32_t received =
+            transport->RawRead(buffer, min(buffer_size, *_content_length));
+        *_content_length -= received;
+        return received;
+    }
 }
 
 inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,

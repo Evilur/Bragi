@@ -1,6 +1,7 @@
 #pragma once
 
 #include "reflection/enum.h"
+#include "type/nullable.h"
 #include "type/radix_tree.h"
 #include "util/class.h"
 #include "http/http_transport.h"
@@ -15,15 +16,20 @@
 class HttpResponse final {
 public:
     PREVENT_COPY_ALLOW_MOVE(HttpResponse);
+
     HttpResponse() noexcept = default;
 
+    [[nodiscard]]
     bool IsValid() const noexcept;
 
+    [[nodiscard]]
     uint16_t StatusCode() const noexcept;
 
+    [[nodiscard]]
     bool IsChunkedEncoding() const noexcept;
 
-    uint64_t ContentLength() const noexcept;
+    [[nodiscard]]
+    const Nullable<uint64_t>& ContentLength() const noexcept;
 
     void ReadHttp11Headers(HttpTransport& transport, const String& method);
 
@@ -45,7 +51,7 @@ private:
     bool _is_valid = false;
     uint16_t _status_code = 0;
 
-    uint64_t _content_length = 0;
+    Nullable<uint64_t> _content_length = nullptr;
     bool _is_chunked_encoding = false;
 
     bool _is_connection_close = false;
@@ -112,7 +118,7 @@ noexcept { return _status_code; }
 inline bool HttpResponse::IsChunkedEncoding() const
 noexcept { return _is_chunked_encoding; }
 
-inline uint64_t HttpResponse::ContentLength() const
+inline const Nullable<uint64_t>& HttpResponse::ContentLength() const
 noexcept { return _content_length; }
 
 inline void HttpResponse::ReadHttp11Headers(
@@ -176,7 +182,7 @@ validate:
         _status_code >= 200 && _status_code < 300 ||
         _status_code >= 100 && _status_code < 200 ||
         _status_code == 204 || _status_code == 304) {
-        _content_length = 0;
+        _content_length = (uint64_t)0;
         _is_chunked_encoding = false;
     }
 }
