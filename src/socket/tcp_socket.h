@@ -69,13 +69,25 @@ inline TcpSocket::TcpSocket() {
 }
 
 inline TcpSocket::TcpSocket(TcpSocket&& other) noexcept {
+    /* Check for self-assignment */
+    if (&other == this) return;
+
+    /* Close this socket */
     Close();
+
+    /* Swap file descryptors numbers */
     this->_socket_fd = other._socket_fd;
     other._socket_fd = -1;
 }
 
 inline TcpSocket& TcpSocket::operator=(TcpSocket&& other) noexcept {
+    /* Check for self-assignment */
+    if (&other == this) return *this;
+
+    /* Close this socket */
     Close();
+
+    /* Swap file descryptors numbers */
     this->_socket_fd = other._socket_fd;
     other._socket_fd = -1;
     return *this;
