@@ -1,6 +1,7 @@
 #pragma once
 
 template<typename T>
+[[nodiscard]]
 constexpr T&& move(T& obj) noexcept;
 
 template<typename T>

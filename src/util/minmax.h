@@ -6,6 +6,7 @@
 #include <utility>
 
 template <typename T, typename U, typename>
+[[nodiscard]]
 constexpr std::common_type_t<T, U> min(T&& x1, U&& x2);
 
 template <typename T, typename U, typename>
