@@ -215,8 +215,8 @@ inline HttpResponse::ParseResult HttpResponse::ReadHttp11ResponseLine(
     buffer_ptr += sizeof(http_first_bytes) - 1;
 
     /* Check for the http version and the after space */
-    if ((buffer_ptr[0] != '0' ||
-         buffer_ptr[0] != '1') &&
+    if ((buffer_ptr[0] != '0' &&
+         buffer_ptr[0] != '1') ||
         buffer_ptr[1] != ' ') return INVALID;
 
     /* Go to the status code */
