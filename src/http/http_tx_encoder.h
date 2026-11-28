@@ -8,7 +8,7 @@
 
 class HttpTxEncoder {
 public:
-    ALLOW_COPY_ALLOW_MOVE(HttpTxEncoder);
+    PREVENT_COPY_AND_MOVE(HttpTxEncoder);
     virtual ~HttpTxEncoder() = default;
 
     virtual void Write(HttpTransport* transport, char chr) = 0;
@@ -27,7 +27,7 @@ protected:
 
 class HttpTxEncoder::Plain final : public HttpTxEncoder {
 public:
-    PREVENT_COPY_ALLOW_MOVE(Plain);
+    PREVENT_COPY_AND_MOVE(Plain);
     Plain(uint64_t content_length) noexcept;
 
     void Write(HttpTransport* transport, char chr) override;
@@ -43,7 +43,7 @@ private:
 
 class HttpTxEncoder::Chunked final : public HttpTxEncoder {
 public:
-    PREVENT_COPY_ALLOW_MOVE(Chunked);
+    PREVENT_COPY_AND_MOVE(Chunked);
     Chunked() noexcept = default;
 
     void Write(HttpTransport* transport, char chr) override;
@@ -58,8 +58,13 @@ inline HttpTxEncoder::Plain::Plain(const uint64_t content_length)
 noexcept : _content_length(content_length) { }
 
 inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
-                                        char chr)
-{ transport->RawWrite(chr); }
+                                        char chr) {
+    if (_content_length == 0)
+        throw HttpException("There are more data sent "
+                            "that Content-Length specify");
+    else --_content_length;
+    transport->RawWrite(chr);
+}
 
 inline void HttpTxEncoder::Plain::Write(HttpTransport* const transport,
                                       const char* const buffer,

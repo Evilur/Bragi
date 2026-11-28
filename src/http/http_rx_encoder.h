@@ -10,7 +10,7 @@
 
 class HttpRxEncoder {
 public:
-    ALLOW_COPY_ALLOW_MOVE(HttpRxEncoder);
+    PREVENT_COPY_AND_MOVE(HttpRxEncoder);
     virtual ~HttpRxEncoder() = default;
 
     virtual uint32_t Read(HttpTransport* transport,
@@ -26,7 +26,7 @@ protected:
 
 class HttpRxEncoder::Plain final : public HttpRxEncoder {
 public:
-    PREVENT_COPY_ALLOW_MOVE(Plain);
+    PREVENT_COPY_AND_MOVE(Plain);
 
     Plain() noexcept = default;
     Plain(uint64_t content_length) noexcept;
@@ -41,7 +41,7 @@ private:
 
 class HttpRxEncoder::Chunked final : public HttpRxEncoder {
 public:
-    PREVENT_COPY_ALLOW_MOVE(Chunked);
+    PREVENT_COPY_AND_MOVE(Chunked);
     Chunked() = default;
 
     uint32_t Read(HttpTransport* transport,
