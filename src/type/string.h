@@ -279,18 +279,18 @@ inline constexpr bool String::operator==(const char (&other)[N]) const
 noexcept { return _len == N - 1 && Equal(_string, other, N - 1); }
 
 inline constexpr bool String::operator!=(const String& other) const noexcept {
-    return _len != other._len || Equal(_string, other._string, _len);
+    return _len != other._len || !Equal(_string, other._string, _len);
 }
 
 template <typename T,
     std::enable_if_t<std::is_same_v<T, const char*> ||
     std::is_same_v<T, char*>, int>>
 inline constexpr bool String::operator!=(const T other) const
-noexcept { return Equal(_string, other); }
+noexcept { return !Equal(_string, other); }
 
 template <uint32_t N>
 inline constexpr bool String::operator!=(const char (&other)[N]) const
-noexcept { return _len != N - 1 || Equal(_string, other, N - 1); }
+noexcept { return _len != N - 1 || !Equal(_string, other, N - 1); }
 
 inline constexpr String::operator const char*() const
 noexcept { return _string; }
@@ -575,11 +575,17 @@ inline constexpr int32_t String::Compare(
 
 inline constexpr bool String::Equal(
     const char* x1, const char* x2
-) noexcept { return Compare(x1, x2) == 0; }
+) noexcept {
+    if (x1 == x2) return true;
+    else return Compare(x1, x2) == 0;
+}
 
 inline constexpr bool String::Equal(
     const char* x1, const char* x2, uint32_t len
-) noexcept { return Compare(x1, x2, len) == 0; }
+) noexcept {
+    if (x1 == x2) return true;
+    else return Compare(x1, x2, len) == 0;
+}
 
 inline constexpr bool String::EqualIgnoreCase(
     const char* x1, const char* x2
