@@ -171,7 +171,10 @@ inline void HttpClient::Flush() {
         _rx_encoder = new HttpRxEncoder::Plain(*content_length);
 
     /* Can we use this connection for the next request? */
-    _reusable = !_is_connection_close && !_response->IsConnectionClose();
+    _reusable = !_is_connection_close && !_response->IsConnectionClose() && (
+        _response->IsChunkedEncoding() ||
+        _response->ContentLength() != nullptr
+    );
 }
 
 inline uint32_t HttpClient::Read(char* const buffer,
@@ -190,6 +193,9 @@ inline void HttpClient::Close() noexcept {
     _transport.Close();
     _connected = false;
     _reusable = false;
+    _headersSent = false;
+    _tx_encoder = nullptr;
+    _rx_encoder = nullptr;
 }
 
 inline void HttpClient::EnsureConnected() {
