@@ -20,20 +20,26 @@ public:
     DynamicArray(DynamicArray && other) noexcept;
     DynamicArray &operator=(DynamicArray && other) noexcept;
 
+    [[nodiscard]]
     operator T*() noexcept;
 
     ~DynamicArray() noexcept;
 
+    [[nodiscard]]
     T* Data() noexcept;
 
+    [[nodiscard]]
     S Size() const noexcept;
 
+    [[nodiscard]]
     bool IsEmpty() const noexcept;
 
     void Push(const T& element);
     void Push(T&& element);
 
+    [[nodiscard]]
     T& operator[](S index) noexcept;
+    [[nodiscard]]
     const T& operator[](S index) const noexcept;
 
 private:

@@ -30,45 +30,59 @@ public:
 
     constexpr ~String() noexcept;
 
+    [[nodiscard]]
     constexpr String operator+(char symbol) const;
 
+    [[nodiscard]]
     constexpr String operator+(const char* string) const;
 
+    [[nodiscard]]
     constexpr bool operator==(const String& other) const noexcept;
 
     template <typename T,
         std::enable_if_t<std::is_same_v<T, const char*> ||
         std::is_same_v<T, char*>, int> = 0>
+    [[nodiscard]]
     constexpr bool operator==(T other) const noexcept;
 
     template <uint32_t N>
+    [[nodiscard]]
     constexpr bool operator==(const char (&other)[N]) const noexcept;
 
+    [[nodiscard]]
     constexpr bool operator!=(const String& other) const noexcept;
 
     template <typename T,
         std::enable_if_t<std::is_same_v<T, const char*> ||
         std::is_same_v<T, char*>, int> = 0>
+    [[nodiscard]]
     constexpr bool operator!=(T other) const noexcept;
 
     template <uint32_t N>
+    [[nodiscard]]
     constexpr bool operator!=(const char (&other)[N]) const noexcept;
 
+    [[nodiscard]]
     constexpr operator const char*() const noexcept;
 
+    [[nodiscard]]
     constexpr operator char*() const noexcept;
 
+    [[nodiscard]]
     constexpr operator std::string_view() const noexcept;
 
+    [[nodiscard]]
     constexpr uint32_t Length() const noexcept;
 
+    [[nodiscard]]
     constexpr bool IsEmpty() const noexcept;
 
     constexpr void ToLower() noexcept;
 
     constexpr void ToUpper() noexcept;
 
-    [[nodiscard]] constexpr const char* CStr() const noexcept;
+    [[nodiscard]]
+    constexpr const char* CStr() const noexcept;
 
 private:
     char* _string;
@@ -76,64 +90,80 @@ private:
 
 public:
     template<typename... Args>
+    [[nodiscard]]
     static String Format(const char* format, Args... args);
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T ToInt(const char* string) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T ToInt(
         const char* string, const char*& after_ptr
     ) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T ToInt(
         const char* string, uint32_t len
     ) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T ToInt(
         const char* string, uint32_t len, const char*& after_ptr
     ) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T HexToInt(const char* string) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T HexToInt(
         const char* string, const char*& after_ptr
     ) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T HexToInt(
         const char* string, uint32_t len
     ) noexcept;
 
     template <typename T>
+    [[nodiscard]]
     static constexpr T HexToInt(
         const char* string, uint32_t len, const char*& after_ptr
     ) noexcept;
 
+    [[nodiscard]]
     static constexpr int32_t Compare(const char* x1, const char* x2) noexcept;
 
+    [[nodiscard]]
     static constexpr int32_t Compare(
         const char* x1, const char* x2, uint32_t len
     ) noexcept;
 
+    [[nodiscard]]
     static constexpr bool Equal(const char* x1, const char* x2) noexcept;
 
+    [[nodiscard]]
     static constexpr bool Equal(
         const char* x1, const char* x2, uint32_t len
     ) noexcept;
 
+    [[nodiscard]]
     static constexpr bool EqualIgnoreCase(
         const char* x1, const char* x2
     ) noexcept;
 
+    [[nodiscard]]
     static constexpr bool EqualIgnoreCase(
         const char* x1, const char* x2, uint32_t len
     ) noexcept;
 
+    [[nodiscard]]
     static constexpr uint32_t Length(const char* string) noexcept;
 
 private:

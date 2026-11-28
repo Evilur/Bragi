@@ -20,6 +20,7 @@ class RadixTree final {
 private:
     using NextCharFunc = char (*)(const char*&);
 
+    [[nodiscard]]
     static constexpr char NextChar(const char*& key) noexcept;
 
 public:
@@ -33,9 +34,11 @@ public:
     constexpr ~RadixTree() noexcept = default;
 
     template <NextCharFunc NextChar = NextChar>
+    [[nodiscard]]
     constexpr const T* Get(const char* key) const noexcept;
 
     template <NextCharFunc NextChar = NextChar>
+    [[nodiscard]]
     constexpr const T* Get(const char* key, uint32_t len) const noexcept;
 
 private:

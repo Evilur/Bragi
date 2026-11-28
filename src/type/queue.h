@@ -21,14 +21,18 @@ public:
 
     constexpr void Push(T&& value) noexcept;
 
+    [[nodiscard]]
     constexpr T Pop() noexcept;
 
     constexpr void Clear() noexcept;
 
+    [[nodiscard]]
     constexpr uint32_t Size() const noexcept;
 
+    [[nodiscard]]
     constexpr bool IsEmpty() const noexcept;
 
+    [[nodiscard]]
     constexpr bool IsFull() const noexcept;
 
 private:
@@ -40,7 +44,7 @@ private:
 
 template <typename T, uint32_t N>
 inline constexpr void Queue<T, N>::Push(const T& value) noexcept {
-    assert(!IsFull() && "There is no free space in the queue to push");
+    assert(!IsFull());
 
     /* Set the new value */
     _data[_tail] = value;

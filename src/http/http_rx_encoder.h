@@ -13,10 +13,12 @@ public:
     PREVENT_COPY_AND_MOVE(HttpRxEncoder);
     virtual ~HttpRxEncoder() = default;
 
+    [[nodiscard]]
     virtual uint32_t Read(HttpTransport* transport,
                           char* buffer,
                           uint32_t buffer_size) = 0;
 
+    [[nodiscard]]
     virtual bool IsFinished() const noexcept = 0;
 
     class Plain;
@@ -33,10 +35,12 @@ public:
     Plain() noexcept = default;
     Plain(uint64_t content_length) noexcept;
 
+    [[nodiscard]]
     uint32_t Read(HttpTransport* transport,
                   char* buffer,
                   uint32_t buffer_size) override;
 
+    [[nodiscard]]
     bool IsFinished() const noexcept override;
 
 private:
@@ -48,10 +52,12 @@ public:
     PREVENT_COPY_AND_MOVE(Chunked);
     Chunked() = default;
 
+    [[nodiscard]]
     uint32_t Read(HttpTransport* transport,
                   char* buffer,
                   uint32_t buffer_size) override;
 
+    [[nodiscard]]
     bool IsFinished() const noexcept override;
 
 private:

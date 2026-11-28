@@ -25,13 +25,19 @@ public:
     Nullable(Nullable&& other) noexcept;
     Nullable& operator=(Nullable&& other) noexcept;
 
+    [[nodiscard]]
     T& operator*() noexcept;
+    [[nodiscard]]
     const T& operator*() const noexcept;
 
+    [[nodiscard]]
     T* operator->() noexcept;
+    [[nodiscard]]
     const T* operator->() const noexcept;
 
+    [[nodiscard]]
     bool operator==(std::nullptr_t) const noexcept;
+    [[nodiscard]]
     bool operator!=(std::nullptr_t) const noexcept;
 
 private:
@@ -40,7 +46,9 @@ private:
 
     void Reset() noexcept;
 
+    [[nodiscard]]
     T* Ptr() noexcept;
+    [[nodiscard]]
     const T* Ptr() const noexcept;
 
     alignas(T) unsigned char _storage[sizeof(T)];

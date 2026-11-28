@@ -24,29 +24,39 @@ public:
 
     ~UniqPtr() noexcept;
 
+    [[nodiscard]]
     BaseType* Get() noexcept;
 
+    [[nodiscard]]
     const BaseType* Get() const noexcept;
 
+    [[nodiscard]]
     BaseType* const& Ref() noexcept;
 
+    [[nodiscard]]
     const BaseType* const& Ref() const noexcept;
 
     void Release() noexcept;
 
+    [[nodiscard]]
     BaseType& operator*() noexcept;
 
+    [[nodiscard]]
     const BaseType& operator*() const noexcept;
 
+    [[nodiscard]]
     BaseType* operator->() noexcept
     requires (!std::is_array_v<T>);
 
+    [[nodiscard]]
     const BaseType* operator->() const noexcept
     requires (!std::is_array_v<T>);
 
+    [[nodiscard]]
     BaseType& operator[](uint64_t index) noexcept
     requires (std::is_array_v<T>);
 
+    [[nodiscard]]
     const BaseType& operator[](uint64_t index) const noexcept
     requires (std::is_array_v<T>);
 

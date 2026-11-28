@@ -25,6 +25,7 @@ public:
 
     virtual ~Exception() noexcept = default;
 
+    [[nodiscard]]
     virtual const char* what() const noexcept override = 0;
 };
 

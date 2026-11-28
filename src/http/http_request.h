@@ -38,8 +38,10 @@ public:
 
     HttpRequest& SetContentLength(uint64_t length) noexcept;
 
+    [[nodiscard]]
     uint64_t ContentLength() const noexcept;
 
+    [[nodiscard]]
     bool IsChunkedEncoding() const noexcept;
 
     void SendHttp11Headers(HttpTransport& transport);

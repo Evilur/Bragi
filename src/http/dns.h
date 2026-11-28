@@ -13,6 +13,7 @@ class DNS final {
 public:
     PREVENT_INSTANTIATION(DNS);
 
+    [[nodiscard]]
     static sockaddr_in Resolve(const char* hostname);
 };
 

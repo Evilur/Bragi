@@ -6,10 +6,12 @@
 
 template <typename T>
 requires std::is_enum_v<T>
+[[nodiscard]]
 constexpr const char* get_enum_label(T value) noexcept;
 
 template <typename T>
 requires std::is_enum_v<T>
+[[nodiscard]]
 constexpr uint32_t get_enum_label_length(T value) noexcept;
 
 template <typename T>

@@ -6,6 +6,7 @@ class HttpException final : public Exception {
 public:
     EXCEPTION_COMMON_CONTSTRUCT(HttpException);
 
+    [[nodiscard]]
     const char* what() const noexcept override;
 };
 

@@ -26,16 +26,20 @@ public:
 
     virtual ~HttpClient() noexcept = default;
 
+    [[nodiscard]]
     HttpRequest& Request() noexcept;
 
+    [[nodiscard]]
     bool HasResponse() const noexcept;
 
+    [[nodiscard]]
     const HttpResponse& Response() const noexcept;
 
     virtual void Write(const char* buffer, uint32_t buffer_size);
 
     virtual void Flush();
 
+    [[nodiscard]]
     virtual uint32_t Read(char* buffer, uint32_t buffer_size);
 
     void Close() noexcept;

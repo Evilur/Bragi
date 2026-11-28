@@ -33,6 +33,7 @@ public:
 
     void Close() noexcept;
 
+    [[nodiscard]]
     bool IsClosed() const noexcept;
 
     void SetOption(int32_t level,
@@ -42,6 +43,7 @@ public:
 
     void Send(const char* buffer, uint32_t buffer_size) const;
 
+    [[nodiscard]]
     int32_t Receive(char* buffer, uint32_t buffer_size) const;
 
 private:

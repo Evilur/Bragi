@@ -40,10 +40,13 @@ public:
 
     void Flush();
 
+    [[nodiscard]]
     uint32_t Read(char* buffer, uint32_t buffer_size);
 
+    [[nodiscard]]
     uint32_t RawRead(char* buffer, uint32_t buffer_size);
 
+    [[nodiscard]]
     uint32_t RxBufferedSize() const noexcept;
 
     /**
@@ -53,12 +56,14 @@ public:
      * @param buffer   Receives the pointer to the buffered data
      * @return Number of available bytes.
      */
+    [[nodiscard]]
     uint32_t Peek(const char*& buffer, bool use_socket = true);
 
     void Consume(uint32_t size);
 
     void Close() noexcept;
 
+    [[nodiscard]]
     bool IsClosed() const noexcept;
 
     void Reset();
