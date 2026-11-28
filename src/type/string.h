@@ -528,21 +528,19 @@ inline String String::Format(
 inline constexpr int32_t String::Compare(
     const char* x1, const char* x2
 ) noexcept {
-    if constexpr (std::is_constant_evaluated()) {
+    if consteval {
         while (*x1 && *x1 == *x2) ++x1, ++x2;
         return (unsigned char)*x1 - (unsigned char)*x2;
-    } else
-        return strcmp(x1, x2);
+    } else { return strcmp(x1, x2); }
 }
 
 inline constexpr int32_t String::Compare(
     const char* x1, const char* x2, uint32_t len
 ) noexcept {
-    if constexpr (std::is_constant_evaluated()) {
+    if consteval {
         while (len && *x1 && *x1 == *x2) ++x1, ++x2, --len;
         return len ? (unsigned char)*x1 - (unsigned char)*x2 : 0;
-    } else
-        return strncmp(x1, x2, len);
+    } else { return strncmp(x1, x2, len); }
 }
 
 inline constexpr bool String::Equal(
@@ -591,20 +589,18 @@ inline constexpr bool String::EqualIgnoreCase(
 }
 
 inline constexpr uint32_t String::Length(const char* const string) noexcept {
-    if constexpr (std::is_constant_evaluated()) {
+    if consteval {
         uint32_t len = 0;
         while (string[len]) ++len;
         return len;
-    } else
-        return strlen(string);
+    } else { return strlen(string); }
 }
 
 inline constexpr void String::Copy(
     char* const dest, const char* const src, const uint32_t size
 ) noexcept {
-    if constexpr (std::is_constant_evaluated())
+    if consteval {
         for (uint32_t i = 0; i < size; ++i)
             dest[i] = src[i];
-    else
-        memcpy(dest, src, size);
+    } else { memcpy(dest, src, size); }
 }
