@@ -3,7 +3,7 @@
 #include "reflection/enum.h"
 #include "type/nullable.h"
 #include "type/radix_tree.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "http/http_transport.h"
 
 #include <cstdint>

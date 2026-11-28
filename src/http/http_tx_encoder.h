@@ -1,7 +1,7 @@
 #pragma once
 
 #include "exception/http_exception.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "http/http_transport.h"
 
 #include <cstdint>

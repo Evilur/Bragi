@@ -2,7 +2,7 @@
 
 #include "socket/tcp_socket.h"
 #include "type/string.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/minmax.h"
 
 #include <cassert>

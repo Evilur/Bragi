@@ -1,7 +1,7 @@
 #pragma once
 
 #include "type/queue.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "type/key_value_pair.h"
 #include "type/string.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "exception/http_exception.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/logger.h"
 #include "type/string.h"
 

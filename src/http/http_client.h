@@ -2,7 +2,7 @@
 
 #include "type/nullable.h"
 #include "type/uniq_ptr.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "http/dns.h"
 #include "http/http_request.h"
 #include "http/http_response.h"

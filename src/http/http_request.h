@@ -3,7 +3,7 @@
 #include "type/dynamic_array.h"
 #include "type/nullable.h"
 #include "type/string.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/logger.h"
 #include "http/http_transport.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/logger.h"
 
 #include <exception>

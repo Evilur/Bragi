@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/move.h"
 #include "util/access_traits.h"
 

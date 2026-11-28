@@ -1,7 +1,7 @@
 #pragma once
 
 #include "type/nullable.h"
-#include "util/class.h"
+#include "util/class_traits.h"
 #include "util/minmax.h"
 #include "type/string.h"
 #include "http/http_transport.h"
