@@ -103,7 +103,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             /* If the transport is closed
              * And the buffer has not enough data */
             if (transport->IsClosed() && rx_buffer_size < sizeof("0\r\n") - 1)
-                return total_received;
+                throw HttpException("Invalid chunk size");
 
             /* Peek the chunk size */
             const char* chunk_size_str;
@@ -111,7 +111,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
                 transport->Peek(chunk_size_str, use_socket);
             if (peeked < sizeof("0\r\n") - 1) {
                 if (use_socket && peeked == rx_buffer_size)
-                    return total_received;
+                    throw HttpException("Invalid chunk size");
                 else continue;
             }
 
@@ -126,12 +126,13 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             /* Check for the empty size value */
             if (after_chunk_size == chunk_size_str) {
                 transport->Close();
-                return total_received;
+                throw HttpException("Invalid chunk size");
             }
 
             /* If we have not enough data to read the \r\n seq */
             if (after_chunk_size + 1 - chunk_size_str >= peeked) {
-                if (transport->IsClosed()) return total_received;
+                if (transport->IsClosed())
+                    throw HttpException("Invalid chunk size");
                 continue;
             }
 
@@ -139,7 +140,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             if (after_chunk_size[0] != '\r' ||
                 after_chunk_size[1] != '\n') {
                 transport->Close();
-                return total_received;
+                throw HttpException("Invalid chunk size");
             }
             after_chunk_size += 2;
 
@@ -147,7 +148,8 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
             if (current_chunk_size == 0) {
                 /* Check the buffer size */
                 if (after_chunk_size + 1 - chunk_size_str >= peeked) {
-                    if (transport->IsClosed()) return total_received;
+                    if (transport->IsClosed())
+                        throw HttpException("Invalid chunk size");
                     continue;
                 }
 
@@ -155,7 +157,7 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
                 if (after_chunk_size[0] != '\r' ||
                     after_chunk_size[1] != '\n') {
                     transport->Close();
-                    return total_received;
+                    throw HttpException("Invalid chunk size");
                 }
                 after_chunk_size += 2;
                 _end = true;
@@ -173,7 +175,8 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
         );
 
         /* If the connection has been closed */
-        if (received == 0) { return total_received; }
+        if (received == 0)
+            throw HttpException("Invalid chunk size");
 
         /* Update the values */
         _current_chunk_size -= received;
@@ -190,21 +193,22 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
                  * And the buffer has not enough data */
                 if (transport->IsClosed() &&
                     rx_buffer_size < sizeof("\r\n") - 1)
-                    return total_received;
+                    throw HttpException("Invalid chunk size");
 
                 /* Peek the \r\n sequence after the chunk */
                 const char* end_seq;
                 const uint32_t peeked = transport->Peek(end_seq, use_socket);
                 if (peeked < sizeof("\r\n") - 1) {
                     if (use_socket && peeked == rx_buffer_size)
-                        return total_received;
+                        throw HttpException("Invalid chunk size");
                     else continue;
                 }
 
                 /* Check for the \r\n sequence */
                 if (end_seq[0] != '\r' ||
                     end_seq[1] != '\n') {
-                    transport->Close(); return total_received;
+                    transport->Close();
+                    throw HttpException("Invalid chunk size");
                 }
 
                 /* Consume the peeked buffer */

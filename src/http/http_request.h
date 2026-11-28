@@ -1,6 +1,5 @@
 #pragma once
 
-#include "exception/http_request_exception.h"
 #include "type/dynamic_array.h"
 #include "type/nullable.h"
 #include "type/string.h"
@@ -38,8 +37,6 @@ public:
     HttpRequest& AddCookie(const char* key, const char* value) noexcept;
 
     HttpRequest& SetContentLength(uint64_t length) noexcept;
-
-    HttpRequest& SetChunkedEncoding(bool flag) noexcept;
 
     uint64_t ContentLength() const noexcept;
 
@@ -95,13 +92,6 @@ HttpRequest::SetHeaders(const char* const (* const headers)[2],
         const char* const name = headers[i][0];
         const char* const value = headers[i][1];
 
-        /* Check the name and the value */
-        if (name == nullptr || value == nullptr) {
-            ERROR_LOG("Failed to set the header: %s cannot be nullptr",
-                      name == nullptr ? "name" : "value");
-            throw HttpRequestException();
-        }
-
         /* If all is OK, save the header */
         SaveHeader(name, value);
     }
@@ -123,10 +113,8 @@ HttpRequest::SetCookies(const char* const (* const cookies)[2],
         const char* const value = cookies[i][1];
 
         /* Check the key and the value */
-        if (key == nullptr) {
-            ERROR_LOG("Failed to set the cookie: key cannot be nullptr");
-            throw HttpRequestException();
-        }
+        assert(key != nullptr && strpbrk(key, "\r\n:=") == nullptr);
+        assert(value == nullptr || strpbrk(value, "\r\n;") == nullptr);
 
         /* If all is OK, push the cookie to the array */
         new_cookies.Push({ key, value });
@@ -145,7 +133,15 @@ noexcept { SaveHeader(name, value); return *this; }
 
 inline HttpRequest& HttpRequest::AddCookie(const char* const key,
                                            const char* const value)
-noexcept { _cookies.Push({ key, value }); return *this; }
+noexcept {
+    /* Check the key and the value */
+    assert(key != nullptr && strpbrk(key, "\r\n:=") == nullptr);
+    assert(value == nullptr || strpbrk(value, "\r\n;") == nullptr);
+
+    /* Save the cookie */
+    _cookies.Push({ key, value });
+    return *this;
+}
 
 inline HttpRequest& HttpRequest::SetContentLength(const uint64_t length)
 noexcept { _content_length = length; return *this; }
@@ -243,10 +239,8 @@ noexcept { _content_length = nullptr; }
 inline void HttpRequest::SaveHeader(const char* const name,
                                     const char* const value) noexcept {
     /* Check for injections */
-    assert(name != nullptr &&
-           !strpbrk(name, "\r\n:") && "Invalid header name");
-    assert(value != nullptr &&
-           !strpbrk(value, "\r\n") && "Invalid header value");
+    assert(name != nullptr && strpbrk(name, "\r\n:=") == nullptr);
+    assert(value != nullptr && strpbrk(value, "\r\n") == nullptr);
 
     /* Create a header */
     /* The header name is in the lower case now */

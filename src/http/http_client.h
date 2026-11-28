@@ -87,106 +87,113 @@ inline const HttpResponse& HttpClient::Response() const noexcept {
 
 inline void HttpClient::Write(const char* const buffer,
                               const uint32_t buffer_size) {
-    /* If we haven't sent the headers yet, do it now */
-    if (!_headersSent) {
-        /* Prepare for the next request */
-        EnsureConnected();
+    try {
+        /* If we haven't sent the headers yet, do it now */
+        if (!_headersSent) {
+            /* Prepare for the next request */
+            EnsureConnected();
 
-        /* Send the request headers */
-        try { _request.SendHttp11Headers(_transport); }
+            /* Send the request headers */
+            try { _request.SendHttp11Headers(_transport); }
+            catch (const SocketException& e)
+            { throw HttpException("Failed to send the http request headers"); }
+
+            /* Set the right encoder */
+            if (_request.IsChunkedEncoding())
+                _tx_encoder = new HttpTxEncoder::Chunked();
+            else
+                _tx_encoder = new HttpTxEncoder::Plain(_request.ContentLength());
+
+            /* Else prepare for the next request */
+            _request.ResetContentLength();
+
+            /* Save the connection state */
+            _is_connection_close = _request.close_connection;
+
+            /* Update the state */
+            _headersSent = true;
+        }
+
+        /* Send the body */
+        try { _transport.Write(buffer, buffer_size); }
         catch (const SocketException& e)
-        { throw HttpException("Failed to send the http request headers"); }
-
-        /* Set the right encoder */
-        if (_request.IsChunkedEncoding())
-            _tx_encoder = new HttpTxEncoder::Chunked();
-        else
-            _tx_encoder = new HttpTxEncoder::Plain(_request.ContentLength());
-
-        /* Else prepare for the next request */
-        _request.ResetContentLength();
-
-        /* Save the connection state */
-        _is_connection_close = _request.close_connection;
-
-        /* Update the state */
-        _headersSent = true;
-    }
-
-    /* Send the body */
-    try { _transport.Write(buffer, buffer_size); }
-    catch (const SocketException& e)
-    { throw HttpException("Failed to send the http body"); }
+        { throw HttpException("Failed to send the http body"); }
+    } catch (const HttpException& e) { Close(); throw; }
 }
 
 inline void HttpClient::Flush() {
-    /* If we haven't sent the headers yet, do it now */
-    if (!_headersSent) {
-        /* Prepare for the next request */
-        EnsureConnected();
+    try {
+        /* If we haven't sent the headers yet, do it now */
+        if (!_headersSent) {
+            /* Prepare for the next request */
+            EnsureConnected();
 
-        /* Set the 'Content-Length' to 0 and send the request headers */
-        _request.SetContentLength(0);
-        try { _request.SendHttp11Headers(_transport); }
+            /* Set the 'Content-Length' to 0 and send the request headers */
+            _request.SetContentLength(0);
+            try { _request.SendHttp11Headers(_transport); }
+            catch (const SocketException& e)
+            { throw HttpException("Failed to send the http request headers"); }
+
+            /* Prepare the request for the next request */
+            _request.ResetContentLength();
+
+            /* Save the connection state */
+            _is_connection_close = _request.close_connection;
+        }
+
+        /* Flush the request */
+        try { _transport.Flush(); }
         catch (const SocketException& e)
-        { throw HttpException("Failed to send the http request headers"); }
+        { throw HttpException("Failed to flush the http data"); }
 
-        /* Prepare the request for the next request */
-        _request.ResetContentLength();
+        /* Reset the tx encoder */
+        _tx_encoder = nullptr;
 
-        /* Save the connection state */
-        _is_connection_close = _request.close_connection;
-    }
+        /* Reset the request state */
+        _headersSent = false;
 
-    /* Flush the request */
-    try { _transport.Flush(); }
-    catch (const SocketException& e)
-    { throw HttpException("Failed to flush the http data"); }
+        /* Create a new http response object */
+        _response = HttpResponse();
 
-    /* Reset the tx encoder */
-    _tx_encoder = nullptr;
+        /* Read the response headers */
+        try { _response->ReadHttp11Headers(_transport, _request.method); }
+        catch (const SocketException& e)
+        { throw HttpException("Failed to read the http response headers"); }
 
-    /* Reset the request state */
-    _headersSent = false;
+        /* Check for the response validity */
+        if (!_response->IsValid())
+            throw HttpException("The server returned invalid response");
 
-    /* Create a new http response object */
-    _response = HttpResponse();
+        /* Set the right rx encoder */
+        else if (_response->IsChunkedEncoding())
+            _rx_encoder = new HttpRxEncoder::Chunked();
+        else if (const Nullable<uint64_t>& content_length =
+                 _response->ContentLength(); content_length == nullptr)
+            _rx_encoder = new HttpRxEncoder::Plain();
+        else
+            _rx_encoder = new HttpRxEncoder::Plain(*content_length);
 
-    /* Read the response headers */
-    try { _response->ReadHttp11Headers(_transport, _request.method); }
-    catch (const SocketException& e)
-    { throw HttpException("Failed to read the http response headers"); }
-
-    /* Check for the response validity */
-    if (!_response->IsValid())
-        throw HttpException("The server returned invalid response");
-
-    /* Set the right rx encoder */
-    else if (_response->IsChunkedEncoding())
-        _rx_encoder = new HttpRxEncoder::Chunked();
-    else if (const Nullable<uint64_t>& content_length =
-             _response->ContentLength(); content_length == nullptr)
-        _rx_encoder = new HttpRxEncoder::Plain();
-    else
-        _rx_encoder = new HttpRxEncoder::Plain(*content_length);
-
-    /* Can we use this connection for the next request? */
-    _reusable = !_is_connection_close && !_response->IsConnectionClose() && (
-        _response->IsChunkedEncoding() ||
-        _response->ContentLength() != nullptr
-    );
+        /* Can we use this connection for the next request? */
+        _reusable = !_is_connection_close && !_response->IsConnectionClose() && (
+            _response->IsChunkedEncoding() ||
+            _response->ContentLength() != nullptr
+        );
+    } catch (const HttpException& e) { Close(); throw; }
 }
 
 inline uint32_t HttpClient::Read(char* const buffer,
                                  const uint32_t buffer_size) {
-    /* Check for the transport state and the buffer state */
-    if (_transport.IsClosed() &&
-        _transport.RxBufferedSize() == 0) return 0;
+    try {
+        /* Check for the transport state and the buffer state */
+        if (_transport.IsClosed() &&
+            _transport.RxBufferedSize() == 0) return 0;
+        assert(_rx_encoder.Get() != nullptr);
 
-    /* Read the data */
-    try { return _transport.Read(buffer, buffer_size); }
-    catch (const SocketException& e)
-    { throw HttpException("The connection has been closed"); }
+        /* Read the data */
+        try { return _transport.Read(buffer, buffer_size); }
+        catch (const SocketException& e)
+        { throw HttpException("The connection has been closed"); }
+    } catch (const HttpException& e) { Close(); throw; }
 }
 
 inline void HttpClient::Close() noexcept {
@@ -196,6 +203,7 @@ inline void HttpClient::Close() noexcept {
     _headersSent = false;
     _tx_encoder = nullptr;
     _rx_encoder = nullptr;
+    _response = nullptr;
 }
 
 inline void HttpClient::EnsureConnected() {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "exception/socket_exception.h"
-#include "util/class.h"
 #include "util/logger.h"
 
 #include <unistd.h>
@@ -111,6 +110,7 @@ inline void TcpSocket::Connect(const sockaddr_in& address) {
 
 inline void TcpSocket::Close() noexcept {
     if (_socket_fd == -1) return;
+    INFO_LOG("Close the connection");
 #ifdef _WIN32
     closesocket(_socket_fd);
     WSACleanup();
@@ -154,7 +154,7 @@ inline void TcpSocket::Send(const char* buffer,
 
         /* Check for an error */
         if (result == -1) {
-            WARN_LOG("Failed to send %ld bytes to %s:%hu",
+            WARN_LOG("Failed to send %u bytes to %s:%hu",
                      buffer_size,
                      inet_ntoa(address.sin_addr),
                      ntohs(address.sin_port));
@@ -178,7 +178,7 @@ inline int32_t TcpSocket::Receive(char* const buffer,
     const int32_t result = recv(_socket_fd, buffer, buffer_size, 0);
 
     /* Print the log */
-#if LOG_LEVEL <= 2
+#if LOG_LEVEL <= 3
     sockaddr_in from;
     socklen_t from_len = sizeof(from);
     getpeername(_socket_fd, (sockaddr*)&from, &from_len);
