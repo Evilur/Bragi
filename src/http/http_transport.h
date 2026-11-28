@@ -101,6 +101,16 @@ inline void HttpTransport::Connect() {
     /* Set options */
     const int32_t nodelay = 1;
     _socket.SetOption(IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+#ifdef _WIN32
+    const DWORD timeout = 5000;
+#else
+    const timeval timeout {
+        .tv_sec = 5,
+        .tv_usec = 0
+    };
+#endif
+    _socket.SetOption(SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    _socket.SetOption(SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
     /* Connect a socket to the server */
     _socket.Connect(_addr);

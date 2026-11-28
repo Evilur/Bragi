@@ -243,8 +243,10 @@ noexcept { _content_length = nullptr; }
 inline void HttpRequest::SaveHeader(const char* const name,
                                     const char* const value) noexcept {
     /* Check for injections */
-    assert(!strpbrk(name, "\r\n:") && "Invalid header name");
-    assert(!strpbrk(value, "\r\n") && "Invalid header value");
+    assert(name != nullptr &&
+           !strpbrk(name, "\r\n:") && "Invalid header name");
+    assert(value != nullptr &&
+           !strpbrk(value, "\r\n") && "Invalid header value");
 
     /* Create a header */
     /* The header name is in the lower case now */

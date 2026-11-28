@@ -142,7 +142,8 @@ inline void TcpSocket::Send(const char* buffer,
     /* While we have data that has not been sent yet */
     while (buffer_size > 0) {
         /* Send the data */
-        const int32_t result = send(_socket_fd, buffer, buffer_size, 0);
+        const int32_t result =
+            send(_socket_fd, buffer, buffer_size, MSG_NOSIGNAL);
 
         /* Print the log */
 #if LOG_LEVEL <= 3
