@@ -9,6 +9,9 @@
 
 /**
  * A simple representation of the http request
+ * Important! You should provide only verified data to
+ * This class since it works with the raw provided values.
+ * Responsibility for correct HTTP requests lies with the calling code.
  * @author Evilur <the.evilur@gmail.com>
  */
 class HttpRequest final {
