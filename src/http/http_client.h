@@ -169,19 +169,17 @@ inline void HttpClient::Flush() {
             throw HttpException("The server returned invalid response");
 
         /* Set the right rx encoder */
-        else if (_response->IsChunkedEncoding())
+        else if (_response->IsChunkedEncoding()) {
             _rx_encoder = new HttpRxEncoder::Chunked();
-        else if (const Nullable<uint64_t>& content_length =
-                 _response->ContentLength(); content_length == nullptr)
-            _rx_encoder = new HttpRxEncoder::Plain();
-        else
+            _reusable =
+                !_is_connection_close && !_response->IsConnectionClose();
+        } else if (const Nullable<uint64_t>& content_length =
+                 _response->ContentLength(); content_length != nullptr) {
             _rx_encoder = new HttpRxEncoder::Plain(*content_length);
-
-        /* Can we use this connection for the next request? */
-        _reusable = !_is_connection_close && !_response->IsConnectionClose() && (
-            _response->IsChunkedEncoding() ||
-            _response->ContentLength() != nullptr
-        );
+            _reusable =
+                !_is_connection_close && !_response->IsConnectionClose();
+        } else
+            _rx_encoder = new HttpRxEncoder::Plain();
     } catch (const HttpException& e) { Close(); throw; }
 }
 
