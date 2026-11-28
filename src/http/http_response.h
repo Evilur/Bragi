@@ -31,6 +31,9 @@ public:
     [[nodiscard]]
     const Nullable<uint64_t>& ContentLength() const noexcept;
 
+    [[nodiscard]]
+    bool IsConnectionClose() const noexcept;
+
     void ReadHttp11Headers(HttpTransport& transport, const String& method);
 
 private:
@@ -120,6 +123,9 @@ noexcept { return _is_chunked_encoding; }
 
 inline const Nullable<uint64_t>& HttpResponse::ContentLength() const
 noexcept { return _content_length; }
+
+inline bool HttpResponse::IsConnectionClose() const
+noexcept { return _is_connection_close; }
 
 inline void HttpResponse::ReadHttp11Headers(
     HttpTransport& transport, const String& method

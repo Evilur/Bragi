@@ -50,6 +50,13 @@ private:
     HttpTransport _transport;
 
     bool _headersSent = false;
+
+    bool _is_connection_close = true;
+
+    bool _connected = false;
+    bool _reusable  = false;
+
+    void EnsureConnected();
 };
 
 inline HttpClient::HttpClient(const char* const domain,
@@ -82,13 +89,8 @@ inline void HttpClient::Write(const char* const buffer,
                               const uint32_t buffer_size) {
     /* If we haven't sent the headers yet, do it now */
     if (!_headersSent) {
-        /* Check for the transport state */
-        if (_transport.IsClosed()) _transport.Reset();
-
-        /* Connect the transport to the server */
-        try { _transport.Connect(); }
-        catch (const SocketException& e)
-        { throw HttpException("Failed to connect to the server"); }
+        /* Prepare for the next request */
+        EnsureConnected();
 
         /* Send the request headers */
         try { _request.SendHttp11Headers(_transport); }
@@ -104,6 +106,9 @@ inline void HttpClient::Write(const char* const buffer,
         /* Else prepare for the next request */
         _request.ResetContentLength();
 
+        /* Save the connection state */
+        _is_connection_close = _request.close_connection;
+
         /* Update the state */
         _headersSent = true;
     }
@@ -117,13 +122,8 @@ inline void HttpClient::Write(const char* const buffer,
 inline void HttpClient::Flush() {
     /* If we haven't sent the headers yet, do it now */
     if (!_headersSent) {
-        /* Check for the transport state */
-        if (_transport.IsClosed()) _transport.Reset();
-
-        /* Connect the transport to the server */
-        try { _transport.Connect(); }
-        catch (const SocketException& e)
-        { throw HttpException("Failed to connect to the server"); }
+        /* Prepare for the next request */
+        EnsureConnected();
 
         /* Set the 'Content-Length' to 0 and send the request headers */
         _request.SetContentLength(0);
@@ -133,6 +133,9 @@ inline void HttpClient::Flush() {
 
         /* Prepare the request for the next request */
         _request.ResetContentLength();
+
+        /* Save the connection state */
+        _is_connection_close = _request.close_connection;
     }
 
     /* Flush the request */
@@ -166,6 +169,9 @@ inline void HttpClient::Flush() {
         _rx_encoder = new HttpRxEncoder::Plain();
     else
         _rx_encoder = new HttpRxEncoder::Plain(*content_length);
+
+    /* Can we use this connection for the next request? */
+    _reusable = !_is_connection_close && !_response->IsConnectionClose();
 }
 
 inline uint32_t HttpClient::Read(char* const buffer,
@@ -180,4 +186,35 @@ inline uint32_t HttpClient::Read(char* const buffer,
     { throw HttpException("The connection has been closed"); }
 }
 
-inline void HttpClient::Close() noexcept { _transport.Close(); }
+inline void HttpClient::Close() noexcept {
+    _transport.Close();
+    _connected = false;
+    _reusable = false;
+}
+
+inline void HttpClient::EnsureConnected() {
+    /* Use the old connection only if the connection is ON
+     * And there is no body to drain */
+    if (_connected && !(
+            _connected && _reusable &&
+            !_transport.IsClosed() &&
+            _rx_encoder.Get() != nullptr && _rx_encoder->IsFinished() &&
+            _transport.RxBufferedSize() == 0
+        )) {
+        _transport.Close();
+        _connected = false;
+    }
+
+    /* Reset the state */
+    _reusable = false;
+
+    /* If we already connected */
+    if (_connected) return;
+
+    /* If we need to connect */
+    if (_transport.IsClosed()) _transport.Reset();
+    try { _transport.Connect(); }
+    catch (const SocketException& e)
+    { throw HttpException("Failed to connect to the server"); }
+    _connected = true;
+}

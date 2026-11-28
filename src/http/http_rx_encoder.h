@@ -17,6 +17,8 @@ public:
                           char* buffer,
                           uint32_t buffer_size) = 0;
 
+    virtual bool IsFinished() const noexcept = 0;
+
     class Plain;
     class Chunked;
 
@@ -35,6 +37,8 @@ public:
                   char* buffer,
                   uint32_t buffer_size) override;
 
+    bool IsFinished() const noexcept override;
+
 private:
     Nullable<uint64_t> _content_length = nullptr;
 };
@@ -48,7 +52,7 @@ public:
                   char* buffer,
                   uint32_t buffer_size) override;
 
-    void Reset() noexcept;
+    bool IsFinished() const noexcept override;
 
 private:
     uint64_t _current_chunk_size = 0;
@@ -71,6 +75,9 @@ inline uint32_t HttpRxEncoder::Plain::Read(HttpTransport* const transport,
         return received;
     }
 }
+
+inline bool HttpRxEncoder::Plain::IsFinished() const
+noexcept { return _content_length != nullptr && *_content_length == 0; }
 
 inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
                                              char* buffer,
@@ -211,5 +218,5 @@ inline uint32_t HttpRxEncoder::Chunked::Read(HttpTransport* const transport,
     return total_received;
 }
 
-inline void HttpRxEncoder::Chunked::Reset()
-noexcept { _current_chunk_size = 0; _end = false; }
+inline bool HttpRxEncoder::Chunked::IsFinished() const
+noexcept { return _end; }
